@@ -1,0 +1,16 @@
+LANGUAGES   += c++
+COMPILEOPTS += -Wall
+COMPILEOPTS += -Wextra
+COMPILEOPTS += -Werror
+COMPILEOPTS += -std=c++11
+COMPILEOPTS += -pedantic
+
+LANGUAGES   += bash
+
+GENERATE    += version.h
+
+BINARIES    += flo-llvm-c++
+COMPILEOPTS += `ppkg-config flo --cflags`
+LINKOPTS    += `ppkg-config flo --libs`
+SOURCES     += main-c++.c++
+TESTSRC     += counter-32.bash

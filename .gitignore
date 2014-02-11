@@ -1,0 +1,11 @@
+/bin/
+/lib/
+/obj/
+/check/
+/.scala_dependencies
+
+/Configfiles/local
+/Configfile.local
+Makefile*
+
+*~
