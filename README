@@ -1,0 +1,6 @@
+flo-llvm: Converts Flo files to LLVM IR
+
+This provides an efficient mechanism for executing dataflow graphs
+that are represented as Flo files.  Ideally it will eventually
+eliminate Chisel's C++ backend, as well as provide a basis for LLVM
+backends that target other architectures (DREAMER, for example).
