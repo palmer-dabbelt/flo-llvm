@@ -14,3 +14,5 @@ COMPILEOPTS += `ppkg-config flo --cflags`
 LINKOPTS    += `ppkg-config flo --libs`
 SOURCES     += main-c++.c++
 TESTSRC     += counter-32.bash
+TESTSRC     += counter-64.bash
+

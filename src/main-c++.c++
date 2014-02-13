@@ -497,8 +497,7 @@ int generate_llvmir(const libflo::node_list &flo, FILE *f)
                 );
 
             if (node->width() < 64) {
-                fprintf(f,
-                        "    %%T__%lu = load i64* %s\n",
+                fprintf(f, "    %%T__%lu = load i64* %s\n",
                         tmp,
                         llvm_name(node->d(), "rptr64").c_str()
                     );
@@ -510,6 +509,11 @@ int generate_llvmir(const libflo::node_list &flo, FILE *f)
                     );
 
                 tmp++;
+            } else if (node->width() == 64) {
+                fprintf(f, "    %s = load i64* %s\n",
+                        llvm_name(node->d()).c_str(),
+                        llvm_name(node->d(), "rptr64").c_str()
+                    );
             } else {
                 fprintf(stderr, "wide nodes not supported\n");
                 abort();
@@ -584,6 +588,11 @@ int generate_llvmir(const libflo::node_list &flo, FILE *f)
                     );
 
                 tmp++;
+            } else if (node->width() == 64) {
+                fprintf(f, "    store i64 %s, i64* %s\n",
+                        llvm_name(node->d()).c_str(),
+                        llvm_name(node->d(), "ptr64").c_str()
+                    );
             } else {
                 fprintf(stderr, "wide nodes not supported\n");
                 abort();
