@@ -395,11 +395,9 @@ int generate_llvmir(const libflo::node_list &flo, FILE *f)
 
     /* Generates a large array of zeros on the stack that can be used
      * for initializing dat_ts to zero. */
-    fprintf(f, "  %%zeros = alloca [%lu x i64]\n", (largest_dat_t + 63) / 64);
-    fprintf(f, "  %%zerosp = getelementptr [%lu x i64]* %%zeros, i64 0, i64 0\n",
-            (largest_dat_t + 63) / 64);
-    fprintf(f, "  %%zerosp8 = bitcast i64* %%zerosp to i8*\n");
-    fprintf(f, "  call void @llvm.memset.p0i8.i64(i8* %%zerosp8, i8 0, i64 %lu, i32 0, i1 0)\n",
+    fprintf(f, "  %%zeros = alloca i64, i32 %lu\n", (largest_dat_t + 63) / 64);
+    fprintf(f, "  %%zeros8 = bitcast i64* %%zeros to i8*\n");
+    fprintf(f, "  call void @llvm.memset.p0i8.i64(i8* %%zeros8, i8 0, i64 %lu, i32 0, i1 0)\n",
             (largest_dat_t + 63) / 64);
 
     uint64_t tmp = 0;
@@ -413,7 +411,7 @@ int generate_llvmir(const libflo::node_list &flo, FILE *f)
 
         fprintf(f, "  %%T%lu = call i8* @_llvmflo_%s_ptr(i8* %%dut)\n",
                 tmp, mangled_name.c_str());
-        fprintf(f, "  call void @_llvmdat_%u_set(i8* %%T%lu, i64* %%zerosp)\n",
+        fprintf(f, "  call void @_llvmdat_%u_set(i8* %%T%lu, i64* %%zeros)\n",
                 node->width(), tmp);
 
         tmp++;
@@ -474,15 +472,9 @@ int generate_llvmir(const libflo::node_list &flo, FILE *f)
             break;
 
         case opcode::REG:
-            fprintf(f, "    %s = alloca [%u x i64]\n",
-                    llvm_name(node->d(), "rvec").c_str(),
-                    (node->width() + 63) / 64
-                );
-
-            fprintf(f, "    %s = getelementptr [%u x i64]* %s, i64 0, i64 0\n",
+            fprintf(f, "    %s = alloca i64, i32 %u\n",
                     llvm_name(node->d(), "rptr64").c_str(),
-                    (node->width() + 63) / 64,
-                    llvm_name(node->d(), "rvec").c_str()
+                    (node->width() + 63) / 64
                 );
 
             fprintf(f, "    %s = call i8* @_llvmflo_%s_ptr(i8* %%dut)\n",
@@ -496,6 +488,8 @@ int generate_llvmir(const libflo::node_list &flo, FILE *f)
                     llvm_name(node->d(), "rptr64").c_str()
                 );
 
+            /* FIXME: Are these three cases really necessary?  It
+             * feels like they might not actually be... */
             if (node->width() < 64) {
                 fprintf(f, "    %%T__%lu = load i64* %s\n",
                         tmp,
@@ -515,8 +509,57 @@ int generate_llvmir(const libflo::node_list &flo, FILE *f)
                         llvm_name(node->d(), "rptr64").c_str()
                     );
             } else {
-                fprintf(stderr, "wide nodes not supported\n");
-                abort();
+                fprintf(f, "    %%T__%lu = or i%d 0, 0\n",
+                        tmp,
+                        node->width()
+                    );
+                tmp++;
+
+                for (unsigned i = 0; i < (node->width() + 63) / 64; ++i) {
+                    fprintf(f,
+                            "     %%T__%lu = getelementptr i64* %s, i64 %d\n",
+                            tmp,
+                            llvm_name(node->d(), "rptr64").c_str(),
+                            i
+                        );
+                    tmp++;
+
+                    fprintf(f, "      %%T__%lu = load i64* %%T__%lu\n",
+                            tmp,
+                            tmp - 1
+                        );
+                    tmp++;
+
+                    fprintf(f, "      %%T__%lu = zext i64 %%T__%lu to i%d\n",
+                            tmp,
+                            tmp - 1,
+                            node->width()
+                        );
+                    tmp++;
+
+                    fprintf(f, "      %%T__%lu = shl i%d %%T__%lu, %d\n",
+                            tmp,
+                            node->width(),
+                            tmp - 1,
+                            i * 64
+                        );
+                    tmp++;
+
+                    fprintf(f, "      %%T__%lu = or i%d %%T__%lu, %%T__%lu\n",
+                            tmp,
+                            node->width(),
+                            tmp - 1,
+                            tmp - 5
+                        );
+                    tmp++;
+                }
+
+                fprintf(f, "    %s = or i%d %%T__%lu, %%T__%lu\n",
+                        llvm_name(node->d()).c_str(),
+                        node->width(),
+                        tmp - 1,
+                        tmp - 1
+                    );
             }
 
             break;                    
@@ -559,15 +602,9 @@ int generate_llvmir(const libflo::node_list &flo, FILE *f)
          * its cooresponding computation, but only when the node
          * appears in the Chisel header. */
         if (mangled_name_p.first == true && nop == false) {
-            fprintf(f, "    %s = alloca [%u x i64]\n",
-                    llvm_name(node->d(), "vec").c_str(),
-                    (node->width() + 63) / 64
-                );
-
-            fprintf(f, "    %s = getelementptr [%u x i64]* %s, i64 0, i64 0\n",
+            fprintf(f, "    %s = alloca i64, i32 %u\n",
                     llvm_name(node->d(), "ptr64").c_str(),
-                    (node->width() + 63) / 64,
-                    llvm_name(node->d(), "vec").c_str()
+                    (node->width() + 63) / 64
                 );
 
             fprintf(f, "    %s = call i8* @_llvmflo_%s_ptr(i8* %%dut)\n",
@@ -575,6 +612,8 @@ int generate_llvmir(const libflo::node_list &flo, FILE *f)
                     mangle_name(node->d()).second.c_str()
                 );
 
+            /* FIXME: Are these three cases really necessary?  It
+             * feels like they might not actually be... */
             if (node->width() < 64) {
                 fprintf(f, "    %%T__%lu = zext i%d %s to i64\n",
                         tmp,
@@ -594,8 +633,35 @@ int generate_llvmir(const libflo::node_list &flo, FILE *f)
                         llvm_name(node->d(), "ptr64").c_str()
                     );
             } else {
-                fprintf(stderr, "wide nodes not supported\n");
-                abort();
+                for (unsigned i = 0; i < (node->width() + 63) / 64; ++i) {
+                    fprintf(f,
+                            "     %%T__%lu = getelementptr i64* %s, i64 %d\n",
+                            tmp,
+                            llvm_name(node->d(), "ptr64").c_str(),
+                            i
+                        );
+                    tmp++;
+
+                    fprintf(f, "      %%T__%lu = lshr i%d %s, %d\n",
+                            tmp,
+                            node->width(),
+                            llvm_name(node->d()).c_str(),
+                            i * 64
+                        );
+                    tmp++;
+
+                    fprintf(f, "      %%T__%lu = trunc i%d %%T__%lu to i64\n",
+                            tmp,
+                            node->width(),
+                            tmp - 1
+                        );
+                    tmp++;
+
+                    fprintf(f, "      store i64 %%T__%lu, i64* %%T__%lu\n",
+                            tmp - 1,
+                            tmp - 3
+                        );
+                }
             }
 
             fprintf(f, "    call void @_llvmdat_%u_set(i8* %s, i64* %s)\n",
