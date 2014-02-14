@@ -71,6 +71,7 @@ std::vector<node_ptr> dataflow_order(const node_list &in)
         case opcode::MOV:
         case opcode::MUX:
         case opcode::NOT:
+        case opcode::OR:
         case opcode::OUT:
         {
             bool all_ok = true;
@@ -105,7 +106,6 @@ std::vector<node_ptr> dataflow_order(const node_list &in)
              * with them... */
         case opcode::EAT:
         case opcode::SUB:
-        case opcode::OR:
         case opcode::LIT:
         case opcode::CAT:
         case opcode::RSH:
