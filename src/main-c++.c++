@@ -447,8 +447,12 @@ int generate_llvmir(const libflo::node_list &flo, FILE *f)
             /* The following nodes are just no-ops in this phase, they
              * only show up in the clock_hi phase. */
         case opcode::OUT:
-            fprintf(f, "    ; Generated NOP\n");
-            nop = true;
+            fprintf(f, "    %s = or i%d %s, %s\n",
+                    llvm_name(node->d()).c_str(),
+                    node->width(),
+                    llvm_name(node->s(0)).c_str(),
+                    llvm_name(node->s(0)).c_str()
+                );
             break;
 
         case opcode::ADD:
