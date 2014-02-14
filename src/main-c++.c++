@@ -338,8 +338,19 @@ int generate_compat(const libflo::node_list &flo, FILE *f)
         } else if (strsta(last_path, module)) {
             fprintf(f, "    fprintf(f, \"$upscope $end\\n\");\n");
         } else if (strsta(module, last_path)) {
+            /* Determine a slightly shorter name for the module, which
+             * is what VCD uses.  This is just the last component of
+             * the module name, the remainder can be determined by the
+             * hierarchy. */
+            char *lastmodule = module;
+            for (size_t i = 0; i < strlen(module); i++)
+                if (module[i] == ':')
+                    lastmodule = module + i;
+            if (*lastmodule == ':')
+                lastmodule++;
+
             fprintf(f, "    fprintf(f, \"$scope module %s $end\\n\");\n",
-                    module);
+                    lastmodule);
         }
 
         /* Obtains a short name for this node and stores it for
