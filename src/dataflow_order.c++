@@ -65,6 +65,7 @@ std::vector<node_ptr> dataflow_order(const node_list &in)
              * be availiable before they can execute. */
         case opcode::ADD:
         case opcode::AND:
+        case opcode::EQ:
         case opcode::MUX:
         case opcode::OUT:
         {
@@ -103,7 +104,6 @@ std::vector<node_ptr> dataflow_order(const node_list &in)
         case opcode::LT:
         case opcode::NOT:
         case opcode::OR:
-        case opcode::EQ:
         case opcode::LIT:
         case opcode::CAT:
         case opcode::RSH:
