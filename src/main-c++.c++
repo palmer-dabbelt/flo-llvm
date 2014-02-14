@@ -24,6 +24,7 @@
 #include "version.h"
 #include <libflo/parse.h++>
 #include <libflo/infer_widths.h++>
+#include <algorithm>
 #include <string.h>
 #include <string>
 
@@ -55,6 +56,15 @@ static const std::string llvm_name(const std::string chisel_name,
 
 /* Produces a class name from a set of Flo nodes. */
 static const std::string class_name(const libflo::node_list &flo);
+
+/* Sorts a list of nodes by their d, in alphabetical order. */
+static std::vector<std::string> sort_by_d(const node_list &flo);
+
+/* Creates a map between a name and the width of that name. */
+static std::map<std::string, unsigned> make_width_map(const node_list &flo);
+
+/* Returns TRUE if the haystack starts with the needle. */
+static bool strsta(const std::string haystack, const std::string needle);
 
 int main(int argc, const char **argv)
 {
@@ -290,14 +300,83 @@ int generate_compat(const libflo::node_list &flo, FILE *f)
     /* On the first cycle we need to write out the VCD header file. */
     size_t vcdtmp = 0;
     fprintf(f, "  if (cycle == 0) {\n");
-    fprintf(f, "  fprintf(f, \"$timescale 1ps $end\\n\");\n");
-    for (auto it = flo.nodes(); !it.done(); ++it) {
+    fprintf(f, "    fprintf(f, \"$timescale 1ps $end\\n\");\n");
+    
+    std::string last_path = "";
+    auto sorted = sort_by_d(flo);
+    auto width_map = make_width_map(flo);
+    std::map<std::string, std::string> short_name;
+    for (auto it = sorted.begin(); it != sorted.end(); ++it) {
+        char buffer[BUFFER_SIZE];
+        snprintf(buffer, BUFFER_SIZE, "%s", (*it).c_str());
+
+        /* Here's where we figure out where in the module heirarchy
+         * this node is. */
+        char *module = buffer;
+        char *signal = buffer;
+        for (size_t i = 0; i < strlen(buffer); i++)
+            if (buffer[i] == ':')
+                signal = buffer + i;
+
+        /* These have no "::" in them, which means they're not
+         * globally visible. */
+        if (module == signal)
+            continue;
+
+        /* The module seperator is a "::", make sure that's true. */
+        if (signal[-1] != ':') {
+            fprintf(stderr, "Module seperator without '::' in '%s'\n", buffer);
+            abort();
+        }
+
+        signal[-1] = '\0';
+        signal++;
+
+        /* Figure out if we're going up or down a module and perform
+         * that move. */
+        if (strsta(last_path, module) && strsta(module, last_path)) {
+        } else if (strsta(last_path, module)) {
+            fprintf(f, "    fprintf(f, \"$upscope $end\\n\");\n");
+        } else if (strsta(module, last_path)) {
+            fprintf(f, "    fprintf(f, \"$scope module %s $end\\n\");\n",
+                    module);
+        }
+
+        /* Obtains a short name for this node and stores it for
+         * later. */
+        char sn[BUFFER_SIZE];
+        snprintf(sn, BUFFER_SIZE, "N%lu", vcdtmp++);
+        short_name[*it] = sn;
+
+        /* After changing modules, go ahead and output the wire. */
+        fprintf(f, "    fprintf(f, \"$var wire %d %s %s $end\\n\");\n",
+                width_map.find(*it)->second,
+                sn,
+                signal
+            );
+
+        /* The last path is always equal to the current one -- note
+         * that sometimes this won't do anything as it'll be the same,
+         * but this strictly enforces this condition. */
+        last_path = module;
     }
+
+    size_t colon_count = 0;
+    for (size_t i = 0; i < strlen(last_path.c_str()); i++)
+        if (last_path[i] == ':')
+            colon_count++;
+
+    for (size_t i = 0; i <= (colon_count / 2); i++)
+        fprintf(f, "    fprintf(f, \"$upscope $end\\n\");\n");
+
+    fprintf(f, "  fprintf(f, \"$enddefinitions $end\\n\");\n");
+    fprintf(f, "  fprintf(f, \"$dumpvars\\n\");\n");
+    fprintf(f, "  fprintf(f, \"$end\\n\");\n");
+
     fprintf(f, "  }\n");
 
     fprintf(f, "  fprintf(f, \"#%%lu\\n\", cycle);\n");
 
-    vcdtmp = 0;
     for (auto it = flo.nodes(); !it.done(); ++it) {
         auto node = *it;
 
@@ -312,9 +391,9 @@ int generate_compat(const libflo::node_list &flo, FILE *f)
                 mangled_name.c_str()
             );
 
-        fprintf(f, "    dat_dump(f, %s, \"N%lu\");\n",
+        fprintf(f, "    dat_dump(f, %s, \"%s\");\n",
                 mangled_name.c_str(),
-                vcdtmp++
+                short_name.find(node->d())->second.c_str()
             );
 
         fprintf(f, "    _vcdshadow_%s = %s;\n",
@@ -712,4 +791,34 @@ const std::string llvm_name(const std::string chisel_name,
     snprintf(buffer, BUFFER_SIZE, "%%C%s__%s",
              prefix.c_str(), mangled.c_str());
     return buffer;
+}
+
+std::vector<std::string> sort_by_d(const libflo::node_list &flo)
+{
+    std::vector<std::string> out;
+
+    for (auto it = flo.nodes(); !it.done(); ++it)
+        out.push_back((*it)->d());
+
+    std::sort(out.begin(), out.end());
+
+    return out;
+}
+
+std::map<std::string, unsigned> make_width_map(const node_list &flo)
+{
+    std::map<std::string, unsigned> out;
+
+    for (auto it = flo.nodes(); !it.done(); ++it)
+        out[(*it)->d()] = (*it)->width();
+
+    return out;
+}
+
+bool strsta(const std::string haystack, const std::string needle)
+{
+    const char *h = haystack.c_str();
+    const char *n = needle.c_str();
+
+    return (strncmp(h, n, strlen(n)) == 0);
 }
