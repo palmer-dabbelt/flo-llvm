@@ -145,11 +145,11 @@ int generate_header(const libflo::node_list &flo, FILE *f)
         auto mangled_name = mangled_name_p.second;
 
         fprintf(f, "    dat_t<%d> %s;\n",
-                node->width(),
+                node->outwid(),
                 mangled_name.c_str());
 
         fprintf(f, "    dat_t<%d> _vcdshadow_%s;\n",
-                node->width(),
+                node->outwid(),
                 mangled_name.c_str());
     }
 
@@ -190,7 +190,7 @@ int generate_compat(const libflo::node_list &flo, FILE *f)
         auto mangled_name = mangled_name_p.second;
 
         fprintf(f, "  dat_t<%d> *_llvmflo_%s_ptr(%s_t *d)\n",
-                node->width(),
+                node->outwid(),
                 mangled_name.c_str(),
                 dut_name.c_str()
             );
@@ -202,8 +202,8 @@ int generate_compat(const libflo::node_list &flo, FILE *f)
     size_t largest_dat_t = 0;
     for (auto it = flo.nodes(); !it.done(); ++it) {
         auto node = *it;
-        if (node->width() > largest_dat_t)
-            largest_dat_t = node->width();
+        if (node->outwid() > largest_dat_t)
+            largest_dat_t = node->outwid();
     }
 
     /* Goes ahead and emits a dat_t accessor function for each and
@@ -219,29 +219,29 @@ int generate_compat(const libflo::node_list &flo, FILE *f)
         /* Checks to see if this accessor width has already been
          * initialized, in which case we don't initialize the accessor
          * functions to avoid duplicate symbols. */
-        if (node->width() > largest_dat_t) {
+        if (node->outwid() > largest_dat_t) {
             fprintf(stderr, "node's width of %d is larger than %lu\n",
-                    node->width(),
+                    node->outwid(),
                     largest_dat_t);
 
             abort();
         }
-        if (dats_emitted[node->width()] == true)
+        if (dats_emitted[node->outwid()] == true)
             continue;
-        dats_emitted[node->width()] = true;
+        dats_emitted[node->outwid()] = true;
 
         /* Emits a getter and a setter for dat_ts of this width. */
         fprintf(f, "  void _llvmdat_%d_get(const dat_t<%d> *d, uint64_t *a)\n",
-                node->width(), node->width());
+                node->outwid(), node->outwid());
         fprintf(f, "  {\n");
-        for (size_t i = 0; i < (node->width() + 63) / 64; ++i)
+        for (size_t i = 0; i < (node->outwid() + 63) / 64; ++i)
             fprintf(f, "    a[%lu] = d->values[%lu];\n", i, i);
         fprintf(f, "  }\n");
 
         fprintf(f, "  void _llvmdat_%d_set(dat_t<%d> *d, const uint64_t *a)\n",
-                node->width(), node->width());
+                node->outwid(), node->outwid());
         fprintf(f, "  {\n");
-        for (size_t i = 0; i < (node->width() + 63) / 64; ++i)
+        for (size_t i = 0; i < (node->outwid() + 63) / 64; ++i)
             fprintf(f, "    d->values[%lu] = a[%lu];\n", i, i);
         fprintf(f, "  }\n");
     }
@@ -436,8 +436,8 @@ int generate_llvmir(const libflo::node_list &flo, FILE *f)
     size_t largest_dat_t = 0;
     for (auto it = flo.nodes(); !it.done(); ++it) {
         auto node = *it;
-        if (node->width() > largest_dat_t)
-            largest_dat_t = node->width();
+        if (node->outwid() > largest_dat_t)
+            largest_dat_t = node->outwid();
     }
     auto dats_emitted = new bool[largest_dat_t + 1];
     for (size_t i = 0; i <= largest_dat_t; ++i) {
@@ -449,22 +449,22 @@ int generate_llvmir(const libflo::node_list &flo, FILE *f)
         /* Checks to see if this accessor width has already been
          * initialized, in which case we don't initialize the accessor
          * functions to avoid duplicate symbols. */
-        if (node->width() > largest_dat_t) {
+        if (node->outwid() > largest_dat_t) {
             fprintf(stderr, "node's width of %d is larger than %lu\n",
-                    node->width(),
+                    node->outwid(),
                     largest_dat_t);
 
             abort();
         }
-        if (dats_emitted[node->width()] == true)
+        if (dats_emitted[node->outwid()] == true)
             continue;
-        dats_emitted[node->width()] = true;
+        dats_emitted[node->outwid()] = true;
 
         /* Emits a getter and a setter for dat_ts of this width. */
         fprintf(f, "declare void @_llvmdat_%d_get(i8* %%dut, i64* %%a)\n",
-                node->width());
+                node->outwid());
         fprintf(f, "declare void @_llvmdat_%d_set(i8* %%dut, i64* %%a)\n",
-                node->width());
+                node->outwid());
     }
 
     /* Write the init function, which sets every node to zero.  Note
@@ -491,7 +491,7 @@ int generate_llvmir(const libflo::node_list &flo, FILE *f)
         fprintf(f, "  %%T%lu = call i8* @_llvmflo_%s_ptr(i8* %%dut)\n",
                 tmp, mangled_name.c_str());
         fprintf(f, "  call void @_llvmdat_%u_set(i8* %%T%lu, i64* %%zeros)\n",
-                node->width(), tmp);
+                node->outwid(), tmp);
 
         tmp++;
     }
@@ -528,7 +528,7 @@ int generate_llvmir(const libflo::node_list &flo, FILE *f)
         case opcode::OUT:
             fprintf(f, "    %s = or i%d %s, %s\n",
                     llvm_name(node->d()).c_str(),
-                    node->width(),
+                    node->outwid(),
                     llvm_name(node->s(0)).c_str(),
                     llvm_name(node->s(0)).c_str()
                 );
@@ -537,7 +537,7 @@ int generate_llvmir(const libflo::node_list &flo, FILE *f)
         case opcode::ADD:
             fprintf(f, "    %s = add i%d %s, %s\n",
                     llvm_name(node->d()).c_str(),
-                    node->width(),
+                    node->outwid(),
                     llvm_name(node->s(0)).c_str(),
                     llvm_name(node->s(1)).c_str()
                 );
@@ -547,9 +547,9 @@ int generate_llvmir(const libflo::node_list &flo, FILE *f)
             fprintf(f, "    %s = select i1 %s, i%d %s, i%d %s\n",
                     llvm_name(node->d()).c_str(),
                     llvm_name(node->s(0)).c_str(),
-                    node->width(),
+                    node->outwid(),
                     llvm_name(node->s(1)).c_str(),
-                    node->width(),
+                    node->outwid(),
                     llvm_name(node->s(2)).c_str()
                 );
             break;
@@ -557,7 +557,7 @@ int generate_llvmir(const libflo::node_list &flo, FILE *f)
         case opcode::REG:
             fprintf(f, "    %s = alloca i64, i32 %u\n",
                     llvm_name(node->d(), "rptr64").c_str(),
-                    (node->width() + 63) / 64
+                    (node->outwid() + 63) / 64
                 );
 
             fprintf(f, "    %s = call i8* @_llvmflo_%s_ptr(i8* %%dut)\n",
@@ -566,14 +566,14 @@ int generate_llvmir(const libflo::node_list &flo, FILE *f)
                 );
 
             fprintf(f, "    call void @_llvmdat_%u_get(i8* %s, i64* %s)\n",
-                    node->width(),
+                    node->outwid(),
                     llvm_name(node->d(), "rptrC").c_str(),
                     llvm_name(node->d(), "rptr64").c_str()
                 );
 
             /* FIXME: Are these three cases really necessary?  It
              * feels like they might not actually be... */
-            if (node->width() < 64) {
+            if (node->outwid() < 64) {
                 fprintf(f, "    %%T__%lu = load i64* %s\n",
                         tmp,
                         llvm_name(node->d(), "rptr64").c_str()
@@ -582,11 +582,11 @@ int generate_llvmir(const libflo::node_list &flo, FILE *f)
                 fprintf(f, "    %s = trunc i64 %%T__%lu to i%u\n",
                         llvm_name(node->d()).c_str(),
                         tmp,
-                        node->width()
+                        node->outwid()
                     );
 
                 tmp++;
-            } else if (node->width() == 64) {
+            } else if (node->outwid() == 64) {
                 fprintf(f, "    %s = load i64* %s\n",
                         llvm_name(node->d()).c_str(),
                         llvm_name(node->d(), "rptr64").c_str()
@@ -594,11 +594,11 @@ int generate_llvmir(const libflo::node_list &flo, FILE *f)
             } else {
                 fprintf(f, "    %%T__%lu = or i%d 0, 0\n",
                         tmp,
-                        node->width()
+                        node->outwid()
                     );
                 tmp++;
 
-                for (unsigned i = 0; i < (node->width() + 63) / 64; ++i) {
+                for (unsigned i = 0; i < (node->outwid() + 63) / 64; ++i) {
                     fprintf(f,
                             "     %%T__%lu = getelementptr i64* %s, i64 %d\n",
                             tmp,
@@ -616,13 +616,13 @@ int generate_llvmir(const libflo::node_list &flo, FILE *f)
                     fprintf(f, "      %%T__%lu = zext i64 %%T__%lu to i%d\n",
                             tmp,
                             tmp - 1,
-                            node->width()
+                            node->outwid()
                         );
                     tmp++;
 
                     fprintf(f, "      %%T__%lu = shl i%d %%T__%lu, %d\n",
                             tmp,
-                            node->width(),
+                            node->outwid(),
                             tmp - 1,
                             i * 64
                         );
@@ -630,7 +630,7 @@ int generate_llvmir(const libflo::node_list &flo, FILE *f)
 
                     fprintf(f, "      %%T__%lu = or i%d %%T__%lu, %%T__%lu\n",
                             tmp,
-                            node->width(),
+                            node->outwid(),
                             tmp - 1,
                             tmp - 5
                         );
@@ -639,7 +639,7 @@ int generate_llvmir(const libflo::node_list &flo, FILE *f)
 
                 fprintf(f, "    %s = or i%d %%T__%lu, %%T__%lu\n",
                         llvm_name(node->d()).c_str(),
-                        node->width(),
+                        node->outwid(),
                         tmp - 1,
                         tmp - 1
                     );
@@ -687,7 +687,7 @@ int generate_llvmir(const libflo::node_list &flo, FILE *f)
         if (mangled_name_p.first == true && nop == false) {
             fprintf(f, "    %s = alloca i64, i32 %u\n",
                     llvm_name(node->d(), "ptr64").c_str(),
-                    (node->width() + 63) / 64
+                    (node->outwid() + 63) / 64
                 );
 
             fprintf(f, "    %s = call i8* @_llvmflo_%s_ptr(i8* %%dut)\n",
@@ -697,10 +697,10 @@ int generate_llvmir(const libflo::node_list &flo, FILE *f)
 
             /* FIXME: Are these three cases really necessary?  It
              * feels like they might not actually be... */
-            if (node->width() < 64) {
+            if (node->outwid() < 64) {
                 fprintf(f, "    %%T__%lu = zext i%d %s to i64\n",
                         tmp,
-                        node->width(),
+                        node->outwid(),
                         llvm_name(node->d()).c_str()
                     );
 
@@ -710,13 +710,13 @@ int generate_llvmir(const libflo::node_list &flo, FILE *f)
                     );
 
                 tmp++;
-            } else if (node->width() == 64) {
+            } else if (node->outwid() == 64) {
                 fprintf(f, "    store i64 %s, i64* %s\n",
                         llvm_name(node->d()).c_str(),
                         llvm_name(node->d(), "ptr64").c_str()
                     );
             } else {
-                for (unsigned i = 0; i < (node->width() + 63) / 64; ++i) {
+                for (unsigned i = 0; i < (node->outwid() + 63) / 64; ++i) {
                     fprintf(f,
                             "     %%T__%lu = getelementptr i64* %s, i64 %d\n",
                             tmp,
@@ -727,7 +727,7 @@ int generate_llvmir(const libflo::node_list &flo, FILE *f)
 
                     fprintf(f, "      %%T__%lu = lshr i%d %s, %d\n",
                             tmp,
-                            node->width(),
+                            node->outwid(),
                             llvm_name(node->d()).c_str(),
                             i * 64
                         );
@@ -735,7 +735,7 @@ int generate_llvmir(const libflo::node_list &flo, FILE *f)
 
                     fprintf(f, "      %%T__%lu = trunc i%d %%T__%lu to i64\n",
                             tmp,
-                            node->width(),
+                            node->outwid(),
                             tmp - 1
                         );
                     tmp++;
@@ -748,7 +748,7 @@ int generate_llvmir(const libflo::node_list &flo, FILE *f)
             }
 
             fprintf(f, "    call void @_llvmdat_%u_set(i8* %s, i64* %s)\n",
-                    node->width(),
+                    node->outwid(),
                     llvm_name(node->d(), "ptrC").c_str(),
                     llvm_name(node->d(), "ptr64").c_str()
                 );
@@ -810,7 +810,7 @@ std::map<std::string, unsigned> make_width_map(const node_list &flo)
     std::map<std::string, unsigned> out;
 
     for (auto it = flo.nodes(); !it.done(); ++it)
-        out[(*it)->d()] = (*it)->width();
+        out[(*it)->d()] = (*it)->outwid();
 
     return out;
 }
