@@ -68,6 +68,7 @@ std::vector<node_ptr> dataflow_order(const node_list &in)
         case opcode::EQ:
         case opcode::GTE:
         case opcode::LT:
+        case opcode::MOV:
         case opcode::MUX:
         case opcode::NOT:
         case opcode::OUT:
@@ -116,7 +117,6 @@ std::vector<node_ptr> dataflow_order(const node_list &in)
         case opcode::XOR:
         case opcode::ST:
         case opcode::MEM:
-        case opcode::MOV:
             fprintf(stderr, "Unimplimented node type: '%s'\n",
                     libflo::opcode_to_string(node->opcode()).c_str());
             abort();
