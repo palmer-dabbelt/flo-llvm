@@ -64,6 +64,7 @@ std::vector<node_ptr> dataflow_order(const node_list &in)
             /* These nodes must wait for every one of their inputs to
              * be availiable before they can execute. */
         case opcode::ADD:
+        case opcode::AND:
         case opcode::MUX:
         case opcode::OUT:
         {
@@ -99,7 +100,6 @@ std::vector<node_ptr> dataflow_order(const node_list &in)
              * with them... */
         case opcode::EAT:
         case opcode::SUB:
-        case opcode::AND:
         case opcode::LT:
         case opcode::NOT:
         case opcode::OR:
