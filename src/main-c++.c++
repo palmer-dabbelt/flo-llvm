@@ -581,6 +581,14 @@ int generate_llvmir(const libflo::node_list &flo, FILE *f)
                 );
             break;
 
+        case opcode::NOT:
+            fprintf(f, "    %s = xor i%d %s, -1\n",
+                    llvm_name(node->d()).c_str(),
+                    node->width(),
+                    llvm_name(node->s(0)).c_str()
+                );
+            break;
+
         case opcode::REG:
             fprintf(f, "    %s = alloca i64, i32 %u\n",
                     llvm_name(node->d(), "rptr64").c_str(),
@@ -685,7 +693,6 @@ int generate_llvmir(const libflo::node_list &flo, FILE *f)
         case opcode::EAT:
         case opcode::SUB:
         case opcode::LT:
-        case opcode::NOT:
         case opcode::OR:
         case opcode::LIT:
         case opcode::CAT:
