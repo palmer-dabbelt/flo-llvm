@@ -570,6 +570,15 @@ int generate_llvmir(const libflo::node_list &flo, FILE *f)
                 );
             break;
 
+        case opcode::LT:
+            fprintf(f, "    %s = icmp ult i%d %s, %s\n",
+                    llvm_name(node->d()).c_str(),
+                    node->width(),
+                    llvm_name(node->s(0)).c_str(),
+                    llvm_name(node->s(1)).c_str()
+                );
+            break;
+
         case opcode::MUX:
             fprintf(f, "    %s = select i1 %s, i%d %s, i%d %s\n",
                     llvm_name(node->d()).c_str(),
@@ -692,7 +701,6 @@ int generate_llvmir(const libflo::node_list &flo, FILE *f)
         case opcode::RND:
         case opcode::EAT:
         case opcode::SUB:
-        case opcode::LT:
         case opcode::OR:
         case opcode::LIT:
         case opcode::CAT:
