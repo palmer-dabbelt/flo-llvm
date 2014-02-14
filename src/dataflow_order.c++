@@ -73,6 +73,7 @@ std::vector<node_ptr> dataflow_order(const node_list &in)
         case opcode::NOT:
         case opcode::OR:
         case opcode::OUT:
+        case opcode::SUB:
         {
             bool all_ok = true;
             for (auto it = node->s_begin(); it != node->s_end(); ++it) {
@@ -105,7 +106,6 @@ std::vector<node_ptr> dataflow_order(const node_list &in)
             /* FIXME: Implement these opcodes once I know what to do
              * with them... */
         case opcode::EAT:
-        case opcode::SUB:
         case opcode::LIT:
         case opcode::CAT:
         case opcode::RSH:

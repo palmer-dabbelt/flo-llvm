@@ -715,10 +715,18 @@ int generate_llvmir(const libflo::node_list &flo, FILE *f)
                 );
             break;
 
+        case opcode::SUB:
+            fprintf(f, "    %s = sub i%d %s, %s\n",
+                    llvm_name(node->d()).c_str(),
+                    node->outwid(),
+                    llvm_name(node->s(0)).c_str(),
+                    llvm_name(node->s(1)).c_str()
+                );
+            break;
+
         case opcode::IN:
         case opcode::RND:
         case opcode::EAT:
-        case opcode::SUB:
         case opcode::LIT:
         case opcode::CAT:
         case opcode::RSH:
