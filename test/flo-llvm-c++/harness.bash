@@ -30,3 +30,8 @@ cat opt.llvm
 # compiler, if you're using a sane architecture).
 lli opt.llvm --vcd test.vcd --cycles 100
 cat test.vcd
+
+# Ensures that the two VCD files are actually the same.  Note that
+# this allows extra signals to exist in the test file, but at least
+# every signal from the gold file must exist.
+vcddiff gold.vcd test.vcd
