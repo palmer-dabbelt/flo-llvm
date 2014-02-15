@@ -6,6 +6,10 @@ COMPILEOPTS += -Werror
 COMPILEOPTS += -std=c++11
 COMPILEOPTS += -pedantic
 
+# Staticly link against some internal libraries
+LANGUAGES   += c++
+COMPILEOPTS += -Isrc
+
 # BASH is used to run tests
 LANGUAGES   += bash
 
