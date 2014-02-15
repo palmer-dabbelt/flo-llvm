@@ -1,3 +1,4 @@
+# This strives to build my C++ code in the safest way possible.
 LANGUAGES   += c++
 COMPILEOPTS += -Wall
 COMPILEOPTS += -Wextra
@@ -5,10 +6,17 @@ COMPILEOPTS += -Werror
 COMPILEOPTS += -std=c++11
 COMPILEOPTS += -pedantic
 
+# BASH is used to run tests
 LANGUAGES   += bash
 
+# This reads the version information from git and makes it availiable
+# for all the other code.
 GENERATE    += version.h
 
+# This binary generates code that's compatible with Chisel's old C++
+# API.  This maintains full source compatibility but has two problems:
+# it's going to be tough to map to DREAMER, and it may disable some
+# compiler optimizations.
 BINARIES    += flo-llvm-c++
 COMPILEOPTS += `ppkg-config flo --cflags`
 LINKOPTS    += `ppkg-config flo --libs`
