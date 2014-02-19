@@ -533,10 +533,8 @@ int generate_llvmir(const node_list &flo, FILE *f)
         auto lo __attribute__((unused)) = out.define(clock_lo,
                                                      {"dut", "rst"});
 
-        /* Schedule the computation in dataflow order and emit every
-         * node's representation in LLVM IR.  Note that loads from the
-         * C++ emulator wrapper are just scheduled directly in place
-         * here. */
+        /* The code is already in dataflow order so all we need to do
+         * is emit the computation out to LLVM. */
         for (auto it = flo.nodes(); !it.done(); ++it) {
             auto node = *it;
 
