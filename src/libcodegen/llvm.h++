@@ -27,6 +27,7 @@ namespace libcodegen {
 }
 
 #include <memory>
+#include <stdarg.h>
 #include <stdio.h>
 #include <string>
 #include <vector>
@@ -59,6 +60,10 @@ namespace libcodegen {
         /* Emits a function definition. */
         definition_ptr define(const function_t &f,
                               const std::vector<std::string> &arg_names);
+
+        /* Emits a comment.  Don't put newlines inside the comment! */
+        void comment(const std::string format, ...);
+        void comment(const std::string format, va_list args);
 
     protected:
         /* Disposes of a definition object -- this should only be

@@ -76,6 +76,21 @@ definition_ptr llvm::define(const function_t &f,
     return definition_ptr(new definition(this));
 }
 
+void llvm::comment(const std::string format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    comment(format, args);
+    va_end(args);
+}
+
+void llvm::comment(const std::string format, va_list args)
+{
+    fprintf(_f, "  ; ");
+    vfprintf(_f, format.c_str(), args);
+    fprintf(_f, "\n");
+}
+
 void llvm::define_finish(const definition *d __attribute__((unused)))
 {
     fprintf(_f, "}\n\n");

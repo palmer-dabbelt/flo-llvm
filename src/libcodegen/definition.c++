@@ -31,3 +31,16 @@ definition::~definition(void)
 {
     _parent->define_finish(this);
 }
+
+void definition::comment(const std::string format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    comment(format, args);
+    va_end(args);
+}
+
+void definition::comment(const std::string format, va_list args)
+{
+    _parent->comment(format, args);
+}

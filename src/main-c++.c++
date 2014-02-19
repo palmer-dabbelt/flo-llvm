@@ -538,8 +538,7 @@ int generate_llvmir(const node_list &flo, FILE *f)
         for (auto it = flo.nodes(); !it.done(); ++it) {
             auto node = *it;
 
-            fprintf(f, "  ; Chisel Node: ");
-            node->writeln(f);
+            lo->comment("Chisel Node: %s", node->to_string().c_str());
 
             bool nop = false;
             switch (node->opcode()) {

@@ -44,6 +44,12 @@ namespace libcodegen {
          * callback function when it is destroyed. */
         definition(llvm *parent);
         ~definition(void);
+
+        /* This quite simply prints a comment out to the output file,
+         * directly in this place.  Don't put newlines inside the
+         * comment! */
+        void comment(const std::string format, ...);
+        void comment(const std::string format, va_list args);
     };
 }
 
