@@ -523,317 +523,325 @@ int generate_llvmir(const node_list &flo, FILE *f)
      * operations but does not perform any register writes.  In order
      * to do this we'll have to walk through the computation in
      * dataflow order. */
-    fprintf(f, "define void @_llvmflo_%s_clock_lo(i8* %%dut, i1 %%rst) {\n",
-            dut_name.c_str());
+    function< builtin<void>,
+              arglist2<pointer<builtin<void>>,
+                       builtin<bool>
+                       >
+              >
+        clock_lo("_llvmflo_%s_clock_lo", dut_name.c_str());
+    {
+        auto lo __attribute__((unused)) = out.define(clock_lo,
+                                                     {"dut", "rst"});
 
-    /* Schedule the computation in dataflow order and emit every
-     * node's representation in LLVM IR.  Note that loads from the C++
-     * emulator wrapper are just scheduled directly in place here. */
-    for (auto it = flo.nodes(); !it.done(); ++it) {
-        auto node = *it;
+        /* Schedule the computation in dataflow order and emit every
+         * node's representation in LLVM IR.  Note that loads from the
+         * C++ emulator wrapper are just scheduled directly in place
+         * here. */
+        for (auto it = flo.nodes(); !it.done(); ++it) {
+            auto node = *it;
 
-        fprintf(f, "  ; Chisel Node: ");
-        node->writeln(f);
+            fprintf(f, "  ; Chisel Node: ");
+            node->writeln(f);
 
-        bool nop = false;
-        switch (node->opcode()) {
-            /* The following nodes are just no-ops in this phase, they
-             * only show up in the clock_hi phase. */
-        case libflo::opcode::OUT:
-            fprintf(f, "    %s = or i%d %s, %s\n",
-                    llvm_name(node->d()).c_str(),
-                    node->outwid(),
-                    llvm_name(node->s(0)).c_str(),
-                    llvm_name(node->s(0)).c_str()
-                );
-            break;
+            bool nop = false;
+            switch (node->opcode()) {
+                /* The following nodes are just no-ops in this phase, they
+                 * only show up in the clock_hi phase. */
+            case libflo::opcode::OUT:
+                fprintf(f, "    %s = or i%d %s, %s\n",
+                        llvm_name(node->d()).c_str(),
+                        node->outwid(),
+                        llvm_name(node->s(0)).c_str(),
+                        llvm_name(node->s(0)).c_str()
+                    );
+                break;
 
-        case libflo::opcode::ADD:
-            fprintf(f, "    %s = add i%d %s, %s\n",
-                    llvm_name(node->d()).c_str(),
-                    node->outwid(),
-                    llvm_name(node->s(0)).c_str(),
-                    llvm_name(node->s(1)).c_str()
-                );
-            break;
+            case libflo::opcode::ADD:
+                fprintf(f, "    %s = add i%d %s, %s\n",
+                        llvm_name(node->d()).c_str(),
+                        node->outwid(),
+                        llvm_name(node->s(0)).c_str(),
+                        llvm_name(node->s(1)).c_str()
+                    );
+                break;
 
-        case libflo::opcode::AND:
-            fprintf(f, "    %s = and i%d %s, %s\n",
-                    llvm_name(node->d()).c_str(),
-                    node->outwid(),
-                    llvm_name(node->s(0)).c_str(),
-                    llvm_name(node->s(1)).c_str()
-                );
-            break;
+            case libflo::opcode::AND:
+                fprintf(f, "    %s = and i%d %s, %s\n",
+                        llvm_name(node->d()).c_str(),
+                        node->outwid(),
+                        llvm_name(node->s(0)).c_str(),
+                        llvm_name(node->s(1)).c_str()
+                    );
+                break;
 
-        case libflo::opcode::EQ:
-            fprintf(f, "    %s = icmp eq i%d %s, %s\n",
-                    llvm_name(node->d()).c_str(),
-                    node->width(),
-                    llvm_name(node->s(0)).c_str(),
-                    llvm_name(node->s(1)).c_str()
-                );
-            break;
+            case libflo::opcode::EQ:
+                fprintf(f, "    %s = icmp eq i%d %s, %s\n",
+                        llvm_name(node->d()).c_str(),
+                        node->width(),
+                        llvm_name(node->s(0)).c_str(),
+                        llvm_name(node->s(1)).c_str()
+                    );
+                break;
 
-        case libflo::opcode::GTE:
-            fprintf(f, "    %s = icmp uge i%d %s, %s\n",
-                    llvm_name(node->d()).c_str(),
-                    node->width(),
-                    llvm_name(node->s(0)).c_str(),
-                    llvm_name(node->s(1)).c_str()
-                );
-            break;
+            case libflo::opcode::GTE:
+                fprintf(f, "    %s = icmp uge i%d %s, %s\n",
+                        llvm_name(node->d()).c_str(),
+                        node->width(),
+                        llvm_name(node->s(0)).c_str(),
+                        llvm_name(node->s(1)).c_str()
+                    );
+                break;
 
-        case libflo::opcode::LT:
-            fprintf(f, "    %s = icmp ult i%d %s, %s\n",
-                    llvm_name(node->d()).c_str(),
-                    node->width(),
-                    llvm_name(node->s(0)).c_str(),
-                    llvm_name(node->s(1)).c_str()
-                );
-            break;
+            case libflo::opcode::LT:
+                fprintf(f, "    %s = icmp ult i%d %s, %s\n",
+                        llvm_name(node->d()).c_str(),
+                        node->width(),
+                        llvm_name(node->s(0)).c_str(),
+                        llvm_name(node->s(1)).c_str()
+                    );
+                break;
 
-        case libflo::opcode::MOV:
-            fprintf(f, "    %s = or i%d %s, %s\n",
-                    llvm_name(node->d()).c_str(),
-                    node->outwid(),
-                    llvm_name(node->s(0)).c_str(),
-                    llvm_name(node->s(0)).c_str()
-                );
-            break;
+            case libflo::opcode::MOV:
+                fprintf(f, "    %s = or i%d %s, %s\n",
+                        llvm_name(node->d()).c_str(),
+                        node->outwid(),
+                        llvm_name(node->s(0)).c_str(),
+                        llvm_name(node->s(0)).c_str()
+                    );
+                break;
 
-        case libflo::opcode::MUX:
-            fprintf(f, "    %s = select i1 %s, i%d %s, i%d %s\n",
-                    llvm_name(node->d()).c_str(),
-                    llvm_name(node->s(0)).c_str(),
-                    node->outwid(),
-                    llvm_name(node->s(1)).c_str(),
-                    node->outwid(),
-                    llvm_name(node->s(2)).c_str()
-                );
-            break;
+            case libflo::opcode::MUX:
+                fprintf(f, "    %s = select i1 %s, i%d %s, i%d %s\n",
+                        llvm_name(node->d()).c_str(),
+                        llvm_name(node->s(0)).c_str(),
+                        node->outwid(),
+                        llvm_name(node->s(1)).c_str(),
+                        node->outwid(),
+                        llvm_name(node->s(2)).c_str()
+                    );
+                break;
 
-        case libflo::opcode::NOT:
-            fprintf(f, "    %s = xor i%d %s, -1\n",
-                    llvm_name(node->d()).c_str(),
-                    node->width(),
-                    llvm_name(node->s(0)).c_str()
-                );
-            break;
+            case libflo::opcode::NOT:
+                fprintf(f, "    %s = xor i%d %s, -1\n",
+                        llvm_name(node->d()).c_str(),
+                        node->width(),
+                        llvm_name(node->s(0)).c_str()
+                    );
+                break;
 
-        case libflo::opcode::OR:
-            fprintf(f, "    %s = or i%d %s, %s\n",
-                    llvm_name(node->d()).c_str(),
-                    node->outwid(),
-                    llvm_name(node->s(0)).c_str(),
-                    llvm_name(node->s(1)).c_str()
-                );
-            break;
+            case libflo::opcode::OR:
+                fprintf(f, "    %s = or i%d %s, %s\n",
+                        llvm_name(node->d()).c_str(),
+                        node->outwid(),
+                        llvm_name(node->s(0)).c_str(),
+                        llvm_name(node->s(1)).c_str()
+                    );
+                break;
 
-        case libflo::opcode::REG:
-            fprintf(f, "    %s = alloca i64, i32 %u\n",
-                    llvm_name(node->d(), "rptr64").c_str(),
-                    (node->outwid() + 63) / 64
-                );
+            case libflo::opcode::REG:
+                fprintf(f, "    %s = alloca i64, i32 %u\n",
+                        llvm_name(node->d(), "rptr64").c_str(),
+                        (node->outwid() + 63) / 64
+                    );
 
-            fprintf(f, "    %s = call i8* @_llvmflo_%s_ptr(i8* %%dut)\n",
-                    llvm_name(node->d(), "rptrC").c_str(),
-                    node->mangled_d().c_str()
-                );
+                fprintf(f, "    %s = call i8* @_llvmflo_%s_ptr(i8* %%dut)\n",
+                        llvm_name(node->d(), "rptrC").c_str(),
+                        node->mangled_d().c_str()
+                    );
 
-            fprintf(f, "    call void @_llvmdat_%u_get(i8* %s, i64* %s)\n",
-                    node->outwid(),
-                    llvm_name(node->d(), "rptrC").c_str(),
-                    llvm_name(node->d(), "rptr64").c_str()
-                );
-
-            /* FIXME: Are these three cases really necessary?  It
-             * feels like they might not actually be... */
-            if (node->outwid() < 64) {
-                fprintf(f, "    %%T__%lu = load i64* %s\n",
-                        tmp,
+                fprintf(f, "    call void @_llvmdat_%u_get(i8* %s, i64* %s)\n",
+                        node->outwid(),
+                        llvm_name(node->d(), "rptrC").c_str(),
                         llvm_name(node->d(), "rptr64").c_str()
                     );
 
-                fprintf(f, "    %s = trunc i64 %%T__%lu to i%u\n",
-                        llvm_name(node->d()).c_str(),
-                        tmp,
-                        node->outwid()
-                    );
-
-                tmp++;
-            } else if (node->outwid() == 64) {
-                fprintf(f, "    %s = load i64* %s\n",
-                        llvm_name(node->d()).c_str(),
-                        llvm_name(node->d(), "rptr64").c_str()
-                    );
-            } else {
-                fprintf(f, "    %%T__%lu = or i%d 0, 0\n",
-                        tmp,
-                        node->outwid()
-                    );
-                tmp++;
-
-                for (unsigned i = 0; i < (node->outwid() + 63) / 64; ++i) {
-                    fprintf(f,
-                            "     %%T__%lu = getelementptr i64* %s, i64 %d\n",
+                /* FIXME: Are these three cases really necessary?  It
+                 * feels like they might not actually be... */
+                if (node->outwid() < 64) {
+                    fprintf(f, "    %%T__%lu = load i64* %s\n",
                             tmp,
-                            llvm_name(node->d(), "rptr64").c_str(),
-                            i
+                            llvm_name(node->d(), "rptr64").c_str()
                         );
-                    tmp++;
 
-                    fprintf(f, "      %%T__%lu = load i64* %%T__%lu\n",
+                    fprintf(f, "    %s = trunc i64 %%T__%lu to i%u\n",
+                            llvm_name(node->d()).c_str(),
                             tmp,
-                            tmp - 1
+                            node->outwid()
                         );
-                    tmp++;
 
-                    fprintf(f, "      %%T__%lu = zext i64 %%T__%lu to i%d\n",
+                    tmp++;
+                } else if (node->outwid() == 64) {
+                    fprintf(f, "    %s = load i64* %s\n",
+                            llvm_name(node->d()).c_str(),
+                            llvm_name(node->d(), "rptr64").c_str()
+                        );
+                } else {
+                    fprintf(f, "    %%T__%lu = or i%d 0, 0\n",
                             tmp,
-                            tmp - 1,
                             node->outwid()
                         );
                     tmp++;
 
-                    fprintf(f, "      %%T__%lu = shl i%d %%T__%lu, %d\n",
-                            tmp,
-                            node->outwid(),
-                            tmp - 1,
-                            i * 64
-                        );
-                    tmp++;
+                    for (unsigned i = 0; i < (node->outwid() + 63) / 64; ++i) {
+                        fprintf(f,
+                                "     %%T__%lu = getelementptr i64* %s, i64 %d\n",
+                                tmp,
+                                llvm_name(node->d(), "rptr64").c_str(),
+                                i
+                            );
+                        tmp++;
 
-                    fprintf(f, "      %%T__%lu = or i%d %%T__%lu, %%T__%lu\n",
-                            tmp,
-                            node->outwid(),
-                            tmp - 1,
-                            tmp - 5
-                        );
-                    tmp++;
-                }
+                        fprintf(f, "      %%T__%lu = load i64* %%T__%lu\n",
+                                tmp,
+                                tmp - 1
+                            );
+                        tmp++;
 
-                fprintf(f, "    %s = or i%d %%T__%lu, %%T__%lu\n",
-                        llvm_name(node->d()).c_str(),
-                        node->outwid(),
-                        tmp - 1,
-                        tmp - 1
-                    );
-            }
+                        fprintf(f, "      %%T__%lu = zext i64 %%T__%lu to i%d\n",
+                                tmp,
+                                tmp - 1,
+                                node->outwid()
+                            );
+                        tmp++;
 
-            break;                    
+                        fprintf(f, "      %%T__%lu = shl i%d %%T__%lu, %d\n",
+                                tmp,
+                                node->outwid(),
+                                tmp - 1,
+                                i * 64
+                            );
+                        tmp++;
 
-        case libflo::opcode::RST:
-            fprintf(f, "    %s = or i1 %%rst, %%rst\n",
-                    llvm_name(node->d()).c_str()
-                );
-            break;
+                        fprintf(f, "      %%T__%lu = or i%d %%T__%lu, %%T__%lu\n",
+                                tmp,
+                                node->outwid(),
+                                tmp - 1,
+                                tmp - 5
+                            );
+                        tmp++;
+                    }
 
-        case libflo::opcode::SUB:
-            fprintf(f, "    %s = sub i%d %s, %s\n",
-                    llvm_name(node->d()).c_str(),
-                    node->outwid(),
-                    llvm_name(node->s(0)).c_str(),
-                    llvm_name(node->s(1)).c_str()
-                );
-            break;
-
-        case libflo::opcode::IN:
-        case libflo::opcode::RND:
-        case libflo::opcode::EAT:
-        case libflo::opcode::LIT:
-        case libflo::opcode::CAT:
-        case libflo::opcode::RSH:
-        case libflo::opcode::MSK:
-        case libflo::opcode::LD:
-        case libflo::opcode::NEQ:
-        case libflo::opcode::ARSH:
-        case libflo::opcode::LSH:
-        case libflo::opcode::XOR:
-        case libflo::opcode::ST:
-        case libflo::opcode::MEM:
-            fprintf(stderr, "Unable to compute node '%s'\n",
-                    libflo::opcode_to_string(node->opcode()).c_str());
-            abort();
-            break;
-        }
-
-        /* Every node that's in the Chisel header gets stored after
-         * its cooresponding computation, but only when the node
-         * appears in the Chisel header. */
-        if (node->exported() == true && nop == false) {
-            fprintf(f, "    %s = alloca i64, i32 %u\n",
-                    llvm_name(node->d(), "ptr64").c_str(),
-                    (node->outwid() + 63) / 64
-                );
-
-            fprintf(f, "    %s = call i8* @_llvmflo_%s_ptr(i8* %%dut)\n",
-                    llvm_name(node->d(), "ptrC").c_str(),
-                    node->mangled_d().c_str()
-                );
-
-            /* FIXME: Are these three cases really necessary?  It
-             * feels like they might not actually be... */
-            if (node->outwid() < 64) {
-                fprintf(f, "    %%T__%lu = zext i%d %s to i64\n",
-                        tmp,
-                        node->outwid(),
-                        llvm_name(node->d()).c_str()
-                    );
-
-                fprintf(f, "    store i64 %%T__%lu, i64* %s\n",
-                        tmp,
-                        llvm_name(node->d(), "ptr64").c_str()
-                    );
-
-                tmp++;
-            } else if (node->outwid() == 64) {
-                fprintf(f, "    store i64 %s, i64* %s\n",
-                        llvm_name(node->d()).c_str(),
-                        llvm_name(node->d(), "ptr64").c_str()
-                    );
-            } else {
-                for (unsigned i = 0; i < (node->outwid() + 63) / 64; ++i) {
-                    fprintf(f,
-                            "     %%T__%lu = getelementptr i64* %s, i64 %d\n",
-                            tmp,
-                            llvm_name(node->d(), "ptr64").c_str(),
-                            i
-                        );
-                    tmp++;
-
-                    fprintf(f, "      %%T__%lu = lshr i%d %s, %d\n",
-                            tmp,
-                            node->outwid(),
+                    fprintf(f, "    %s = or i%d %%T__%lu, %%T__%lu\n",
                             llvm_name(node->d()).c_str(),
-                            i * 64
-                        );
-                    tmp++;
-
-                    fprintf(f, "      %%T__%lu = trunc i%d %%T__%lu to i64\n",
-                            tmp,
                             node->outwid(),
+                            tmp - 1,
                             tmp - 1
                         );
-                    tmp++;
-
-                    fprintf(f, "      store i64 %%T__%lu, i64* %%T__%lu\n",
-                            tmp - 1,
-                            tmp - 3
-                        );
                 }
+
+                break;                    
+
+            case libflo::opcode::RST:
+                fprintf(f, "    %s = or i1 %%rst, %%rst\n",
+                        llvm_name(node->d()).c_str()
+                    );
+                break;
+
+            case libflo::opcode::SUB:
+                fprintf(f, "    %s = sub i%d %s, %s\n",
+                        llvm_name(node->d()).c_str(),
+                        node->outwid(),
+                        llvm_name(node->s(0)).c_str(),
+                        llvm_name(node->s(1)).c_str()
+                    );
+                break;
+
+            case libflo::opcode::IN:
+            case libflo::opcode::RND:
+            case libflo::opcode::EAT:
+            case libflo::opcode::LIT:
+            case libflo::opcode::CAT:
+            case libflo::opcode::RSH:
+            case libflo::opcode::MSK:
+            case libflo::opcode::LD:
+            case libflo::opcode::NEQ:
+            case libflo::opcode::ARSH:
+            case libflo::opcode::LSH:
+            case libflo::opcode::XOR:
+            case libflo::opcode::ST:
+            case libflo::opcode::MEM:
+                fprintf(stderr, "Unable to compute node '%s'\n",
+                        libflo::opcode_to_string(node->opcode()).c_str());
+                abort();
+                break;
             }
 
-            fprintf(f, "    call void @_llvmdat_%u_set(i8* %s, i64* %s)\n",
-                    node->outwid(),
-                    llvm_name(node->d(), "ptrC").c_str(),
-                    llvm_name(node->d(), "ptr64").c_str()
-                );
-        }
-    }
+            /* Every node that's in the Chisel header gets stored after
+             * its cooresponding computation, but only when the node
+             * appears in the Chisel header. */
+            if (node->exported() == true && nop == false) {
+                fprintf(f, "    %s = alloca i64, i32 %u\n",
+                        llvm_name(node->d(), "ptr64").c_str(),
+                        (node->outwid() + 63) / 64
+                    );
 
-    fprintf(f, "  ret void\n");
-    fprintf(f, "}\n");
+                fprintf(f, "    %s = call i8* @_llvmflo_%s_ptr(i8* %%dut)\n",
+                        llvm_name(node->d(), "ptrC").c_str(),
+                        node->mangled_d().c_str()
+                    );
+
+                /* FIXME: Are these three cases really necessary?  It
+                 * feels like they might not actually be... */
+                if (node->outwid() < 64) {
+                    fprintf(f, "    %%T__%lu = zext i%d %s to i64\n",
+                            tmp,
+                            node->outwid(),
+                            llvm_name(node->d()).c_str()
+                        );
+
+                    fprintf(f, "    store i64 %%T__%lu, i64* %s\n",
+                            tmp,
+                            llvm_name(node->d(), "ptr64").c_str()
+                        );
+
+                    tmp++;
+                } else if (node->outwid() == 64) {
+                    fprintf(f, "    store i64 %s, i64* %s\n",
+                            llvm_name(node->d()).c_str(),
+                            llvm_name(node->d(), "ptr64").c_str()
+                        );
+                } else {
+                    for (unsigned i = 0; i < (node->outwid() + 63) / 64; ++i) {
+                        fprintf(f,
+                                "     %%T__%lu = getelementptr i64* %s, i64 %d\n",
+                                tmp,
+                                llvm_name(node->d(), "ptr64").c_str(),
+                                i
+                            );
+                        tmp++;
+
+                        fprintf(f, "      %%T__%lu = lshr i%d %s, %d\n",
+                                tmp,
+                                node->outwid(),
+                                llvm_name(node->d()).c_str(),
+                                i * 64
+                            );
+                        tmp++;
+
+                        fprintf(f, "      %%T__%lu = trunc i%d %%T__%lu to i64\n",
+                                tmp,
+                                node->outwid(),
+                                tmp - 1
+                            );
+                        tmp++;
+
+                        fprintf(f, "      store i64 %%T__%lu, i64* %%T__%lu\n",
+                                tmp - 1,
+                                tmp - 3
+                            );
+                    }
+                }
+
+                fprintf(f, "    call void @_llvmdat_%u_set(i8* %s, i64* %s)\n",
+                        node->outwid(),
+                        llvm_name(node->d(), "ptrC").c_str(),
+                        llvm_name(node->d(), "ptr64").c_str()
+                    );
+            }
+        }
+
+        fprintf(f, "  ret void\n");
+    }
 
     return 0;
 }

@@ -22,10 +22,16 @@
 #ifndef LIBCODEGEN__LLVM_HXX
 #define LIBCODEGEN__LLVM_HXX
 
+namespace libcodegen {
+    class llvm;
+}
+
 #include <memory>
 #include <stdio.h>
 #include <string>
+#include <vector>
 #include "builtin.h++"
+#include "definition.h++"
 #include "function.h++"
 #include "pointer.h++"
 
@@ -34,6 +40,10 @@ namespace libcodegen {
      * from codegen.  Note that this is an SSA format, so there's a
      * number of things you can't do that you could in C. */
     class llvm {
+        /* This definition helper is a friend because it needs to
+         * access some protected data. */
+        friend class definition;
+
     private:
         FILE *_f;
 
@@ -45,6 +55,16 @@ namespace libcodegen {
 
         /* Emits a function declaration. */
         void declare(const function_t &f);
+
+        /* Emits a function definition. */
+        definition_ptr define(const function_t &f,
+                              const std::vector<std::string> &arg_names);
+
+    protected:
+        /* Disposes of a definition object -- this should only be
+         * called from the definition class's destructor, which is why
+         * it needs to have a raw pointer. */
+        void define_finish(const definition *d);
     };
 }
 
