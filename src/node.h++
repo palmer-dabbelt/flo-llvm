@@ -35,10 +35,26 @@ typedef std::shared_ptr<node> node_ptr;
  * coherent values in many places. */
 class node: public libflo::node {
 private:
+    /* This returns the mangled name that Chisel uses to refer to this
+     * symbol inside the C++ header file. */
+    const std::string _mangled_d;
+
+    /* FIXME: This should be removed. */
+    const std::vector<std::string> _mangled_s;
+
+    /* This is set to TRUE whenever this symbol should be exported
+     * into the Chisel header file, and FALSE otherwise. */
+    const bool _exported;
+
 public:
     /* Fills out this node with the extra information that's needed in
      * order to make code generation work. */
     node(const libflo::node_ptr n);
+
+    /* Accessor functions. */
+    const std::string mangled_d(void) const { return _mangled_d; }
+    const std::string mangled_s(size_t i) const { return _mangled_s[i]; }
+    bool exported(void) const { return _exported; }
 };
 
 #endif

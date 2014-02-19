@@ -20,7 +20,6 @@
  */
 
 #include "dataflow_order.h++"
-#include "mangle_name.h++"
 #include "node.h++"
 #include "node_list.h++"
 #include "version.h"
@@ -34,6 +33,7 @@
 #include <algorithm>
 #include <string.h>
 #include <string>
+#include <map>
 
 using namespace libcodegen;
 
@@ -155,18 +155,16 @@ int generate_header(const node_list &flo, FILE *f)
     for (auto it = flo.nodes(); !it.done(); ++it) {
         auto node = *it;
 
-        auto mangled_name_p = mangle_name(node->d());
-        if (mangled_name_p.first != true)
+        if (!node->exported())
             continue;
-        auto mangled_name = mangled_name_p.second;
 
         fprintf(f, "    dat_t<%d> %s;\n",
                 node->outwid(),
-                mangled_name.c_str());
+                node->mangled_d().c_str());
 
         fprintf(f, "    dat_t<%d> _vcdshadow_%s;\n",
                 node->outwid(),
-                mangled_name.c_str());
+                node->mangled_d().c_str());
     }
 
     /* Here we write the class methods that exist in Chisel and will
@@ -200,17 +198,15 @@ int generate_compat(const node_list &flo, FILE *f)
     for (auto it = flo.nodes(); !it.done(); ++it) {
         auto node = *it;
 
-        auto mangled_name_p = mangle_name(node->d());
-        if (mangled_name_p.first != true)
+        if (node->exported() == false)
             continue;
-        auto mangled_name = mangled_name_p.second;
 
         fprintf(f, "  dat_t<%d> *_llvmflo_%s_ptr(%s_t *d)\n",
                 node->outwid(),
-                mangled_name.c_str(),
+                node->mangled_d().c_str(),
                 dut_name.c_str()
             );
-        fprintf(f, "    { return &(d->%s); }\n", mangled_name.c_str());
+        fprintf(f, "    { return &(d->%s); }\n", node->mangled_d().c_str());
     }
 
     /* Figure out the largest dat_t used by this design, so we can
@@ -294,17 +290,15 @@ int generate_compat(const node_list &flo, FILE *f)
     for (auto it = flo.nodes(); !it.done(); ++it) {
         auto node = *it;
 
-        auto mangled_name_p = mangle_name(node->d());
-        if (mangled_name_p.first != true)
+        if (node->exported() == false)
             continue;
-        auto mangled_name = mangled_name_p.second;
 
         if (node->opcode() != libflo::opcode::REG)
             continue;
 
         fprintf(f, "  %s = %s;\n",
-                mangle_name(node->d( )).second.c_str(),
-                mangle_name(node->s(1)).second.c_str()
+                node->mangled_d( ).c_str(),
+                node->mangled_s(1).c_str()
             );
     }
     fprintf(f, "}\n");
@@ -407,25 +401,23 @@ int generate_compat(const node_list &flo, FILE *f)
     for (auto it = flo.nodes(); !it.done(); ++it) {
         auto node = *it;
 
-        auto mangled_name_p = mangle_name(node->d());
-        if (mangled_name_p.first != true)
+        if (node->exported() == false)
             continue;
-        auto mangled_name = mangled_name_p.second;
 
         fprintf(f,
                 "  if ((cycle == 0) || (_vcdshadow_%s != %s).to_ulong()) {\n",
-                mangled_name.c_str(),
-                mangled_name.c_str()
+                node->mangled_d().c_str(),
+                node->mangled_d().c_str()
             );
 
         fprintf(f, "    dat_dump(f, %s, \"%s\");\n",
-                mangled_name.c_str(),
+                node->mangled_d().c_str(),
                 short_name.find(node->d())->second.c_str()
             );
 
         fprintf(f, "    _vcdshadow_%s = %s;\n",
-                mangled_name.c_str(),
-                mangled_name.c_str()
+                node->mangled_d().c_str(),
+                node->mangled_d().c_str()
             );
 
         fprintf(f, "  }\n");
@@ -471,16 +463,14 @@ int generate_llvmir(const node_list &flo, FILE *f)
     for (auto it = flo.nodes(); !it.done(); ++it) {
         auto node = *it;
 
-        auto mangled_name_p = mangle_name(node->d());
-        if (mangled_name_p.first != true)
+        if (node->exported() == false)
             continue;
-        auto mangled_name = mangled_name_p.second;
 
         function< pointer< builtin<char> >,
                   arglist1< pointer< builtin<char> >
                             >
                   >
-            ptr_func("_llvmflo_%s_ptr", mangled_name.c_str());
+            ptr_func("_llvmflo_%s_ptr", node->mangled_d().c_str());
         out.declare(ptr_func);
     }
 
@@ -534,13 +524,11 @@ int generate_llvmir(const node_list &flo, FILE *f)
     for (auto it = flo.nodes(); !it.done(); ++it) {
         auto node = *it;
 
-        auto mangled_name_p = mangle_name(node->d());
-        if (mangled_name_p.first != true)
+        if (node->exported() == false)
             continue;
-        auto mangled_name = mangled_name_p.second;
 
         fprintf(f, "  %%T%lu = call i8* @_llvmflo_%s_ptr(i8* %%dut)\n",
-                tmp, mangled_name.c_str());
+                tmp, node->mangled_d().c_str());
         fprintf(f, "  call void @_llvmdat_%u_set(i8* %%T%lu, i64* %%zeros)\n",
                 node->outwid(), tmp);
 
@@ -563,11 +551,6 @@ int generate_llvmir(const node_list &flo, FILE *f)
     auto df = dataflow_order(flo);
     for (auto it = df.nodes(); !it.done(); ++it) {
         auto node = *it;
-
-        /* Here we don't care if the mangled name was changed, they're
-         * all going to end up in the circuit eventually. */
-        auto mangled_name_p = mangle_name(node->d());
-        auto mangled_name = mangled_name_p.second;
 
         fprintf(f, "  ; Chisel Node: ");
         node->writeln(f);
@@ -675,7 +658,7 @@ int generate_llvmir(const node_list &flo, FILE *f)
 
             fprintf(f, "    %s = call i8* @_llvmflo_%s_ptr(i8* %%dut)\n",
                     llvm_name(node->d(), "rptrC").c_str(),
-                    mangle_name(node->d()).second.c_str()
+                    node->mangled_d().c_str()
                 );
 
             fprintf(f, "    call void @_llvmdat_%u_get(i8* %s, i64* %s)\n",
@@ -798,7 +781,7 @@ int generate_llvmir(const node_list &flo, FILE *f)
         /* Every node that's in the Chisel header gets stored after
          * its cooresponding computation, but only when the node
          * appears in the Chisel header. */
-        if (mangled_name_p.first == true && nop == false) {
+        if (node->exported() == true && nop == false) {
             fprintf(f, "    %s = alloca i64, i32 %u\n",
                     llvm_name(node->d(), "ptr64").c_str(),
                     (node->outwid() + 63) / 64
@@ -806,7 +789,7 @@ int generate_llvmir(const node_list &flo, FILE *f)
 
             fprintf(f, "    %s = call i8* @_llvmflo_%s_ptr(i8* %%dut)\n",
                     llvm_name(node->d(), "ptrC").c_str(),
-                    mangle_name(node->d()).second.c_str()
+                    node->mangled_d().c_str()
                 );
 
             /* FIXME: Are these three cases really necessary?  It
@@ -893,6 +876,7 @@ const std::string class_name(const node_list &flo)
     return "";
 }
 
+/* FIXME: This needs to be removed somehow... */
 const std::string llvm_name(const std::string chisel_name,
                             const std::string prefix)
 {
@@ -901,9 +885,13 @@ const std::string llvm_name(const std::string chisel_name,
     if (isdigit(buffer[0]))
         return chisel_name;
 
-    auto mangled = mangle_name(chisel_name).second;
     snprintf(buffer, BUFFER_SIZE, "%%C%s__%s",
-             prefix.c_str(), mangled.c_str());
+             prefix.c_str(), chisel_name.c_str());
+
+    for (size_t i = 0; i < strlen(buffer); ++i)
+        if (buffer[i] == ':')
+            buffer[i] = '_';
+
     return buffer;
 }
 
