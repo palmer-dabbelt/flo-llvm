@@ -19,29 +19,16 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LIBCODEGEN__POINTER_HXX
-#define LIBCODEGEN__POINTER_HXX
+#include "builtin.h++"
+#include "pointer.h++"
 
-#include "value.h++"
-
+/* Here's a special case: in LLVM "void*" doesn't exist and we instead
+ * need to use an "i8*" to emulate it.  This behavior is suggested by
+ * the LLVM documentation. */
 namespace libcodegen {
-    /* This represents a pointer to any sort of type.  In this case, V
-     * is expected to be a "value". */
-    template<class V> class pointer: public value {
-    private:
-        V _V;
-
-    public:
-        pointer(void)
-            : _V()
-            {
-            }
-
-        /* This is just yet another way of getting at the LLVM name of
-         * a pointer. */
-        virtual const std::string as_llvm(void) const
-            { return _V.as_llvm() + "*"; }
-    };
+    template<>
+    const std::string pointer< builtin<void> >::as_llvm(void) const
+    {
+        return "i8*";
+    }
 }
-
-#endif

@@ -53,10 +53,14 @@ namespace libcodegen {
     class function: public function_t {
     private:
         std::string _name;
+        R _R;
+        A _A;
 
     public:
         function(const char *name)
-            : _name(name)
+            : _name(name),
+              _R(),
+              _A()
             {
             }
 
@@ -72,12 +76,12 @@ namespace libcodegen {
                 _name = name;
             }
 
-        const std::string ret_llvm(void) const { return R::as_llvm(); }
+        const std::string ret_llvm(void) const { return _R.as_llvm(); }
 
         const std::string name(void) const { return _name; }
 
         const std::vector<std::string> args_llvm(void) const
-            { return A::as_llvm(); }
+            { return _A.as_llvm(); }
     };
 }
 

@@ -32,65 +32,90 @@
 namespace libcodegen {
     template<class A>
     class arglist1 {
+    private:
+        A _A;
+
     public:
-        static std::vector<std::string> as_llvm(void)
+        const std::vector<std::string> as_llvm(void) const
             {
                 std::vector<std::string> out;
-                out.push_back(A::as_llvm());
+                out.push_back(_A.as_llvm());
                 return out;
             }
     };
 
     template<class A, class B>
     class arglist2 {
+    private:
+        A _A;
+        B _B;
+
     public:
-        static std::vector<std::string> as_llvm(void)
+        const std::vector<std::string> as_llvm(void) const
             {
                 std::vector<std::string> out;
-                out.push_back(A::as_llvm());
-                out.push_back(B::as_llvm());
+                out.push_back(_A.as_llvm());
+                out.push_back(_B.as_llvm());
                 return out;
             }
     };
 
     template<class A, class B, class C>
     class arglist3 {
+    private:
+        A _A;
+        B _B;
+        C _C;
+
     public:
-        static std::vector<std::string> as_llvm(void)
+        const std::vector<std::string> as_llvm(void) const
             {
                 std::vector<std::string> out;
-                out.push_back(A::as_llvm());
-                out.push_back(B::as_llvm());
-                out.push_back(C::as_llvm());
+                out.push_back(_A.as_llvm());
+                out.push_back(_B.as_llvm());
+                out.push_back(_C.as_llvm());
                 return out;
             }
     };
 
     template<class A, class B, class C, class D>
     class arglist4 {
+    private:
+        A _A;
+        B _B;
+        C _C;
+        D _D;
+
     public:
-        static std::vector<std::string> as_llvm(void)
+        const std::vector<std::string> as_llvm(void) const
             {
                 std::vector<std::string> out;
-                out.push_back(A::as_llvm());
-                out.push_back(B::as_llvm());
-                out.push_back(C::as_llvm());
-                out.push_back(D::as_llvm());
+                out.push_back(_A.as_llvm());
+                out.push_back(_B.as_llvm());
+                out.push_back(_C.as_llvm());
+                out.push_back(_D.as_llvm());
                 return out;
             }
     };
 
     template<class A, class B, class C, class D, class E>
     class arglist5 {
+    private:
+        A _A;
+        B _B;
+        C _C;
+        D _D;
+        E _E;
+
     public:
-        static std::vector<std::string> as_llvm(void)
+        const std::vector<std::string> as_llvm(void) const
             {
                 std::vector<std::string> out;
-                out.push_back(A::as_llvm());
-                out.push_back(B::as_llvm());
-                out.push_back(C::as_llvm());
-                out.push_back(D::as_llvm());
-                out.push_back(E::as_llvm());
+                out.push_back(_A.as_llvm());
+                out.push_back(_B.as_llvm());
+                out.push_back(_C.as_llvm());
+                out.push_back(_D.as_llvm());
+                out.push_back(_E.as_llvm());
                 return out;
             }
     };
