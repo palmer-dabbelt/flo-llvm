@@ -529,8 +529,7 @@ int generate_llvmir(const node_list &flo, FILE *f)
     /* Schedule the computation in dataflow order and emit every
      * node's representation in LLVM IR.  Note that loads from the C++
      * emulator wrapper are just scheduled directly in place here. */
-    auto df = dataflow_order(flo);
-    for (auto it = df.nodes(); !it.done(); ++it) {
+    for (auto it = flo.nodes(); !it.done(); ++it) {
         auto node = *it;
 
         fprintf(f, "  ; Chisel Node: ");
