@@ -22,11 +22,10 @@
 #include "dataflow_order.h++"
 #include <map>
 #include <queue>
-using namespace libflo;
 
-std::vector<node_ptr> dataflow_order(const node_list &in)
+node_list dataflow_order(const node_list &in)
 {
-    std::vector<node_ptr> out;
+    node_list out;
     std::queue<node_ptr> remaining;
 
     std::map<std::string, bool> scheduled;
@@ -52,28 +51,28 @@ std::vector<node_ptr> dataflow_order(const node_list &in)
              * special case: it actually doesn't do anything during
              * the dataflow schedule but instead gets a whole phase
              * dedicated to just storing its values later on. */
-        case opcode::IN:
-        case opcode::REG:
-        case opcode::RND:
-        case opcode::RST:
-            out.push_back(node);
+        case libflo::opcode::IN:
+        case libflo::opcode::REG:
+        case libflo::opcode::RND:
+        case libflo::opcode::RST:
+            out.add(node);
             scheduled[node->d()] = true;
             work_done = true;
             break;
 
             /* These nodes must wait for every one of their inputs to
              * be availiable before they can execute. */
-        case opcode::ADD:
-        case opcode::AND:
-        case opcode::EQ:
-        case opcode::GTE:
-        case opcode::LT:
-        case opcode::MOV:
-        case opcode::MUX:
-        case opcode::NOT:
-        case opcode::OR:
-        case opcode::OUT:
-        case opcode::SUB:
+        case libflo::opcode::ADD:
+        case libflo::opcode::AND:
+        case libflo::opcode::EQ:
+        case libflo::opcode::GTE:
+        case libflo::opcode::LT:
+        case libflo::opcode::MOV:
+        case libflo::opcode::MUX:
+        case libflo::opcode::NOT:
+        case libflo::opcode::OR:
+        case libflo::opcode::OUT:
+        case libflo::opcode::SUB:
         {
             bool all_ok = true;
             for (auto it = node->s_begin(); it != node->s_end(); ++it) {
@@ -94,7 +93,7 @@ std::vector<node_ptr> dataflow_order(const node_list &in)
             }
 
             if (all_ok == true) {
-                out.push_back(node);
+                out.add(node);
                 scheduled[node->d()] = true;
                 work_done = true;
             }
@@ -105,18 +104,18 @@ std::vector<node_ptr> dataflow_order(const node_list &in)
 
             /* FIXME: Implement these opcodes once I know what to do
              * with them... */
-        case opcode::EAT:
-        case opcode::LIT:
-        case opcode::CAT:
-        case opcode::RSH:
-        case opcode::MSK:
-        case opcode::LD:
-        case opcode::NEQ:
-        case opcode::ARSH:
-        case opcode::LSH:
-        case opcode::XOR:
-        case opcode::ST:
-        case opcode::MEM:
+        case libflo::opcode::EAT:
+        case libflo::opcode::LIT:
+        case libflo::opcode::CAT:
+        case libflo::opcode::RSH:
+        case libflo::opcode::MSK:
+        case libflo::opcode::LD:
+        case libflo::opcode::NEQ:
+        case libflo::opcode::ARSH:
+        case libflo::opcode::LSH:
+        case libflo::opcode::XOR:
+        case libflo::opcode::ST:
+        case libflo::opcode::MEM:
             fprintf(stderr, "Unimplimented node type: '%s'\n",
                     libflo::opcode_to_string(node->opcode()).c_str());
             abort();

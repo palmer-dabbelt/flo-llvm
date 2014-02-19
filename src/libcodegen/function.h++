@@ -23,6 +23,7 @@
 #define LIBCODEGEN__FUNCTION_HXX
 
 #include "value.h++"
+#include <stdarg.h>
 #include <string>
 #include <vector>
 
@@ -51,12 +52,24 @@ namespace libcodegen {
     template<class R, class A>
     class function: public function_t {
     private:
-        const std::string _name;
+        std::string _name;
 
     public:
-        function(const std::string name)
+        function(const char *name)
             : _name(name)
             {
+            }
+
+        function(const std::string format, ...)
+            {
+                char name[1024];
+
+                va_list args;
+                va_start(args, format);
+                vsnprintf(name, 1024, format.c_str(), args);
+                va_end(args);
+                
+                _name = name;
             }
 
         const std::string ret_llvm(void) const { return R::as_llvm(); }

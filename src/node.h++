@@ -19,12 +19,26 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DATAFLOW_ORDER_HXX
-#define DATAFLOW_ORDER_HXX
+#ifndef NODE_HXX
+#define NODE_HXX
 
-#include "node_list.h++"
+#include <libflo/node.h++>
+#include <memory>
 #include <vector>
 
-node_list dataflow_order(const node_list &in);
+class node;
+typedef std::shared_ptr<node> node_ptr;
+
+/* This defines our extension of a node.  The idea here is to provide
+ * some semblance of type safety when generating code by looking up
+ * values within this header file as opposed to attempting to generate
+ * coherent values in many places. */
+class node: public libflo::node {
+private:
+public:
+    /* Fills out this node with the extra information that's needed in
+     * order to make code generation work. */
+    node(const libflo::node_ptr n);
+};
 
 #endif

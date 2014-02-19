@@ -21,6 +21,8 @@
 
 #include "dataflow_order.h++"
 #include "mangle_name.h++"
+#include "node.h++"
+#include "node_list.h++"
 #include "version.h"
 #include <libcodegen/arglist.h++>
 #include <libcodegen/builtin.h++>
@@ -33,7 +35,6 @@
 #include <string.h>
 #include <string>
 
-using namespace libflo;
 using namespace libcodegen;
 
 #ifndef BUFFER_SIZE
@@ -49,9 +50,9 @@ enum gentype {
 
 /* These generate the different sorts of files that can be produced by
  * the C++ toolchain. */
-static int generate_header(const libflo::node_list &flo, FILE *f);
-static int generate_compat(const libflo::node_list &flo, FILE *f);
-static int generate_llvmir(const libflo::node_list &flo, FILE *f);
+static int generate_header(const node_list &flo, FILE *f);
+static int generate_compat(const node_list &flo, FILE *f);
+static int generate_llvmir(const node_list &flo, FILE *f);
 
 /* Produces the LLVM-internal name given a string -- essentially this
  * is just yet another form of name mangling.  The prefix argument is
@@ -61,13 +62,14 @@ static const std::string llvm_name(const std::string chisel_name,
                                    const std::string prefix = "");
 
 /* Produces a class name from a set of Flo nodes. */
-static const std::string class_name(const libflo::node_list &flo);
+static const std::string class_name(const node_list &flo);
 
 /* Sorts a list of nodes by their d, in alphabetical order. */
 static std::vector<std::string> sort_by_d(const node_list &flo);
 
 /* Creates a map between a name and the width of that name. */
-static std::map<std::string, unsigned> make_width_map(const node_list &flo);
+static std::map<std::string, unsigned>
+make_width_map(const node_list &flo);
 
 /* Returns TRUE if the haystack starts with the needle. */
 static bool strsta(const std::string haystack, const std::string needle);
@@ -106,14 +108,22 @@ int main(int argc, const char **argv)
     /* Reads the input file and infers the width of every node. */
     auto flo = libflo::infer_widths(libflo::parse(infn));
 
+    /* Generates the sorts of nodes that the LLVM backend uses (as
+     * opposed to the sorts that libflo uses). */
+    node_list nodes(flo);
+
+    /* Orders the computation such that the dataflow dependencies will
+     * be respected when run serially. */
+    auto df = dataflow_order(nodes);
+
     /* Figures out what sort of output to generate. */
     switch (type) {
     case GENTYPE_IR:
-        return generate_llvmir(flo, stdout);
+        return generate_llvmir(df, stdout);
     case GENTYPE_HEADER:
-        return generate_header(flo, stdout);
+        return generate_header(df, stdout);
     case GENTYPE_COMPAT:
-        return generate_compat(flo, stdout);
+        return generate_compat(df, stdout);
     case GENTYPE_ERROR:
         fprintf(stderr, "Unknown generate target '%s'\n", argv[2]);
         fprintf(stderr, "  valid targets are:\n");
@@ -127,7 +137,7 @@ int main(int argc, const char **argv)
     return 0;
 }
 
-int generate_header(const libflo::node_list &flo, FILE *f)
+int generate_header(const node_list &flo, FILE *f)
 {
     /* Figures out the class name, printing that out. */
     fprintf(f, "#include <stdio.h>\n");
@@ -175,7 +185,7 @@ int generate_header(const libflo::node_list &flo, FILE *f)
     return 0;
 }
 
-int generate_compat(const libflo::node_list &flo, FILE *f)
+int generate_compat(const node_list &flo, FILE *f)
 {
     auto dut_name = class_name(flo);
 
@@ -289,7 +299,7 @@ int generate_compat(const libflo::node_list &flo, FILE *f)
             continue;
         auto mangled_name = mangled_name_p.second;
 
-        if (node->opcode() != opcode::REG)
+        if (node->opcode() != libflo::opcode::REG)
             continue;
 
         fprintf(f, "  %s = %s;\n",
@@ -426,7 +436,7 @@ int generate_compat(const libflo::node_list &flo, FILE *f)
     return 0;
 }
 
-int generate_llvmir(const libflo::node_list &flo, FILE *f)
+int generate_llvmir(const node_list &flo, FILE *f)
 {
     auto dut_name = class_name(flo);
 
@@ -466,8 +476,12 @@ int generate_llvmir(const libflo::node_list &flo, FILE *f)
             continue;
         auto mangled_name = mangled_name_p.second;
 
-        fprintf(f, "declare i8* @_llvmflo_%s_ptr(i8* %%dut)\n",
-                mangled_name.c_str());
+        function< pointer< builtin<char> >,
+                  arglist1< pointer< builtin<char> >
+                            >
+                  >
+            ptr_func("_llvmflo_%s_ptr", mangled_name.c_str());
+        out.declare(ptr_func);
     }
 
     size_t largest_dat_t = 0;
@@ -547,7 +561,7 @@ int generate_llvmir(const libflo::node_list &flo, FILE *f)
      * node's representation in LLVM IR.  Note that loads from the C++
      * emulator wrapper are just scheduled directly in place here. */
     auto df = dataflow_order(flo);
-    for (auto it = df.begin(); it != df.end(); ++it) {
+    for (auto it = df.nodes(); !it.done(); ++it) {
         auto node = *it;
 
         /* Here we don't care if the mangled name was changed, they're
@@ -562,7 +576,7 @@ int generate_llvmir(const libflo::node_list &flo, FILE *f)
         switch (node->opcode()) {
             /* The following nodes are just no-ops in this phase, they
              * only show up in the clock_hi phase. */
-        case opcode::OUT:
+        case libflo::opcode::OUT:
             fprintf(f, "    %s = or i%d %s, %s\n",
                     llvm_name(node->d()).c_str(),
                     node->outwid(),
@@ -571,7 +585,7 @@ int generate_llvmir(const libflo::node_list &flo, FILE *f)
                 );
             break;
 
-        case opcode::ADD:
+        case libflo::opcode::ADD:
             fprintf(f, "    %s = add i%d %s, %s\n",
                     llvm_name(node->d()).c_str(),
                     node->outwid(),
@@ -580,7 +594,7 @@ int generate_llvmir(const libflo::node_list &flo, FILE *f)
                 );
             break;
 
-        case opcode::AND:
+        case libflo::opcode::AND:
             fprintf(f, "    %s = and i%d %s, %s\n",
                     llvm_name(node->d()).c_str(),
                     node->outwid(),
@@ -589,7 +603,7 @@ int generate_llvmir(const libflo::node_list &flo, FILE *f)
                 );
             break;
 
-        case opcode::EQ:
+        case libflo::opcode::EQ:
             fprintf(f, "    %s = icmp eq i%d %s, %s\n",
                     llvm_name(node->d()).c_str(),
                     node->width(),
@@ -598,7 +612,7 @@ int generate_llvmir(const libflo::node_list &flo, FILE *f)
                 );
             break;
 
-        case opcode::GTE:
+        case libflo::opcode::GTE:
             fprintf(f, "    %s = icmp uge i%d %s, %s\n",
                     llvm_name(node->d()).c_str(),
                     node->width(),
@@ -607,7 +621,7 @@ int generate_llvmir(const libflo::node_list &flo, FILE *f)
                 );
             break;
 
-        case opcode::LT:
+        case libflo::opcode::LT:
             fprintf(f, "    %s = icmp ult i%d %s, %s\n",
                     llvm_name(node->d()).c_str(),
                     node->width(),
@@ -616,7 +630,7 @@ int generate_llvmir(const libflo::node_list &flo, FILE *f)
                 );
             break;
 
-        case opcode::MOV:
+        case libflo::opcode::MOV:
             fprintf(f, "    %s = or i%d %s, %s\n",
                     llvm_name(node->d()).c_str(),
                     node->outwid(),
@@ -625,7 +639,7 @@ int generate_llvmir(const libflo::node_list &flo, FILE *f)
                 );
             break;
 
-        case opcode::MUX:
+        case libflo::opcode::MUX:
             fprintf(f, "    %s = select i1 %s, i%d %s, i%d %s\n",
                     llvm_name(node->d()).c_str(),
                     llvm_name(node->s(0)).c_str(),
@@ -636,7 +650,7 @@ int generate_llvmir(const libflo::node_list &flo, FILE *f)
                 );
             break;
 
-        case opcode::NOT:
+        case libflo::opcode::NOT:
             fprintf(f, "    %s = xor i%d %s, -1\n",
                     llvm_name(node->d()).c_str(),
                     node->width(),
@@ -644,7 +658,7 @@ int generate_llvmir(const libflo::node_list &flo, FILE *f)
                 );
             break;
 
-        case opcode::OR:
+        case libflo::opcode::OR:
             fprintf(f, "    %s = or i%d %s, %s\n",
                     llvm_name(node->d()).c_str(),
                     node->outwid(),
@@ -653,7 +667,7 @@ int generate_llvmir(const libflo::node_list &flo, FILE *f)
                 );
             break;
 
-        case opcode::REG:
+        case libflo::opcode::REG:
             fprintf(f, "    %s = alloca i64, i32 %u\n",
                     llvm_name(node->d(), "rptr64").c_str(),
                     (node->outwid() + 63) / 64
@@ -746,13 +760,13 @@ int generate_llvmir(const libflo::node_list &flo, FILE *f)
 
             break;                    
 
-        case opcode::RST:
+        case libflo::opcode::RST:
             fprintf(f, "    %s = or i1 %%rst, %%rst\n",
                     llvm_name(node->d()).c_str()
                 );
             break;
 
-        case opcode::SUB:
+        case libflo::opcode::SUB:
             fprintf(f, "    %s = sub i%d %s, %s\n",
                     llvm_name(node->d()).c_str(),
                     node->outwid(),
@@ -761,20 +775,20 @@ int generate_llvmir(const libflo::node_list &flo, FILE *f)
                 );
             break;
 
-        case opcode::IN:
-        case opcode::RND:
-        case opcode::EAT:
-        case opcode::LIT:
-        case opcode::CAT:
-        case opcode::RSH:
-        case opcode::MSK:
-        case opcode::LD:
-        case opcode::NEQ:
-        case opcode::ARSH:
-        case opcode::LSH:
-        case opcode::XOR:
-        case opcode::ST:
-        case opcode::MEM:
+        case libflo::opcode::IN:
+        case libflo::opcode::RND:
+        case libflo::opcode::EAT:
+        case libflo::opcode::LIT:
+        case libflo::opcode::CAT:
+        case libflo::opcode::RSH:
+        case libflo::opcode::MSK:
+        case libflo::opcode::LD:
+        case libflo::opcode::NEQ:
+        case libflo::opcode::ARSH:
+        case libflo::opcode::LSH:
+        case libflo::opcode::XOR:
+        case libflo::opcode::ST:
+        case libflo::opcode::MEM:
             fprintf(stderr, "Unable to compute node '%s'\n",
                     libflo::opcode_to_string(node->opcode()).c_str());
             abort();
@@ -861,7 +875,7 @@ int generate_llvmir(const libflo::node_list &flo, FILE *f)
     return 0;
 }
 
-const std::string class_name(const libflo::node_list &flo)
+const std::string class_name(const node_list &flo)
 {
     for (auto it = flo.nodes(); !it.done(); ++it) {
         auto node = *it;
@@ -893,7 +907,7 @@ const std::string llvm_name(const std::string chisel_name,
     return buffer;
 }
 
-std::vector<std::string> sort_by_d(const libflo::node_list &flo)
+std::vector<std::string> sort_by_d(const node_list &flo)
 {
     std::vector<std::string> out;
 

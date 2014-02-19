@@ -19,12 +19,9 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DATAFLOW_ORDER_HXX
-#define DATAFLOW_ORDER_HXX
+#include "node.h++"
 
-#include "node_list.h++"
-#include <vector>
-
-node_list dataflow_order(const node_list &in);
-
-#endif
+node::node(const libflo::node_ptr n)
+    : libflo::node(n->d(), n->op(), n->s())
+{
+}
