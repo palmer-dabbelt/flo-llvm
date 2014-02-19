@@ -466,14 +466,12 @@ int generate_llvmir(const node_list &flo, FILE *f)
         if (node->exported() == false)
             continue;
 
-        function< pointer< builtin<char> >,
-                  arglist1< pointer< builtin<char> >
-                            >
-                  >
-            ptr_func("_llvmflo_%s_ptr", node->mangled_d().c_str());
-        out.declare(ptr_func);
+        out.declare(node->ptr_func());
     }
 
+    /* FIXME: This should all go away.  Instead I'm just going to
+     * directly emit the get/set code in the C++ shim.  This way I'll
+     * have a unique function for each variable. */
     size_t largest_dat_t = 0;
     for (auto it = flo.nodes(); !it.done(); ++it) {
         auto node = *it;

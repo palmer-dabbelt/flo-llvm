@@ -22,6 +22,11 @@
 #ifndef NODE_HXX
 #define NODE_HXX
 
+#include <libcodegen/arglist.h++>
+#include <libcodegen/builtin.h++>
+#include <libcodegen/llvm.h++>
+#include <libcodegen/pointer.h++>
+#include <libcodegen/vargs.h++>
 #include <libflo/node.h++>
 #include <memory>
 #include <vector>
@@ -55,6 +60,14 @@ public:
     const std::string mangled_d(void) const { return _mangled_d; }
     const std::string mangled_s(size_t i) const { return _mangled_s[i]; }
     bool exported(void) const { return _exported; }
+
+    /* Returns a function that allows for access into this node's
+     * permanent storage.  This handles C++ name demangling (when
+     * generating code for the C++ compatibility layer). */
+    libcodegen::function<
+        libcodegen::pointer<libcodegen::builtin<char>>,
+        libcodegen::arglist1<libcodegen::pointer<libcodegen::builtin<char>>>
+        > ptr_func(void) const;
 };
 
 #endif

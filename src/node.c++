@@ -26,7 +26,6 @@
 #define BUFFER_SIZE 1024
 #endif
 
-
 /* Performs name mangling on a Chisel name. */
 static const std::string mangle_name(const std::string flo_name);
 
@@ -60,6 +59,20 @@ const std::vector<std::string> mangle_s(const std::vector<std::string> &s)
 
     for (auto it = s.begin(); it != s.end(); ++it)
         out.push_back(mangle_name(*it));
+
+    return out;
+}
+
+libcodegen::function<
+    libcodegen::pointer<libcodegen::builtin<char>>,
+    libcodegen::arglist1<libcodegen::pointer<libcodegen::builtin<char>>>
+    > node::ptr_func(void) const
+{
+    libcodegen::function<
+        libcodegen::pointer<libcodegen::builtin<char>>,
+        libcodegen::arglist1<libcodegen::pointer<libcodegen::builtin<char>>>
+        >
+        out("_llvmflo_%s_ptr", mangled_d().c_str());
 
     return out;
 }
