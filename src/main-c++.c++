@@ -277,11 +277,21 @@ int generate_compat(const node_list &flo, FILE *f)
     /* Actually define the (non mangled) implementation of the Chisel
      * C++ interface, which in fact only calls the LLVM-generated
      * functions. */
-    fprintf(f, "void %s_t::init(bool r)\n", dut_name.c_str());
-    fprintf(f, "  { _llvmflo_%s_init(this, r); }\n", dut_name.c_str());
-
     fprintf(f, "void %s_t::clock_lo(bool r)\n", dut_name.c_str());
     fprintf(f, "  { _llvmflo_%s_clock_lo(this, r); }\n", dut_name.c_str());
+
+    /* init just sets everything to zero, which is easy to do in C++
+     * (it'll be fairly short). */
+    fprintf(f, "void %s_t::init(bool r)\n{\n", dut_name.c_str());
+    for (auto it = flo.nodes(); !it.done(); ++it) {
+        auto node = *it;
+
+        if (node->exported() == false)
+            continue;
+
+        fprintf(f, "  this->%s = 0;\n", node->mangled_d().c_str());
+    }
+    fprintf(f, "}\n");
 
     /* clock_hi just copies data around and therefor is simplest to
      * stick in C++ -- using LLVM IR doesn't really gain us anything
@@ -506,35 +516,8 @@ int generate_llvmir(const node_list &flo, FILE *f)
                 node->outwid());
     }
 
-    /* Write the init function, which sets every node to zero.  Note
-     * that random initialization is not currently supported. */
-    fprintf(f, "define void @_llvmflo_%s_init(i8* %%dut, i1 %%rnd) {\n",
-            dut_name.c_str());
-
-    /* Generates a large array of zeros on the stack that can be used
-     * for initializing dat_ts to zero. */
-    fprintf(f, "  %%zeros = alloca i64, i32 %lu\n", (largest_dat_t + 63) / 64);
-    fprintf(f, "  %%zeros8 = bitcast i64* %%zeros to i8*\n");
-    fprintf(f, "  call void @llvm.memset.p0i8.i64(i8* %%zeros8, i8 0, i64 %lu, i32 0, i1 0)\n",
-            (largest_dat_t + 63) / 64);
-
-    uint64_t tmp = 0;
-    for (auto it = flo.nodes(); !it.done(); ++it) {
-        auto node = *it;
-
-        if (node->exported() == false)
-            continue;
-
-        fprintf(f, "  %%T%lu = call i8* @_llvmflo_%s_ptr(i8* %%dut)\n",
-                tmp, node->mangled_d().c_str());
-        fprintf(f, "  call void @_llvmdat_%u_set(i8* %%T%lu, i64* %%zeros)\n",
-                node->outwid(), tmp);
-
-        tmp++;
-    }
-
-    fprintf(f, "  ret void\n");
-    fprintf(f, "}\n");
+    /* FIXME: This temporary variable should go away, instead all the  */
+    uint64_t tmp = 1;
 
     /* Here we generate clock_lo, which performs all the logic
      * operations but does not perform any register writes.  In order
