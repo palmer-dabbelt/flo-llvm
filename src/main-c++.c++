@@ -635,7 +635,7 @@ int generate_llvmir(const node_list &flo, FILE *f)
                         (node->outwid() + 63) / 64
                     );
 
-                fprintf(f, "    %s = call i8* @_llvmflo_%s_ptr(i8* %%C__dut)\n",
+                fprintf(f, "    %s = call i8* @_llvmflo_%s_ptr(i8* %%dut)\n",
                         llvm_name(node->d(), "rptrC").c_str(),
                         node->mangled_d().c_str()
                     );
@@ -723,7 +723,7 @@ int generate_llvmir(const node_list &flo, FILE *f)
                 break;                    
 
             case libflo::opcode::RST:
-                fprintf(f, "    %s = or i1 %%C__rst, %%C__rst\n",
+                fprintf(f, "    %s = or i1 %%rst, %%rst\n",
                         llvm_name(node->d()).c_str()
                     );
                 break;
@@ -766,7 +766,7 @@ int generate_llvmir(const node_list &flo, FILE *f)
                         (node->outwid() + 63) / 64
                     );
 
-                fprintf(f, "    %s = call i8* @_llvmflo_%s_ptr(i8* %%C__dut)\n",
+                fprintf(f, "    %s = call i8* @_llvmflo_%s_ptr(i8* %%dut)\n",
                         llvm_name(node->d(), "ptrC").c_str(),
                         node->mangled_d().c_str()
                     );

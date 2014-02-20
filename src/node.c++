@@ -65,12 +65,22 @@ const std::vector<std::string> mangle_s(const std::vector<std::string> &s)
 
 libcodegen::fix_t node::dv(void) const
 {
-    return libcodegen::fix_t(outwid(), mangled_d());
+    if (isdigit(mangled_d().c_str()[0]))
+        return libcodegen::fix_t(outwid(), mangled_d());
+
+    char buffer[BUFFER_SIZE];
+    snprintf(buffer, BUFFER_SIZE, "C__%s", mangled_d().c_str());
+    return libcodegen::fix_t(outwid(), buffer);
 }
 
 libcodegen::fix_t node::sv(size_t i) const
 {
-    return libcodegen::fix_t(width(), mangled_s(i));
+    if (isdigit(mangled_s(i).c_str()[0]))
+        return libcodegen::fix_t(outwid(), mangled_s(i));
+
+    char buffer[BUFFER_SIZE];
+    snprintf(buffer, BUFFER_SIZE, "C__%s", mangled_s(i).c_str());
+    return libcodegen::fix_t(outwid(), buffer);
 }
 
 libcodegen::function<

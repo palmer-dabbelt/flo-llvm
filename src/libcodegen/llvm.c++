@@ -24,7 +24,7 @@ using namespace libcodegen;
 
 /* Converts a name to an LLVM name.  Essentially this means one of two
  * things: if it's an integer constant then do nothing, otherwise put
- * a '%L' before the name. */
+ * a '%' before the name. */
 static const std::string llvm_name(const std::string name);
 
 llvm::llvm(FILE *f)
@@ -115,14 +115,12 @@ void llvm::define_finish(const definition *d __attribute__((unused)))
     fprintf(_f, "}\n\n");
 }
 
-/* FIXME: This should be prefixed with '%L', not '%C__'.  It's done
- * this way to match the old name mangling. */
 const std::string llvm_name(const std::string name)
 {
     if (isdigit(name.c_str()[0]))
         return name;
 
     char buffer[1024];
-    snprintf(buffer, 1024, "%%C__%s", name.c_str());
+    snprintf(buffer, 1024, "%%%s", name.c_str());
     return buffer;
 }
