@@ -63,6 +63,16 @@ const std::vector<std::string> mangle_s(const std::vector<std::string> &s)
     return out;
 }
 
+libcodegen::fix_t node::dv(void) const
+{
+    return libcodegen::fix_t(outwid(), mangled_d());
+}
+
+libcodegen::fix_t node::sv(size_t i) const
+{
+    return libcodegen::fix_t(width(), mangled_s(i));
+}
+
 libcodegen::function<
     libcodegen::pointer<libcodegen::builtin<char>>,
     libcodegen::arglist1<libcodegen::pointer<libcodegen::builtin<char>>>

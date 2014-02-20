@@ -33,7 +33,13 @@ namespace libcodegen {
 
     public:
         pointer(void)
-            : _V()
+            : value(),
+              _V()
+            {
+            }
+        pointer(const std::string name)
+            : value(name),
+              _V()
             {
             }
 

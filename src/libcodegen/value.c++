@@ -19,33 +19,31 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#include "definition.h++"
+#include "value.h++"
 using namespace libcodegen;
 
-definition::definition(llvm *parent)
-    : _parent(parent)
+static const std::string generate_unique_name(void);
+
+value::value(void)
+    : _name(generate_unique_name())
 {
 }
 
-definition::~definition(void)
+value::value(const std::string name)
+    : _name(name)
 {
-    _parent->define_finish(this);
 }
 
-void definition::comment(const std::string format, ...)
+const std::string generate_unique_name(void)
 {
-    va_list args;
-    va_start(args, format);
-    comment(format, args);
-    va_end(args);
-}
+    static long unsigned index = 1;
 
-void definition::comment(const std::string format, va_list args)
-{
-    _parent->comment(format, args);
-}
+    if (index == 0) {
+        fprintf(stderr, "Temporary value generated wrapped\n");
+        abort();
+    }
 
-void definition::operate(const operation &op)
-{
-    _parent->operate(op);
+    char buffer[1024];
+    snprintf(buffer, 1024, "V%lu", index);
+    return buffer;
 }

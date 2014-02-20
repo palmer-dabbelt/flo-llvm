@@ -26,7 +26,7 @@
 #define gen_as_llvm(type, str)                  \
     template<>                                  \
     const std::string                           \
-    builtin<type>::as_llvm(void)                \
+    builtin<type>::as_llvm(void) const          \
     { return str; }                             \
 
 namespace libcodegen {

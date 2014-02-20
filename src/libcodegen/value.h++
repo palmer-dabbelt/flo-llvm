@@ -30,6 +30,23 @@ namespace libcodegen {
      * actually know the value until execution (so this code _never_
      * knows the value). */
     class value {
+    private:
+        const std::string _name;
+
+    public:
+        /* Generates a new temporary name for this value that's
+         * gaurnteed to be unique. */
+        value(void);
+
+        /* Allows the construction of a value by taking an explicit
+         * name. */
+        value(const std::string name);
+
+        /* Accessor functions. */
+        const std::string name(void) const { return _name; }
+
+        /* Emits the LLVM name for this value. */
+        virtual const std::string as_llvm(void) const = 0;
     };
 }
 

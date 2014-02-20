@@ -19,26 +19,54 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LIBCODEGEN__BUILTIN_HXX
-#define LIBCODEGEN__BUILTIN_HXX
+#ifndef LIBCODEGEN__FIX_HXX
+#define LIBCODEGEN__FIX_HXX
 
 #include "value.h++"
+#include <stddef.h>
 #include <string>
 
 namespace libcodegen {
-    template<class T> class builtin : public value {
+    /* Represents the general class of fixed-width integers, where the
+     * width can only be determined at runtime. */
+    class fix_t: public value {
+    private:
+        size_t _width;
+
     public:
-        builtin(void)
-            : value()
-            {
-            }
-        builtin(const std::string name)
-            : value(name)
+        fix_t(size_t width)
+            : value(),
+              _width(width)
             {
             }
 
+        fix_t(size_t width, const std::string name)
+            : value(name),
+              _width(width)
+            {
+            }
+
+        size_t width(void) const { return _width; }
+
         const std::string as_llvm(void) const;
+    };
+
+    /* Represents a fixed width integer whose width is known at
+     * compile-time. */
+    template<size_t W> class fix: public fix_t {
+    private:
+    public:
+        fix(void)
+            : fix_t(W)
+            {
+            }
+
+        fix(const std::string name)
+            : fix_t(W, name)
+            {
+            }
     };
 }
 
 #endif
+

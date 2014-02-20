@@ -19,33 +19,17 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#include "definition.h++"
+#include "fix.h++"
+#include <stdlib.h>
 using namespace libcodegen;
 
-definition::definition(llvm *parent)
-    : _parent(parent)
-{
-}
+#ifndef BUFFER_SIZE
+#define BUFFER_SIZE 1024
+#endif
 
-definition::~definition(void)
+const std::string fix_t::as_llvm(void) const
 {
-    _parent->define_finish(this);
-}
-
-void definition::comment(const std::string format, ...)
-{
-    va_list args;
-    va_start(args, format);
-    comment(format, args);
-    va_end(args);
-}
-
-void definition::comment(const std::string format, va_list args)
-{
-    _parent->comment(format, args);
-}
-
-void definition::operate(const operation &op)
-{
-    _parent->operate(op);
+    char buffer[BUFFER_SIZE];
+    snprintf(buffer, BUFFER_SIZE, "i%lu", _width);
+    return buffer;
 }

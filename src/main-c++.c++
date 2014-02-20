@@ -25,7 +25,9 @@
 #include "version.h"
 #include <libcodegen/arglist.h++>
 #include <libcodegen/builtin.h++>
+#include <libcodegen/fix.h++>
 #include <libcodegen/llvm.h++>
+#include <libcodegen/operation.h++>
 #include <libcodegen/pointer.h++>
 #include <libcodegen/vargs.h++>
 #include <libflo/parse.h++>
@@ -545,12 +547,7 @@ int generate_llvmir(const node_list &flo, FILE *f)
                 /* The following nodes are just no-ops in this phase, they
                  * only show up in the clock_hi phase. */
             case libflo::opcode::OUT:
-                fprintf(f, "    %s = or i%d %s, %s\n",
-                        llvm_name(node->d()).c_str(),
-                        node->outwid(),
-                        llvm_name(node->s(0)).c_str(),
-                        llvm_name(node->s(0)).c_str()
-                    );
+                lo->operate(mov_op(node->dv(), node->sv(0)));
                 break;
 
             case libflo::opcode::ADD:

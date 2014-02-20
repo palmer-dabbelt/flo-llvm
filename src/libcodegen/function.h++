@@ -32,7 +32,7 @@ namespace libcodegen {
      * you explicitly lose type safety.  This is desirable when you
      * want to be able to process any function (like in a language
      * backend, for example). */
-    class function_t: public value {
+    class function_t {
     public:
         /* Formats the return type of this function as an LLVM type
          * name. */

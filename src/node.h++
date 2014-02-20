@@ -24,6 +24,7 @@
 
 #include <libcodegen/arglist.h++>
 #include <libcodegen/builtin.h++>
+#include <libcodegen/fix.h++>
 #include <libcodegen/llvm.h++>
 #include <libcodegen/pointer.h++>
 #include <libcodegen/vargs.h++>
@@ -60,6 +61,12 @@ public:
     const std::string mangled_d(void) const { return _mangled_d; }
     const std::string mangled_s(size_t i) const { return _mangled_s[i]; }
     bool exported(void) const { return _exported; }
+
+    /* Accesses the source and destination operands as libcodegen
+     * types.  Essentially this makes sure you can't mess up the name
+     * mangling by not even giving you the option to. */
+    libcodegen::fix_t dv(void) const;
+    libcodegen::fix_t sv(size_t i) const;
 
     /* Returns a function that allows for access into this node's
      * permanent storage.  This handles C++ name demangling (when

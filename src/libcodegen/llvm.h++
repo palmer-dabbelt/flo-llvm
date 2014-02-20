@@ -34,6 +34,7 @@ namespace libcodegen {
 #include "builtin.h++"
 #include "definition.h++"
 #include "function.h++"
+#include "operation.h++"
 #include "pointer.h++"
 
 namespace libcodegen {
@@ -64,6 +65,9 @@ namespace libcodegen {
         /* Emits a comment.  Don't put newlines inside the comment! */
         void comment(const std::string format, ...);
         void comment(const std::string format, va_list args);
+
+        /* Performs the given operation. */
+        void operate(const operation &op);
 
     protected:
         /* Disposes of a definition object -- this should only be

@@ -30,6 +30,7 @@ namespace libcodegen {
 }
 
 #include "llvm.h++"
+#include "operation.h++"
 
 namespace libcodegen {
     /* Holds an object that allows for the definition of a function.
@@ -50,6 +51,9 @@ namespace libcodegen {
          * comment! */
         void comment(const std::string format, ...);
         void comment(const std::string format, va_list args);
+
+        /* Performs an operation. */
+        void operate(const operation &op);
     };
 }
 
