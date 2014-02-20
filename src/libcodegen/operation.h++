@@ -59,7 +59,7 @@ namespace libcodegen {
 
         const std::string op_llvm(void) const { return "or"; }
     };
-    template<class T> mov_op_cls<T> mov_op(const T dest, const T src)
+    template<class T> mov_op_cls<T> mov_op(const T& dest, const T& src)
     { return mov_op_cls<T>(dest, src); }
 }
 
