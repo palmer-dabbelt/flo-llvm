@@ -19,38 +19,19 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LIBCODEGEN__POINTER_HXX
-#define LIBCODEGEN__POINTER_HXX
+#ifndef LIBCODEGEN__CONSTANT_HXX
+#define LIBCODEGEN__CONSTANT_HXX
 
-#include "value.h++"
+#include "builtin.h++"
+#include <string>
 
 namespace libcodegen {
-    /* This represents a pointer to any sort of type.  In this case, V
-     * is expected to be a "value". */
-    template<class V> class pointer: public value {
-    private:
-        V _V;
-
+    template<class T> class constant: public builtin<T> {
     public:
-        pointer(void)
-            : value(),
-              _V()
+        constant(T value)
+            : builtin<T>(std::to_string(value))
             {
             }
-        pointer(const std::string name)
-            : value(name),
-              _V()
-            {
-            }
-
-        /* This is just yet another way of getting at the LLVM name of
-         * a pointer. */
-        virtual const std::string as_llvm(void) const
-            { return _V.as_llvm() + "*"; }
-
-        /* This returns the base type of this class, without a
-         * name. */
-        const V base(void) const { return V(); }
     };
 }
 

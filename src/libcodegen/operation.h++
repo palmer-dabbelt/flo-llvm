@@ -86,6 +86,41 @@ namespace libcodegen {
     };
     template<class T> mov_op_cls<T> mov_op(const T& dest, const T& src)
     { return mov_op_cls<T>(dest, src); }
+
+    /* Performs an "alloca" operation, which allocates the provided
+     * amount of space on the stack. */
+    template<class O, class I> class alloca_op_cls: public operation {
+    private:
+        const O& _dst;
+        const I& _src;
+
+    public:
+        alloca_op_cls(const O& dst, const I& src)
+            : operation(dst, dst, src),
+              _dst(dst),
+              _src(src)
+            {
+            }
+
+        const std::string op_llvm(void) const { return "alloca"; }
+
+        virtual const std::string as_llvm(void) const
+            {
+                char buffer[1024];
+                snprintf(buffer, 1024,
+                        "  %s = %s %s, %s %s\n",
+                         _dst.llvm_name().c_str(),
+                         op_llvm().c_str(),
+                         _dst.base().as_llvm().c_str(),
+                         _src.as_llvm().c_str(),
+                         _src.llvm_name().c_str()
+                    );
+                return buffer;
+            }
+    };
+    template<class O, class I>
+    alloca_op_cls<O, I> alloca_op(const O& dst, const I& cnt)
+    { return alloca_op_cls<O, I>(dst, cnt); }
 }
 
 #endif

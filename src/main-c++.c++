@@ -25,6 +25,7 @@
 #include "version.h"
 #include <libcodegen/arglist.h++>
 #include <libcodegen/builtin.h++>
+#include <libcodegen/constant.h++>
 #include <libcodegen/fix.h++>
 #include <libcodegen/llvm.h++>
 #include <libcodegen/operation.h++>
@@ -62,6 +63,8 @@ static int generate_llvmir(const node_list &flo, FILE *f);
  * gaurnteed to not conflict. */
 static const std::string llvm_name(const std::string chisel_name,
                                    const std::string prefix = "");
+static const std::string llvm_name2(const std::string chisel_name,
+                                    const std::string prefix = "");
 
 /* Produces a class name from a set of Flo nodes. */
 static const std::string class_name(const node_list &flo);
@@ -542,6 +545,11 @@ int generate_llvmir(const node_list &flo, FILE *f)
         for (auto it = flo.nodes(); !it.done(); ++it) {
             auto node = *it;
 
+            /* This contains a count of the number of i64-wide
+             * operations that need to be performed in order to make
+             * this operation succeed. */
+            auto i64cnt = constant<uint32_t>((node->outwid() + 63) / 64);
+
             lo->comment("Chisel Node: %s", node->to_string().c_str());
 
             bool nop = false;
@@ -630,10 +638,10 @@ int generate_llvmir(const node_list &flo, FILE *f)
                 break;
 
             case libflo::opcode::REG:
-                fprintf(f, "    %s = alloca i64, i32 %u\n",
-                        llvm_name(node->d(), "rptr64").c_str(),
-                        (node->outwid() + 63) / 64
-                    );
+            {
+                auto rptr64 = pointer<builtin<uint64_t>>(llvm_name2(node->d(), "rptr64"));
+                lo->operate(alloca_op(rptr64, i64cnt));
+            }
 
                 fprintf(f, "    %s = call i8* @_llvmflo_%s_ptr(i8* %%dut)\n",
                         llvm_name(node->d(), "rptrC").c_str(),
@@ -761,10 +769,8 @@ int generate_llvmir(const node_list &flo, FILE *f)
              * its cooresponding computation, but only when the node
              * appears in the Chisel header. */
             if (node->exported() == true && nop == false) {
-                fprintf(f, "    %s = alloca i64, i32 %u\n",
-                        llvm_name(node->d(), "ptr64").c_str(),
-                        (node->outwid() + 63) / 64
-                    );
+                auto ptr64 = pointer<builtin<uint64_t>>(llvm_name2(node->d(), "ptr64"));
+                lo->operate(alloca_op(ptr64, i64cnt));
 
                 fprintf(f, "    %s = call i8* @_llvmflo_%s_ptr(i8* %%dut)\n",
                         llvm_name(node->d(), "ptrC").c_str(),
@@ -874,6 +880,23 @@ const std::string llvm_name(const std::string chisel_name,
     return buffer;
 }
 
+const std::string llvm_name2(const std::string chisel_name,
+                             const std::string prefix)
+{
+    char buffer[BUFFER_SIZE];
+    snprintf(buffer, BUFFER_SIZE, "%s", chisel_name.c_str());
+    if (isdigit(buffer[0]))
+        return chisel_name;
+
+    snprintf(buffer, BUFFER_SIZE, "C%s__%s",
+             prefix.c_str(), chisel_name.c_str());
+
+    for (size_t i = 0; i < strlen(buffer); ++i)
+        if (buffer[i] == ':')
+            buffer[i] = '_';
+
+    return buffer;
+}
 std::vector<std::string> sort_by_d(const node_list &flo)
 {
     std::vector<std::string> out;
