@@ -45,8 +45,19 @@ namespace libcodegen {
         /* Accessor functions. */
         const std::string name(void) const { return _name; }
 
-        /* Emits the LLVM name for this value. */
+        /* Emits the LLVM name for this value's type. */
         virtual const std::string as_llvm(void) const = 0;
+
+        /* Emits the LLVM name for this value. */
+        const std::string llvm_name(void) const
+            {
+                if (isdigit(name().c_str()[0]))
+                    return name();
+
+                char buffer[1024];
+                snprintf(buffer, 1024, "%%%s", name().c_str());
+                return buffer;
+            }
     };
 }
 

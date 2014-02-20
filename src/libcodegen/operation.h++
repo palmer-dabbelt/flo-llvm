@@ -46,6 +46,27 @@ namespace libcodegen {
         /* Returns the LLVM name for the operation that's to be
          * performed. */
         virtual const std::string op_llvm(void) const = 0;
+
+        /* Produces the LLVM that cooresponds to this operation. */
+        virtual const std::string as_llvm(void) const
+            {
+                std::string dest = d().llvm_name();
+                std::string opst = op_llvm();
+                std::string type = s0().as_llvm();
+                std::string src0 = s0().llvm_name();
+                std::string src1 = s1().llvm_name();
+
+                char buffer[1024];
+                snprintf(buffer, 1024,
+                        "  %s = %s %s %s, %s\n",
+                        dest.c_str(),
+                        opst.c_str(),
+                        type.c_str(),
+                        src0.c_str(),
+                        src1.c_str()
+                    );
+                return buffer;
+            }
     };
 
     /* Performs a "mov" operation, which is really just a copy. */

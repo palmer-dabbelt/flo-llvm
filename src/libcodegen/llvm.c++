@@ -22,11 +22,6 @@
 #include "llvm.h++"
 using namespace libcodegen;
 
-/* Converts a name to an LLVM name.  Essentially this means one of two
- * things: if it's an integer constant then do nothing, otherwise put
- * a '%' before the name. */
-static const std::string llvm_name(const std::string name);
-
 llvm::llvm(FILE *f)
     : _f(f)
 {
@@ -74,7 +69,7 @@ definition_ptr llvm::define(const function_t &f,
 
             fprintf(_f, "%s %s",
                     args[i].c_str(),
-                    llvm_name(arg_names[i]->name()).c_str()
+                    arg_names[i]->llvm_name().c_str()
                 );
         }
     }
@@ -101,26 +96,10 @@ void llvm::comment(const std::string format, va_list args)
 
 void llvm::operate(const operation &op)
 {
-    fprintf(_f, "  %s = %s %s %s, %s\n",
-            llvm_name(op.d().name()).c_str(),
-            op.op_llvm().c_str(),
-            op.s0().as_llvm().c_str(),
-            llvm_name(op.s0().name()).c_str(),
-            llvm_name(op.s1().name()).c_str()
-        );
+    fprintf(_f, "  %s\n", op.as_llvm().c_str());
 }
 
 void llvm::define_finish(const definition *d __attribute__((unused)))
 {
     fprintf(_f, "}\n\n");
-}
-
-const std::string llvm_name(const std::string name)
-{
-    if (isdigit(name.c_str()[0]))
-        return name;
-
-    char buffer[1024];
-    snprintf(buffer, 1024, "%%%s", name.c_str());
-    return buffer;
 }
