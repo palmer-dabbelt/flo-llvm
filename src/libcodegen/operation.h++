@@ -23,7 +23,11 @@
 #define LIBCODEGEN__OPERATION_HXX
 
 namespace libcodegen {
-    /* Represents a single operation that can be performed. */
+    /* Represents a single operation that can be performed.  Note that
+     * there's something very dangerous going on here: references to
+     * values are passed everywhere (whereas usually values are
+     * copied).  This is necessary because value is an abstract class,
+     * but it's super nasty! */
     class operation {
     private:
         const value& _d;
