@@ -57,7 +57,7 @@ void llvm::declare(const function_t &f)
 }
 
 definition_ptr llvm::define(const function_t &f,
-                            const std::vector<std::string> &arg_names)
+                            const std::vector<value*> &arg_names)
 {
     if (f.args_llvm().size() != arg_names.size()) {
         fprintf(stderr, "Mismatched args and names sizes\n");
@@ -72,7 +72,10 @@ definition_ptr llvm::define(const function_t &f,
             if (i != 0)
                 fprintf(_f, ", ");
 
-            fprintf(_f, "%s %%%s", args[i].c_str(), arg_names[i].c_str());
+            fprintf(_f, "%s %s",
+                    args[i].c_str(),
+                    llvm_name(arg_names[i]->name()).c_str()
+                );
         }
     }
 

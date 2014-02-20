@@ -532,8 +532,11 @@ int generate_llvmir(const node_list &flo, FILE *f)
               >
         clock_lo("_llvmflo_%s_clock_lo", dut_name.c_str());
     {
+        auto dut = pointer<builtin<void>>("dut");
+        auto rst = builtin<bool>("rst");
+
         auto lo __attribute__((unused)) = out.define(clock_lo,
-                                                     {"dut", "rst"});
+                                                     {&dut, &rst});
 
         /* The code is already in dataflow order so all we need to do
          * is emit the computation out to LLVM. */
@@ -633,7 +636,7 @@ int generate_llvmir(const node_list &flo, FILE *f)
                         (node->outwid() + 63) / 64
                     );
 
-                fprintf(f, "    %s = call i8* @_llvmflo_%s_ptr(i8* %%dut)\n",
+                fprintf(f, "    %s = call i8* @_llvmflo_%s_ptr(i8* %%C__dut)\n",
                         llvm_name(node->d(), "rptrC").c_str(),
                         node->mangled_d().c_str()
                     );
@@ -721,7 +724,7 @@ int generate_llvmir(const node_list &flo, FILE *f)
                 break;                    
 
             case libflo::opcode::RST:
-                fprintf(f, "    %s = or i1 %%rst, %%rst\n",
+                fprintf(f, "    %s = or i1 %%C__rst, %%C__rst\n",
                         llvm_name(node->d()).c_str()
                     );
                 break;
@@ -764,7 +767,7 @@ int generate_llvmir(const node_list &flo, FILE *f)
                         (node->outwid() + 63) / 64
                     );
 
-                fprintf(f, "    %s = call i8* @_llvmflo_%s_ptr(i8* %%dut)\n",
+                fprintf(f, "    %s = call i8* @_llvmflo_%s_ptr(i8* %%C__dut)\n",
                         llvm_name(node->d(), "ptrC").c_str(),
                         node->mangled_d().c_str()
                     );

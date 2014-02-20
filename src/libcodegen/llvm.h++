@@ -59,8 +59,12 @@ namespace libcodegen {
         void declare(const function_t &f);
 
         /* Emits a function definition. */
+        /* FIXME: This probably shouldn't be a pointer, but it appears
+         * I can't stick a reference in there (because of std::vector)
+         * and I can't stick a value in there (because it's
+         * abstract). */
         definition_ptr define(const function_t &f,
-                              const std::vector<std::string> &arg_names);
+                              const std::vector<value*> &arg_names);
 
         /* Emits a comment.  Don't put newlines inside the comment! */
         void comment(const std::string format, ...);
