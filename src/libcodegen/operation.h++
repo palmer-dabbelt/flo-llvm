@@ -62,7 +62,7 @@ namespace libcodegen {
 
                 char buffer[1024];
                 snprintf(buffer, 1024,
-                        "  %s = %s %s %s, %s\n",
+                        "%s = %s %s %s, %s\n",
                         dest.c_str(),
                         opst.c_str(),
                         type.c_str(),
@@ -108,7 +108,7 @@ namespace libcodegen {
             {
                 char buffer[1024];
                 snprintf(buffer, 1024,
-                        "  %s = %s %s, %s %s\n",
+                        "%s = %s %s, %s %s\n",
                          _dst.llvm_name().c_str(),
                          op_llvm().c_str(),
                          _dst.base().as_llvm().c_str(),
