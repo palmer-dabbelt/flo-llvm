@@ -535,8 +535,7 @@ int generate_llvmir(const node_list &flo, FILE *f)
         auto dut = pointer<builtin<void>>("dut");
         auto rst = builtin<bool>("rst");
 
-        auto lo __attribute__((unused)) = out.define(clock_lo,
-                                                     {&dut, &rst});
+        auto lo = out.define(clock_lo, {&dut, &rst});
 
         /* The code is already in dataflow order so all we need to do
          * is emit the computation out to LLVM. */
