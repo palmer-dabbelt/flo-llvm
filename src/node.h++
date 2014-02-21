@@ -75,6 +75,15 @@ public:
         libcodegen::pointer<libcodegen::builtin<char>>,
         libcodegen::arglist1<libcodegen::pointer<libcodegen::builtin<char>>>
         > ptr_func(void) const;
+
+    /* Returns get and set functions for dat_t<>s that match this
+     * node's size. */
+    libcodegen::function<
+        libcodegen::builtin<void>,
+        libcodegen::arglist2<libcodegen::pointer<libcodegen::builtin<void>>,
+                             libcodegen::pointer<libcodegen::builtin<uint64_t>>
+                             >
+        > get_func(void) const;
 };
 
 #endif

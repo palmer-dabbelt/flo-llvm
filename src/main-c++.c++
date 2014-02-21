@@ -536,7 +536,12 @@ int generate_llvmir(const node_list &flo, FILE *f)
         clock_lo("_llvmflo_%s_clock_lo", dut_name.c_str());
     {
         auto dut = pointer<builtin<void>>("dut");
+        auto dut_vec = std::vector<value*>();
+        dut_vec.push_back(&dut);
+
         auto rst = builtin<bool>("rst");
+        auto rst_vec = std::vector<value*>();
+        rst_vec.push_back(&rst);
 
         auto lo = out.define(clock_lo, {&dut, &rst});
 
@@ -640,19 +645,12 @@ int generate_llvmir(const node_list &flo, FILE *f)
             case libflo::opcode::REG:
             {
                 auto rptr64 = pointer<builtin<uint64_t>>(llvm_name2(node->d(), "rptr64"));
+                auto rptrC = pointer<builtin<void>>(llvm_name2(node->d(), "rptrC"));
+
                 lo->operate(alloca_op(rptr64, i64cnt));
+                lo->operate(call_op(rptrC, node->ptr_func(), dut_vec));
+                lo->operate(call_op(node->get_func(), {&rptrC, &rptr64}));
             }
-
-                fprintf(f, "    %s = call i8* @_llvmflo_%s_ptr(i8* %%dut)\n",
-                        llvm_name(node->d(), "rptrC").c_str(),
-                        node->mangled_d().c_str()
-                    );
-
-                fprintf(f, "    call void @_llvmdat_%u_get(i8* %s, i64* %s)\n",
-                        node->outwid(),
-                        llvm_name(node->d(), "rptrC").c_str(),
-                        llvm_name(node->d(), "rptr64").c_str()
-                    );
 
                 /* FIXME: Are these three cases really necessary?  It
                  * feels like they might not actually be... */

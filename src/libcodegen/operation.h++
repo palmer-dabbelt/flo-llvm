@@ -22,6 +22,9 @@
 #ifndef LIBCODEGEN__OPERATION_HXX
 #define LIBCODEGEN__OPERATION_HXX
 
+#include "constant.h++"
+#include <string.h>
+
 namespace libcodegen {
     /* Represents a single operation that can be performed.  Note that
      * there's something very dangerous going on here: references to
@@ -29,13 +32,22 @@ namespace libcodegen {
      * copied).  This is necessary because value is an abstract class,
      * but it's super nasty! */
     class operation {
+    public:
+        /* Produces the LLVM that cooresponds to this operation. */
+        virtual const std::string as_llvm(void) const = 0;
+    };
+
+    /* This represents the sort of operation that's performed by an
+     * ALU -- you shouldn't be building one yourself, like most
+     * operations are. */
+    class alu_op: public operation {
     private:
         const value& _d;
         const value& _s0;
         const value& _s1;
 
     public:
-        operation(const value &d, const value &s0, const value &s1)
+        alu_op(const value &d, const value &s0, const value &s1)
             : _d(d),
               _s0(s0),
               _s1(s1)
@@ -74,11 +86,11 @@ namespace libcodegen {
     };
 
     /* Performs a "mov" operation, which is really just a copy. */
-    template<class T> class mov_op_cls: public operation {
+    template<class T> class mov_op_cls: public alu_op {
     private:
     public:
         mov_op_cls(const T &dest, const T &src)
-            : operation(dest, src, src)
+            : alu_op(dest, src, src)
             {
             }
 
@@ -96,8 +108,7 @@ namespace libcodegen {
 
     public:
         alloca_op_cls(const O& dst, const I& src)
-            : operation(dst, dst, src),
-              _dst(dst),
+            : _dst(dst),
               _src(src)
             {
             }
@@ -121,6 +132,110 @@ namespace libcodegen {
     template<class O, class I>
     alloca_op_cls<O, I> alloca_op(const O& dst, const I& cnt)
     { return alloca_op_cls<O, I>(dst, cnt); }
+
+    /* Performs a call operation, which calls a function. */
+    template<class F> class call_op_cls: public operation {
+    private:
+        const value &_dest;
+        const F& _func;
+        const std::vector<value*> _args;
+
+    public:
+        call_op_cls(const value& dst, const F& func)
+            : _dest(dst),
+              _func(func),
+              _args()
+            {
+            }
+        call_op_cls(const value& dst, const F& func,
+                    const std::vector<value*> &args)
+            : _dest(dst),
+              _func(func),
+              _args(args)
+            {
+            }
+
+        const std::string op_llvm(void) const { return "call"; }
+
+        virtual const std::string as_llvm(void) const
+            {
+                char buffer[1024];
+                snprintf(buffer, 1024,
+                         "%s = call %s @%s(",
+                         _dest.llvm_name().c_str(),
+                         _func.ret_llvm().c_str(),
+                         _func.name().c_str()
+                    );
+
+                for (auto it = _args.begin(); it != _args.end();  ++it) {
+                    auto arg = *it;
+
+                    if (it != _args.begin())
+                        strncat(buffer, " ,", 1024);
+
+                    strncat(buffer, arg->as_llvm().c_str(), 1024);
+                    strncat(buffer, arg->llvm_name().c_str(), 1024);
+                }
+
+                strncat(buffer, ")", 1024);
+
+                return buffer;
+            }
+    };
+
+    template<class F> class voidcall_op_cls: public operation {
+    private:
+        const F& _func;
+        const std::vector<value*> _args;
+
+    public:
+        voidcall_op_cls(const F& func, const std::vector<value*> &args)
+            : _func(func),
+              _args(args)
+            {
+            }
+
+        const std::string op_llvm(void) const { return "call"; }
+
+        virtual const std::string as_llvm(void) const
+            {
+                char buffer[1024];
+                snprintf(buffer, 1024,
+                         "call %s @%s(",
+                         _func.ret_llvm().c_str(),
+                         _func.name().c_str()
+                    );
+
+                for (auto it = _args.begin(); it != _args.end();  ++it) {
+                    auto arg = *it;
+
+                    if (it != _args.begin())
+                        strncat(buffer, " ,", 1024);
+
+                    strncat(buffer, arg->as_llvm().c_str(), 1024);
+                    strncat(buffer, arg->llvm_name().c_str(), 1024);
+                }
+
+                strncat(buffer, ")", 1024);
+
+                return buffer;
+            }
+    };
+
+    template<class F>
+    voidcall_op_cls<F>
+    call_op(const F&func, const std::vector<value*> &args)
+    { return voidcall_op_cls<F>(func, args); }
+
+    template<class F>
+    call_op_cls<F>
+    call_op(const value& dst, const F&func, const std::vector<value*> &args)
+    { return call_op_cls<F>(dst, func, args); }
+
+    template<class F>
+    call_op_cls<F>
+    call_op(const value& dst, const F& func)
+    { return call_op_cls<F>(dst, func); }
 }
 
 #endif
