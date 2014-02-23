@@ -27,11 +27,19 @@
 
 namespace libcodegen {
     template<class T> class constant: public builtin<T> {
+    private:
+        T _value;
+
     public:
         constant(T value)
             : builtin<T>(std::to_string(value))
             {
             }
+
+        /* This is a constant at Flo->LLVM compile-time (ie, it's a
+         * constant at C++ run-time).  I see no reason to not allow
+         * this to be implicitly cast back to the type it wraps. */
+        operator T() const { return _value; }
     };
 }
 
