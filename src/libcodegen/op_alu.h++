@@ -24,6 +24,90 @@
 
 #include "operation.h++"
 
+/* These allow for consistant definitions of the different sorts of
+ * operations.  Essentially the idea is that they all look pretty much
+ * the same, this reduces the amount of boiler-plate that needs to be
+ * written. */
+#define LIBCODEGEN__DEF_ALU_OP_1_2(name, op)                    \
+    template<class T>                                           \
+    class name ## _op_cls: public alu_op {                      \
+    private:                                                    \
+    public:                                                     \
+    name ## _op_cls(const T& d, const T& s)                     \
+    : alu_op(d, s, s)                                           \
+            { }                                                 \
+                                                                \
+    const std::string op_llvm(void) const { return op; }        \
+    };                                                          \
+    template<class T>                                           \
+    name ## _op_cls<T>                                          \
+    name ## _op(const T& d, const T& s)                         \
+    { return name ## _op_cls<T>(d, s); }                        \
+
+#define LIBCODEGEN__DEF_ALU_OP_1_3(name, op)                    \
+    template<class T>                                           \
+    class name ## _op_cls: public alu_op {                      \
+    private:                                                    \
+    public:                                                     \
+    name ## _op_cls(const T& d, const T& s, const T& t)         \
+    : alu_op(d, s, t)                                           \
+            { }                                                 \
+                                                                \
+    const std::string op_llvm(void) const { return op; }        \
+    };                                                          \
+    template<class T>                                           \
+    name ## _op_cls<T>                                          \
+    name ## _op(const T& d, const T& s, const T& t)             \
+    { return name ## _op_cls<T>(d, s, t); }                     \
+
+#define LIBCODEGEN__DEF_ALU_OP_2_2(name, op)                    \
+    template<class D, class S>                                  \
+    class name ## _op_cls: public alu_op {                      \
+    private:                                                    \
+    public:                                                     \
+    name ## _op_cls(const D& d, const S& s)                     \
+    : alu_op(d, s, s)                                           \
+            { }                                                 \
+                                                                \
+    const std::string op_llvm(void) const { return op; }        \
+    };                                                          \
+    template<class D, class S>                                  \
+    name ## _op_cls<D, S>                                       \
+    name ## _op(const D& d, const S& s)                         \
+    { return name ## _op_cls<D, S>(d, s); }                     \
+
+#define LIBCODEGEN__DEF_ALU_OP_2_3s(name, op)                   \
+    template<class D, class S>                                  \
+    class name ## _op_cls: public alu_op {                      \
+    private:                                                    \
+    public:                                                     \
+    name ## _op_cls(const D& d, const S& s, const S& t)         \
+    : alu_op(d, s, t)                                           \
+            { }                                                 \
+                                                                \
+    const std::string op_llvm(void) const { return op; }        \
+    };                                                          \
+    template<class D, class S>                                  \
+    name ## _op_cls<D, S>                                       \
+    name ## _op(const D& d, const S& s, const S& t)             \
+    { return name ## _op_cls<D, S>(d, s, t); }                  \
+
+#define LIBCODEGEN__DEF_ALU_OP_2_3o(name, op)                   \
+    template<class D, class S>                                  \
+    class name ## _op_cls: public alu_op {                      \
+    private:                                                    \
+    public:                                                     \
+    name ## _op_cls(const D& d, const D& s, const S& t)         \
+    : alu_op(d, s, t)                                           \
+            { }                                                 \
+                                                                \
+    const std::string op_llvm(void) const { return op; }        \
+    };                                                          \
+    template<class D, class S>                                  \
+    name ## _op_cls<D, S>                                       \
+    name ## _op(const D& d, const D& s, const S& t)             \
+    { return name ## _op_cls<D, S>(d, s, t); }                  \
+
 namespace libcodegen {
     /* This represents the sort of operation that's performed by an
      * ALU -- you shouldn't be building one yourself, like most
@@ -74,171 +158,32 @@ namespace libcodegen {
     };
 
     /* Performs a "mov" operation, which is really just a copy. */
-    template<class T> class mov_op_cls: public alu_op {
-    private:
-    public:
-        mov_op_cls(const T &dest, const T &src)
-            : alu_op(dest, src, src)
-            {
-            }
+    LIBCODEGEN__DEF_ALU_OP_1_2(mov, "or")
 
-        const std::string op_llvm(void) const { return "or"; }
-    };
-    template<class T> mov_op_cls<T> mov_op(const T& dest, const T& src)
-    { return mov_op_cls<T>(dest, src); }
+    /* A slightly less safe version of a mov -- this one doesn't do
+     * _any_ type checking at all! */
+    LIBCODEGEN__DEF_ALU_OP_2_2(unsafemov, "or")
 
-    /* A slightly less safe version of a mov -- this one can fail at
-     * runtime. */
-    template<class D, class S> class unsafemov_op_cls: public alu_op {
-    private:
-    public:
-        unsafemov_op_cls(const D &dest, const S &src)
-            : alu_op(dest, src, src)
-            {
-            }
+    /* Arithmatic operations. */
+    LIBCODEGEN__DEF_ALU_OP_1_3(add, "add")
+    LIBCODEGEN__DEF_ALU_OP_1_3(sub, "sub")
 
-        const std::string op_llvm(void) const { return "or"; }
-    };
-    template<class D, class S>
-    unsafemov_op_cls<D, S> unsafemov_op(const D& dest, const S& src)
-    { return unsafemov_op_cls<D, S>(dest, src); }
-
-    /* Performs an addition. */
-    template<class T> class add_op_cls: public alu_op {
-    private:
-    public:
-        add_op_cls(const T &dest, const T &s0, const T& s1)
-            : alu_op(dest, s0, s1)
-            {
-            }
-
-        const std::string op_llvm(void) const { return "add"; }
-    };
-    template<class T>
-    add_op_cls<T> add_op(const T& d, const T& s0, const T& s1)
-    { return add_op_cls<T>(d, s0, s1); }
-
-    /* Performs a subtraction. */
-    template<class T> class sub_op_cls: public alu_op {
-    private:
-    public:
-        sub_op_cls(const T &dest, const T &s0, const T& s1)
-            : alu_op(dest, s0, s1)
-            {
-            }
-
-        const std::string op_llvm(void) const { return "sub"; }
-    };
-    template<class T>
-    sub_op_cls<T> sub_op(const T& d, const T& s0, const T& s1)
-    { return sub_op_cls<T>(d, s0, s1); }
-
-    /* Performs a bitwise logical OR. */
-    template<class T> class or_op_cls: public alu_op {
-    private:
-    public:
-        or_op_cls(const T &dest, const T &s0, const T& s1)
-            : alu_op(dest, s0, s1)
-            {
-            }
-
-        const std::string op_llvm(void) const { return "or"; }
-    };
-    template<class T> or_op_cls<T>
-    or_op(const T& d, const T& s0, const T& s1)
-    { return or_op_cls<T>(d, s0, s1); }
-
-    /* Performs a bitwise logical AND. */
-    template<class T> class and_op_cls: public alu_op {
-    private:
-    public:
-        and_op_cls(const T &dest, const T &s0, const T& s1)
-            : alu_op(dest, s0, s1)
-            {
-            }
-
-        const std::string op_llvm(void) const { return "and"; }
-    };
-    template<class T> and_op_cls<T>
-    and_op(const T& d, const T& s0, const T& s1)
-    { return and_op_cls<T>(d, s0, s1); }
+    /* Bitwise logical operations. */
+    LIBCODEGEN__DEF_ALU_OP_1_3(and, "and")
+    LIBCODEGEN__DEF_ALU_OP_1_3(or, "or")
 
     /* Performs a left shift. */
-    template<class T, class O> class lsh_op_cls: public alu_op {
-    private:
-    public:
-        lsh_op_cls(const T& dst, const T& src, const O& offset)
-            : alu_op(dst, src, offset)
-            {
-            }
+    LIBCODEGEN__DEF_ALU_OP_2_3o(lsh, "shl")
+    LIBCODEGEN__DEF_ALU_OP_2_3o(lrsh, "lshr")
 
-        const std::string op_llvm(void) const { return "shl"; }
-    };
-    template<class T, class O>
-    lsh_op_cls<T, O> lsh_op(const T& d, const T& s, const O& o)
-    { return lsh_op_cls<T, O>(d, s, o); }
+    /* Comparison operations. */
+    LIBCODEGEN__DEF_ALU_OP_2_3s(cmp_eq, "icmp eq")
+    LIBCODEGEN__DEF_ALU_OP_2_3s(cmp_gte, "icmp uge")
+    LIBCODEGEN__DEF_ALU_OP_2_3s(cmp_lt, "icmp ult")
 
-    /* Performs a logical right shift. */
-    template<class T, class O> class lrsh_op_cls: public alu_op {
-    private:
-    public:
-        lrsh_op_cls(const T& dst, const T& src, const O& offset)
-            : alu_op(dst, src, offset)
-            {
-            }
-
-        const std::string op_llvm(void) const { return "lshr"; }
-    };
-    template<class T, class O>
-    lrsh_op_cls<T, O> lrsh_op(const T& d, const T& s, const O& o)
-    { return lrsh_op_cls<T, O>(d, s, o); }
-
-    /* Compares two numbers to see if they are equal or not. */
-    template<class D, class S> class cmp_eq_op_cls: public alu_op {
-    private:
-    public:
-        cmp_eq_op_cls(const D& d, const S& s0, const S& s1)
-            : alu_op(d, s0, s1)
-        {
-        }
-
-        const std::string op_llvm(void) const { return "icmp eq"; }
-    };
-    template<class D, class S>
-    cmp_eq_op_cls<D, S> cmp_eq_op(const D& d, const S& s0, const S& s1)
-    { return cmp_eq_op_cls<D, S>(d, s0, s1); }
-
-    /* Greate-or-equal comparison */
-    template<class D, class S> class cmp_gte_op_cls: public alu_op {
-    private:
-    public:
-        cmp_gte_op_cls(const D& d, const S& s0, const S& s1)
-            : alu_op(d, s0, s1)
-        {
-        }
-
-        const std::string op_llvm(void) const { return "icmp uge"; }
-    };
-    template<class D, class S>
-    cmp_gte_op_cls<D, S> cmp_gte_op(const D& d, const S& s0, const S& s1)
-    { return cmp_gte_op_cls<D, S>(d, s0, s1); }
-
-    /* Less-than comparison */
-    template<class D, class S> class cmp_lt_op_cls: public alu_op {
-    private:
-    public:
-        cmp_lt_op_cls(const D& d, const S& s0, const S& s1)
-            : alu_op(d, s0, s1)
-        {
-        }
-
-        const std::string op_llvm(void) const { return "icmp ult"; }
-    };
-    template<class D, class S>
-    cmp_lt_op_cls<D, S> cmp_lt_op(const D& d, const S& s0, const S& s1)
-    { return cmp_lt_op_cls<D, S>(d, s0, s1); }
-
-    /* Performs a bitwise logical NOT. */
+    /* Performs a bitwise logical NOT -- note that this is a
+     * special-case operation because LLVM doesn't have a NOT
+     * operation! */
     template<class T> class not_op_cls: public alu_op {
     private:
     public:
