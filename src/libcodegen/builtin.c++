@@ -29,6 +29,13 @@
     builtin<type>::as_llvm(void) const          \
     { return str; }                             \
 
+
+#define gen_width(type, w)                      \
+    template<>                                  \
+    size_t                                      \
+    builtin<type>::width(void) const            \
+    { return w; }                               \
+
 namespace libcodegen {
     /* Here I manually instantiate this name lookup list.  The idea is
      * that I need to know the LLVM name for a given C name.  As far
@@ -39,4 +46,11 @@ namespace libcodegen {
     gen_as_llvm(char, "i8")
     gen_as_llvm(uint32_t, "i32")
     gen_as_llvm(uint64_t, "i64")
+
+    /* Widths also need to be manually defined. */
+    gen_width(void, 0)
+    gen_width(bool, 1)
+    gen_width(char, 8)
+    gen_width(uint32_t, 32)
+    gen_width(uint64_t, 64)
 }

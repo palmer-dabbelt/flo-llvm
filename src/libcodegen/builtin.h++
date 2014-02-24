@@ -37,7 +37,13 @@ namespace libcodegen {
             {
             }
 
-        const std::string as_llvm(void) const;
+        virtual const std::string as_llvm(void) const;
+
+        /* Returns the width of this class -- this is used in the
+         * zero-extend method to check of two variable-width
+         * operations are actually the same width (and therefor can be
+         * MOVed instead of ZEXTed). */
+        virtual size_t width(void) const;
     };
 }
 
