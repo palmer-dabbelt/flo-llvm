@@ -84,6 +84,13 @@ public:
                              libcodegen::pointer<libcodegen::builtin<uint64_t>>
                              >
         > get_func(void) const;
+
+    libcodegen::function<
+        libcodegen::builtin<void>,
+        libcodegen::arglist2<libcodegen::pointer<libcodegen::builtin<void>>,
+                             libcodegen::pointer<libcodegen::builtin<uint64_t>>
+                             >
+        > set_func(void) const;
 };
 
 #endif

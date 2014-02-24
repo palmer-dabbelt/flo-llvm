@@ -63,8 +63,6 @@ static int generate_llvmir(const node_list &flo, FILE *f);
  * gaurnteed to not conflict. */
 static const std::string llvm_name(const std::string chisel_name,
                                    const std::string prefix = "");
-static const std::string llvm_name2(const std::string chisel_name,
-                                    const std::string prefix = "");
 
 /* Produces a class name from a set of Flo nodes. */
 static const std::string class_name(const node_list &flo);
@@ -521,9 +519,6 @@ int generate_llvmir(const node_list &flo, FILE *f)
                 node->outwid());
     }
 
-    /* FIXME: This temporary variable should go away, instead all the  */
-    uint64_t tmp = 1;
-
     /* Here we generate clock_lo, which performs all the logic
      * operations but does not perform any register writes.  In order
      * to do this we'll have to walk through the computation in
@@ -740,71 +735,41 @@ int generate_llvmir(const node_list &flo, FILE *f)
              * its cooresponding computation, but only when the node
              * appears in the Chisel header. */
             if (node->exported() == true && nop == false) {
-                auto ptr64 = pointer<builtin<uint64_t>>(llvm_name2(node->d(), "ptr64"));
+                /* This generates a pointer that can be passed to C++,
+                 * in other words, an array-of-uints. */
+                auto ptr64 = pointer<builtin<uint64_t>>();
                 lo->operate(alloca_op(ptr64, i64cnt));
 
-                fprintf(f, "    %s = call i8* @_llvmflo_%s_ptr(i8* %%dut)\n",
-                        llvm_name(node->d(), "ptrC").c_str(),
-                        node->mangled_d().c_str()
-                    );
-
-                /* FIXME: Are these three cases really necessary?  It
-                 * feels like they might not actually be... */
-                if (node->outwid() < 64) {
-                    fprintf(f, "    %%T__%lu = zext i%d %s to i64\n",
-                            tmp,
-                            node->outwid(),
-                            llvm_name(node->d()).c_str()
-                        );
-
-                    fprintf(f, "    store i64 %%T__%lu, i64* %s\n",
-                            tmp,
-                            llvm_name(node->d(), "ptr64").c_str()
-                        );
-
-                    tmp++;
-                } else if (node->outwid() == 64) {
-                    fprintf(f, "    store i64 %s, i64* %s\n",
-                            llvm_name(node->d()).c_str(),
-                            llvm_name(node->d(), "ptr64").c_str()
-                        );
-                } else {
-                    for (unsigned i = 0; i < (node->outwid() + 63) / 64; ++i) {
-                        fprintf(f,
-                                "     %%T__%lu = getelementptr i64* %s, i64 %d\n",
-                                tmp,
-                                llvm_name(node->d(), "ptr64").c_str(),
-                                i
-                            );
-                        tmp++;
-
-                        fprintf(f, "      %%T__%lu = lshr i%d %s, %d\n",
-                                tmp,
-                                node->outwid(),
-                                llvm_name(node->d()).c_str(),
-                                i * 64
-                            );
-                        tmp++;
-
-                        fprintf(f, "      %%T__%lu = trunc i%d %%T__%lu to i64\n",
-                                tmp,
-                                node->outwid(),
-                                tmp - 1
-                            );
-                        tmp++;
-
-                        fprintf(f, "      store i64 %%T__%lu, i64* %%T__%lu\n",
-                                tmp - 1,
-                                tmp - 3
-                            );
-                    }
+                /* Here we generate the internal temporary values.
+                 * This series of shift/add operations will probably
+                 * be compiled into NOPs by the LLVM optimizer. */
+                auto shifted = std::vector<fix_t>();
+                for (size_t i = 0; i < i64cnt; ++i) {
+                    shifted.push_back(fix_t(node->width()));
+                    auto offset = constant<uint32_t>(i * 64);
+                    lo->operate(lrsh_op(shifted[i], node->dv(), offset));
                 }
 
-                fprintf(f, "    call void @_llvmdat_%u_set(i8* %s, i64* %s)\n",
-                        node->outwid(),
-                        llvm_name(node->d(), "ptrC").c_str(),
-                        llvm_name(node->d(), "ptr64").c_str()
-                    );
+                auto trunced = std::vector<builtin<uint64_t>>(i64cnt);
+                for (size_t i = 0; i < i64cnt; ++i) {
+                    lo->operate(zext_trunc_op(trunced[i], shifted[i]));
+                }
+
+                auto ptrs = std::vector<pointer<builtin<uint64_t>>>(i64cnt);
+                for (size_t i = 0; i < i64cnt; ++i) {
+                    auto index = constant<size_t>(i);
+                    lo->operate(index_op(ptrs[i], ptr64, index));
+                }
+
+                for (size_t i = 0; i < i64cnt; ++i) {
+                    lo->operate(store_op(ptrs[i], trunced[i]));
+                }
+
+                /* Here we fetch the actual C++ pointer that can be
+                 * used to move this signal's data out. */
+                auto ptrC = pointer<builtin<void>>();
+                lo->operate(call_op(ptrC, node->ptr_func(), dut_vec));
+                lo->operate(call_op(node->set_func(), {&ptrC, &ptr64}));
             }
         }
 
@@ -851,23 +816,6 @@ const std::string llvm_name(const std::string chisel_name,
     return buffer;
 }
 
-const std::string llvm_name2(const std::string chisel_name,
-                             const std::string prefix)
-{
-    char buffer[BUFFER_SIZE];
-    snprintf(buffer, BUFFER_SIZE, "%s", chisel_name.c_str());
-    if (isdigit(buffer[0]))
-        return chisel_name;
-
-    snprintf(buffer, BUFFER_SIZE, "C%s__%s",
-             prefix.c_str(), chisel_name.c_str());
-
-    for (size_t i = 0; i < strlen(buffer); ++i)
-        if (buffer[i] == ':')
-            buffer[i] = '_';
-
-    return buffer;
-}
 std::vector<std::string> sort_by_d(const node_list &flo)
 {
     std::vector<std::string> out;

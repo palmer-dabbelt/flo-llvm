@@ -113,3 +113,20 @@ libcodegen::function<
 
     return out;
 }
+
+libcodegen::function<
+    libcodegen::builtin<void>,
+    libcodegen::arglist2<libcodegen::pointer<libcodegen::builtin<void>>,
+                         libcodegen::pointer<libcodegen::builtin<uint64_t>>
+                         >
+    > node::set_func(void) const
+{
+    libcodegen::function<
+        libcodegen::builtin<void>,
+        libcodegen::arglist2<libcodegen::pointer<libcodegen::builtin<void>>,
+                             libcodegen::pointer<libcodegen::builtin<uint64_t>>
+                             >
+        > out("_llvmdat_%u_set", outwid());
+
+    return out;
+}

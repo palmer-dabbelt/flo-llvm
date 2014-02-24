@@ -146,6 +146,21 @@ namespace libcodegen {
     lsh_op_cls<T, O> lsh_op(const T& d, const T& s, const O& o)
     { return lsh_op_cls<T, O>(d, s, o); }
 
+    /* Performs a logical right shift. */
+    template<class T, class O> class lrsh_op_cls: public alu_op {
+    private:
+    public:
+        lrsh_op_cls(const T& dst, const T& src, const O& offset)
+            : alu_op(dst, src, offset)
+            {
+            }
+
+        const std::string op_llvm(void) const { return "lshr"; }
+    };
+    template<class T, class O>
+    lrsh_op_cls<T, O> lrsh_op(const T& d, const T& s, const O& o)
+    { return lrsh_op_cls<T, O>(d, s, o); }
+
     /* Performs an "alloca" operation, which allocates the provided
      * amount of space on the stack. */
     template<class O, class I> class alloca_op_cls: public operation {
@@ -425,6 +440,37 @@ namespace libcodegen {
     template<class T>
     load_op_cls<T> load_op(const T& dst, const pointer<T>& src)
     { return load_op_cls<T>(dst, src); }
+
+    /* Stores to memory. */
+    template<class T> class store_op_cls: public operation {
+    private:
+        const pointer<T>& _dst;
+        const T &_src;
+
+    public:
+        store_op_cls(const pointer<T>& dst, const T& src)
+            : _dst(dst),
+              _src(src)
+            {
+            }
+
+        virtual const std::string as_llvm(void) const
+            {
+                char buffer[1024];
+                snprintf(buffer, 1024,
+                         "store %s %s, %s %s",
+                         _src.as_llvm().c_str(),
+                         _src.llvm_name().c_str(),
+                         _dst.as_llvm().c_str(),
+                         _dst.llvm_name().c_str()
+                    );
+
+                return buffer;
+            }
+    };
+    template<class T>
+    store_op_cls<T> store_op(const pointer<T>& dst, const T& src)
+    { return store_op_cls<T>(dst, src); }
 }
 
 #endif
