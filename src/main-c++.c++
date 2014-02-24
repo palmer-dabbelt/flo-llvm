@@ -28,7 +28,7 @@
 #include <libcodegen/constant.h++>
 #include <libcodegen/fix.h++>
 #include <libcodegen/llvm.h++>
-#include <libcodegen/operation.h++>
+#include <libcodegen/op_alu.h++>
 #include <libcodegen/pointer.h++>
 #include <libcodegen/vargs.h++>
 #include <libflo/parse.h++>
