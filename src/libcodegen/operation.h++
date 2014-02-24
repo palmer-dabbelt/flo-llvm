@@ -116,6 +116,21 @@ namespace libcodegen {
     unsafemov_op_cls<D, S> unsafemov_op(const D& dest, const S& src)
     { return unsafemov_op_cls<D, S>(dest, src); }
 
+    /* Performs an addition. */
+    template<class T> class add_op_cls: public alu_op {
+    private:
+    public:
+        add_op_cls(const T &dest, const T &s0, const T& s1)
+            : alu_op(dest, s0, s1)
+            {
+            }
+
+        const std::string op_llvm(void) const { return "add"; }
+    };
+    template<class T>
+    add_op_cls<T> add_op(const T& d, const T& s0, const T& s1)
+    { return add_op_cls<T>(d, s0, s1); }
+
     /* Performs a bitwise logical OR. */
     template<class T> class or_op_cls: public alu_op {
     private:
