@@ -45,5 +45,6 @@ const std::string generate_unique_name(void)
 
     char buffer[1024];
     snprintf(buffer, 1024, "V%lu", index);
+    index++;
     return buffer;
 }
