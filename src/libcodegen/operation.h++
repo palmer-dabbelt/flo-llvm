@@ -146,6 +146,21 @@ namespace libcodegen {
     or_op(const T& d, const T& s0, const T& s1)
     { return or_op_cls<T>(d, s0, s1); }
 
+    /* Performs a bitwise logical AND. */
+    template<class T> class and_op_cls: public alu_op {
+    private:
+    public:
+        and_op_cls(const T &dest, const T &s0, const T& s1)
+            : alu_op(dest, s0, s1)
+            {
+            }
+
+        const std::string op_llvm(void) const { return "and"; }
+    };
+    template<class T> and_op_cls<T>
+    and_op(const T& d, const T& s0, const T& s1)
+    { return and_op_cls<T>(d, s0, s1); }
+
     /* Performs a left shift. */
     template<class T, class O> class lsh_op_cls: public alu_op {
     private:

@@ -565,12 +565,7 @@ int generate_llvmir(const node_list &flo, FILE *f)
                 break;
 
             case libflo::opcode::AND:
-                fprintf(f, "    %s = and i%d %s, %s\n",
-                        llvm_name(node->d()).c_str(),
-                        node->outwid(),
-                        llvm_name(node->s(0)).c_str(),
-                        llvm_name(node->s(1)).c_str()
-                    );
+                lo->operate(and_op(node->dv(), node->sv(0), node->sv(1)));
                 break;
 
             case libflo::opcode::EQ:
