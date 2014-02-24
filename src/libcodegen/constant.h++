@@ -32,7 +32,8 @@ namespace libcodegen {
 
     public:
         constant(T value)
-            : builtin<T>(std::to_string(value))
+            : builtin<T>(std::to_string(value)),
+              _value(value)
             {
             }
 
