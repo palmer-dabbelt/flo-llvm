@@ -596,11 +596,7 @@ int generate_llvmir(const node_list &flo, FILE *f)
                 break;
 
             case libflo::opcode::NOT:
-                fprintf(f, "    %s = xor i%d %s, -1\n",
-                        llvm_name(node->d()).c_str(),
-                        node->width(),
-                        llvm_name(node->s(0)).c_str()
-                    );
+                lo->operate(not_op(node->dv(), node->sv(0)));
                 break;
 
             case libflo::opcode::OR:

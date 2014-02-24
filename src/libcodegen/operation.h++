@@ -236,6 +236,40 @@ namespace libcodegen {
     cmp_lt_op_cls<D, S> cmp_lt_op(const D& d, const S& s0, const S& s1)
     { return cmp_lt_op_cls<D, S>(d, s0, s1); }
 
+    /* Performs a bitwise logical NOT. */
+    template<class T> class not_op_cls: public alu_op {
+    private:
+    public:
+        not_op_cls(const T &dest, const T &s0)
+            : alu_op(dest, s0, s0)
+            {
+            }
+
+        const std::string op_llvm(void) const { return "xor"; }
+
+        /* The not operation is a tiny bit special in LLVM... */
+        virtual const std::string as_llvm(void) const
+            {
+                std::string dest = d().llvm_name();
+                std::string opst = op_llvm();
+                std::string type = s0().as_llvm();
+                std::string src0 = s0().llvm_name();
+
+                char buffer[1024];
+                snprintf(buffer, 1024,
+                        "%s = %s %s %s, -1",
+                        dest.c_str(),
+                        opst.c_str(),
+                        type.c_str(),
+                        src0.c_str()
+                    );
+                return buffer;
+            }
+    };
+    template<class T> not_op_cls<T>
+    not_op(const T& d, const T& s0)
+    { return not_op_cls<T>(d, s0); }
+
     /* Performs an "alloca" operation, which allocates the provided
      * amount of space on the stack. */
     template<class O, class I> class alloca_op_cls: public operation {
