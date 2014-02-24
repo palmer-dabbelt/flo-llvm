@@ -29,6 +29,10 @@
 #include <libcodegen/fix.h++>
 #include <libcodegen/llvm.h++>
 #include <libcodegen/op_alu.h++>
+#include <libcodegen/op_bits.h++>
+#include <libcodegen/op_call.h++>
+#include <libcodegen/op_cond.h++>
+#include <libcodegen/op_mem.h++>
 #include <libcodegen/pointer.h++>
 #include <libcodegen/vargs.h++>
 #include <libflo/parse.h++>
@@ -56,13 +60,6 @@ enum gentype {
 static int generate_header(const node_list &flo, FILE *f);
 static int generate_compat(const node_list &flo, FILE *f);
 static int generate_llvmir(const node_list &flo, FILE *f);
-
-/* Produces the LLVM-internal name given a string -- essentially this
- * is just yet another form of name mangling.  The prefix argument is
- * used when you want to generate a group of related names that are
- * gaurnteed to not conflict. */
-static const std::string llvm_name(const std::string chisel_name,
-                                   const std::string prefix = "");
 
 /* Produces a class name from a set of Flo nodes. */
 static const std::string class_name(const node_list &flo);
@@ -585,14 +582,11 @@ int generate_llvmir(const node_list &flo, FILE *f)
                 break;
 
             case libflo::opcode::MUX:
-                fprintf(f, "    %s = select i1 %s, i%d %s, i%d %s\n",
-                        llvm_name(node->d()).c_str(),
-                        llvm_name(node->s(0)).c_str(),
-                        node->outwid(),
-                        llvm_name(node->s(1)).c_str(),
-                        node->outwid(),
-                        llvm_name(node->s(2)).c_str()
-                    );
+                lo->operate(mux_op(node->dv(),
+                                   node->sv(0),
+                                   node->sv(1),
+                                   node->sv(2)
+                                ));
                 break;
 
             case libflo::opcode::NOT:
@@ -754,25 +748,6 @@ const std::string class_name(const node_list &flo)
 
     abort();
     return "";
-}
-
-/* FIXME: This needs to be removed somehow... */
-const std::string llvm_name(const std::string chisel_name,
-                            const std::string prefix)
-{
-    char buffer[BUFFER_SIZE];
-    snprintf(buffer, BUFFER_SIZE, "%s", chisel_name.c_str());
-    if (isdigit(buffer[0]))
-        return chisel_name;
-
-    snprintf(buffer, BUFFER_SIZE, "%%C%s__%s",
-             prefix.c_str(), chisel_name.c_str());
-
-    for (size_t i = 0; i < strlen(buffer); ++i)
-        if (buffer[i] == ':')
-            buffer[i] = '_';
-
-    return buffer;
 }
 
 std::vector<std::string> sort_by_d(const node_list &flo)
