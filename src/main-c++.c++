@@ -600,12 +600,7 @@ int generate_llvmir(const node_list &flo, FILE *f)
                 break;
 
             case libflo::opcode::OR:
-                fprintf(f, "    %s = or i%d %s, %s\n",
-                        llvm_name(node->d()).c_str(),
-                        node->outwid(),
-                        llvm_name(node->s(0)).c_str(),
-                        llvm_name(node->s(1)).c_str()
-                    );
+                lo->operate(or_op(node->dv(), node->sv(0), node->sv(1)));
                 break;
 
             case libflo::opcode::REG:
@@ -668,9 +663,7 @@ int generate_llvmir(const node_list &flo, FILE *f)
             }
 
             case libflo::opcode::RST:
-                fprintf(f, "    %s = or i1 %%rst, %%rst\n",
-                        llvm_name(node->d()).c_str()
-                    );
+                lo->operate(unsafemov_op(node->dv(), rst));
                 break;
 
             case libflo::opcode::SUB:
