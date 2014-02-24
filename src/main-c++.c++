@@ -644,89 +644,62 @@ int generate_llvmir(const node_list &flo, FILE *f)
 
             case libflo::opcode::REG:
             {
-                auto rptr64 = pointer<builtin<uint64_t>>(llvm_name2(node->d(), "rptr64"));
-                auto rptrC = pointer<builtin<void>>(llvm_name2(node->d(), "rptrC"));
+                auto ptr64 = pointer<builtin<uint64_t>>();
+                auto ptrC = pointer<builtin<void>>();
 
-                lo->operate(alloca_op(rptr64, i64cnt));
-                lo->operate(call_op(rptrC, node->ptr_func(), dut_vec));
-                lo->operate(call_op(node->get_func(), {&rptrC, &rptr64}));
-            }
+                /* Obtain a pointer to the C++ structure's internal
+                 * structure definiton so it can be converted into an
+                 * LLVM operation. */
+                lo->operate(alloca_op(ptr64, i64cnt));
+                lo->operate(call_op(ptrC, node->ptr_func(), dut_vec));
+                lo->operate(call_op(node->get_func(), {&ptrC, &ptr64}));
 
-                /* FIXME: Are these three cases really necessary?  It
-                 * feels like they might not actually be... */
-                if (node->outwid() < 64) {
-                    fprintf(f, "    %%T__%lu = load i64* %s\n",
-                            tmp,
-                            llvm_name(node->d(), "rptr64").c_str()
-                        );
-
-                    fprintf(f, "    %s = trunc i64 %%T__%lu to i%u\n",
-                            llvm_name(node->d()).c_str(),
-                            tmp,
-                            node->outwid()
-                        );
-
-                    tmp++;
-                } else if (node->outwid() == 64) {
-                    fprintf(f, "    %s = load i64* %s\n",
-                            llvm_name(node->d()).c_str(),
-                            llvm_name(node->d(), "rptr64").c_str()
-                        );
-                } else {
-                    fprintf(f, "    %%T__%lu = or i%d 0, 0\n",
-                            tmp,
-                            node->outwid()
-                        );
-                    tmp++;
-
-                    for (unsigned i = 0; i < (node->outwid() + 63) / 64; ++i) {
-                        fprintf(f,
-                                "     %%T__%lu = getelementptr i64* %s, i64 %d\n",
-                                tmp,
-                                llvm_name(node->d(), "rptr64").c_str(),
-                                i
-                            );
-                        tmp++;
-
-                        fprintf(f, "      %%T__%lu = load i64* %%T__%lu\n",
-                                tmp,
-                                tmp - 1
-                            );
-                        tmp++;
-
-                        fprintf(f, "      %%T__%lu = zext i64 %%T__%lu to i%d\n",
-                                tmp,
-                                tmp - 1,
-                                node->outwid()
-                            );
-                        tmp++;
-
-                        fprintf(f, "      %%T__%lu = shl i%d %%T__%lu, %d\n",
-                                tmp,
-                                node->outwid(),
-                                tmp - 1,
-                                i * 64
-                            );
-                        tmp++;
-
-                        fprintf(f, "      %%T__%lu = or i%d %%T__%lu, %%T__%lu\n",
-                                tmp,
-                                node->outwid(),
-                                tmp - 1,
-                                tmp - 5
-                            );
-                        tmp++;
-                    }
-
-                    fprintf(f, "    %s = or i%d %%T__%lu, %%T__%lu\n",
-                            llvm_name(node->d()).c_str(),
-                            node->outwid(),
-                            tmp - 1,
-                            tmp - 1
-                        );
+                /* Here we generate the internal temporary values.
+                 * This series of shift/add operations will probably
+                 * be compiled into NOPs by the LLVM optimizer. */
+                auto ptrs = std::vector<pointer<builtin<uint64_t>>>(i64cnt);
+                for (size_t i = 0; i < i64cnt; i++) {
+                    auto index = constant<size_t>(i);
+                    lo->operate(index_op(ptrs[i], ptr64, index));
                 }
 
-                break;                    
+                auto loads = std::vector<builtin<uint64_t>>(i64cnt);
+                for (size_t i = 0; i < i64cnt; ++i) {
+                    lo->operate(load_op(loads[i], ptrs[i]));
+                }
+
+                auto extended = std::vector<fix_t>();
+                for (size_t i = 0; i < i64cnt; ++i) {
+                    /* We need this push here because every one of
+                     * these temporaries needs a new name which means
+                     * the copy constructor can't be used.  The
+                     * default constructor can't be used because we
+                     * need to tag each fix with a width. */
+                    extended.push_back(fix_t(node->width()));
+                    lo->operate(zext_trunc_op(extended[i], loads[i]));
+                }
+
+                auto shifted = std::vector<fix_t>();
+                for (size_t i = 0; i < i64cnt; i++) {
+                    shifted.push_back(fix_t(node->width()));
+                    auto offset = constant<uint32_t>(i * 64);
+                    lo->operate(lsh_op(shifted[i], extended[i], offset));
+                }
+
+                auto ored = std::vector<fix_t>();
+                for (size_t i = 0; i < i64cnt; ++i) {
+                    ored.push_back(fix_t(node->width()));
+                    if (i == 0) {
+                        lo->operate(mov_op(ored[i], shifted[i]));
+                    } else {
+                        lo->operate(or_op(ored[i], shifted[i], ored[i-1]));
+                    }
+                }
+
+                lo->operate(mov_op(node->dv(), ored[i64cnt-1]));
+
+                break;
+            }
 
             case libflo::opcode::RST:
                 fprintf(f, "    %s = or i1 %%rst, %%rst\n",
