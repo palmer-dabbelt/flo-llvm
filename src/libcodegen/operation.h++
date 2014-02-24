@@ -221,6 +221,21 @@ namespace libcodegen {
     cmp_gte_op_cls<D, S> cmp_gte_op(const D& d, const S& s0, const S& s1)
     { return cmp_gte_op_cls<D, S>(d, s0, s1); }
 
+    /* Less-than comparison */
+    template<class D, class S> class cmp_lt_op_cls: public alu_op {
+    private:
+    public:
+        cmp_lt_op_cls(const D& d, const S& s0, const S& s1)
+            : alu_op(d, s0, s1)
+        {
+        }
+
+        const std::string op_llvm(void) const { return "icmp ult"; }
+    };
+    template<class D, class S>
+    cmp_lt_op_cls<D, S> cmp_lt_op(const D& d, const S& s0, const S& s1)
+    { return cmp_lt_op_cls<D, S>(d, s0, s1); }
+
     /* Performs an "alloca" operation, which allocates the provided
      * amount of space on the stack. */
     template<class O, class I> class alloca_op_cls: public operation {
