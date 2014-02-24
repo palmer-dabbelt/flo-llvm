@@ -76,11 +76,11 @@ libcodegen::fix_t node::dv(void) const
 libcodegen::fix_t node::sv(size_t i) const
 {
     if (isdigit(mangled_s(i).c_str()[0]))
-        return libcodegen::fix_t(outwid(), mangled_s(i));
+        return libcodegen::fix_t(width(), mangled_s(i));
 
     char buffer[BUFFER_SIZE];
     snprintf(buffer, BUFFER_SIZE, "C__%s", mangled_s(i).c_str());
-    return libcodegen::fix_t(outwid(), buffer);
+    return libcodegen::fix_t(width(), buffer);
 }
 
 libcodegen::function<
