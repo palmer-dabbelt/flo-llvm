@@ -343,13 +343,12 @@ int generate_compat(const node_list &flo, FILE *f)
         if (module == signal)
             continue;
 
-        /* The module seperator is a "::", make sure that's true. */
-        if (signal[-1] != ':') {
-            fprintf(stderr, "Module seperator without '::' in '%s'\n", buffer);
-            abort();
-        }
-
-        signal[-1] = '\0';
+        /* The module seperator can be either ":" or "::".  Detect
+         * which one is actually generated and demangle the name
+         * correctly. */
+        if (signal[-1] == ':')
+            signal[-1] = '\0';
+        signal[0] = '\0';
         signal++;
 
         /* Figure out if we're going up or down a module and perform
@@ -743,12 +742,12 @@ const std::string class_name(const node_list &flo)
     for (auto it = flo.nodes(); !it.done(); ++it) {
         auto node = *it;
 
-        if (strstr(node->d().c_str(), "::") == NULL)
+        if (strstr(node->d().c_str(), ":") == NULL)
             continue;
 
         char buffer[BUFFER_SIZE];
         strncpy(buffer, node->d().c_str(), BUFFER_SIZE);
-        strstr(buffer, "::")[0] = '\0';
+        strstr(buffer, ":")[0] = '\0';
         return buffer;
     }
 
