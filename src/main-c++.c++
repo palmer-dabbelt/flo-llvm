@@ -678,6 +678,12 @@ int generate_llvmir(const node_list &flo, FILE *f)
             case libflo::opcode::XOR:
             case libflo::opcode::ST:
             case libflo::opcode::MEM:
+            case libflo::opcode::NOP:
+            case libflo::opcode::MUL:
+            case libflo::opcode::LOG2:
+            case libflo::opcode::NEG:
+            case libflo::opcode::RD:
+            case libflo::opcode::WR:
                 fprintf(stderr, "Unable to compute node '%s'\n",
                         libflo::opcode_to_string(node->opcode()).c_str());
                 abort();
