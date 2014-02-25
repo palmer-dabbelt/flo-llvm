@@ -122,7 +122,7 @@ node_list dataflow_order(const node_list &in)
         case libflo::opcode::NEG:
         case libflo::opcode::RD:
         case libflo::opcode::WR:
-            fprintf(stderr, "Unimplimented node type: '%s'\n",
+            fprintf(stderr, "Unable to order node type '%s'\n",
                     libflo::opcode_to_string(node->opcode()).c_str());
             abort();
             break;
