@@ -68,6 +68,7 @@ namespace libcodegen {
                         strncat(buffer, " ,", 1024);
 
                     strncat(buffer, arg->as_llvm().c_str(), 1024);
+                    strncat(buffer, " ", 1024);
                     strncat(buffer, arg->llvm_name().c_str(), 1024);
                 }
 
@@ -107,6 +108,7 @@ namespace libcodegen {
                         strncat(buffer, " ,", 1024);
 
                     strncat(buffer, arg->as_llvm().c_str(), 1024);
+                    strncat(buffer, " ", 1024);
                     strncat(buffer, arg->llvm_name().c_str(), 1024);
                 }
 
