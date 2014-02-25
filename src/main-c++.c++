@@ -173,9 +173,9 @@ int generate_header(const node_list &flo, FILE *f)
      * Chisel-emitted definitions. */
     fprintf(f, "  public:\n");
     fprintf(f, "    void init(bool random_init);\n");
-    fprintf(f, "    void clock_lo(bool reset);\n");
-    fprintf(f, "    void clock_hi(bool reset);\n");
-    fprintf(f, "    void dump(FILE *file, size_t clock);\n");
+    fprintf(f, "    void clock_lo(dat_t<1> reset);\n");
+    fprintf(f, "    void clock_hi(dat_t<1> reset);\n");
+    fprintf(f, "    void dump(FILE *file, int clock);\n");
 
     /* Close the class */
     fprintf(f, "};\n");
@@ -277,8 +277,9 @@ int generate_compat(const node_list &flo, FILE *f)
     /* Actually define the (non mangled) implementation of the Chisel
      * C++ interface, which in fact only calls the LLVM-generated
      * functions. */
-    fprintf(f, "void %s_t::clock_lo(bool r)\n", dut_name.c_str());
-    fprintf(f, "  { _llvmflo_%s_clock_lo(this, r); }\n", dut_name.c_str());
+    fprintf(f, "void %s_t::clock_lo(dat_t<1> rd)\n", dut_name.c_str());
+    fprintf(f, "  { _llvmflo_%s_clock_lo(this, rd.to_ulong()); }\n",
+            dut_name.c_str());
 
     /* init just sets everything to zero, which is easy to do in C++
      * (it'll be fairly short). */
@@ -296,7 +297,8 @@ int generate_compat(const node_list &flo, FILE *f)
     /* clock_hi just copies data around and therefor is simplest to
      * stick in C++ -- using LLVM IR doesn't really gain us anything
      * here. */
-    fprintf(f, "void %s_t::clock_hi(bool r)\n{\n", dut_name.c_str());
+    fprintf(f, "void %s_t::clock_hi(dat_t<1> rd)\n{\n", dut_name.c_str());
+    fprintf(f, "  bool r = rd.to_ulong();\n");
     for (auto it = flo.nodes(); !it.done(); ++it) {
         auto node = *it;
 
@@ -315,7 +317,7 @@ int generate_compat(const node_list &flo, FILE *f)
 
     /* VCD dumping is implemented directly in C++ here because I don't
      * really see a reason not to. */
-    fprintf(f, "void %s_t::dump(FILE *f, size_t cycle)\n{\n", dut_name.c_str());
+    fprintf(f, "void %s_t::dump(FILE *f, int cycle)\n{\n", dut_name.c_str());
 
     /* On the first cycle we need to write out the VCD header file. */
     size_t vcdtmp = 0;
