@@ -752,6 +752,7 @@ const std::string class_name(const node_list &flo)
         return buffer;
     }
 
+    fprintf(stderr, "Unable to obtain class name\n");
     abort();
     return "";
 }
