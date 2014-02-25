@@ -64,6 +64,7 @@ node_list dataflow_order(const node_list &in)
              * be availiable before they can execute. */
         case libflo::opcode::ADD:
         case libflo::opcode::AND:
+        case libflo::opcode::CAT:
         case libflo::opcode::EQ:
         case libflo::opcode::GTE:
         case libflo::opcode::LT:
@@ -72,7 +73,9 @@ node_list dataflow_order(const node_list &in)
         case libflo::opcode::NOT:
         case libflo::opcode::OR:
         case libflo::opcode::OUT:
+        case libflo::opcode::RSH:
         case libflo::opcode::SUB:
+        case libflo::opcode::XOR:
         {
             bool all_ok = true;
             for (auto it = node->s_begin(); it != node->s_end(); ++it) {
@@ -106,14 +109,11 @@ node_list dataflow_order(const node_list &in)
              * with them... */
         case libflo::opcode::EAT:
         case libflo::opcode::LIT:
-        case libflo::opcode::CAT:
-        case libflo::opcode::RSH:
         case libflo::opcode::MSK:
         case libflo::opcode::LD:
         case libflo::opcode::NEQ:
         case libflo::opcode::ARSH:
         case libflo::opcode::LSH:
-        case libflo::opcode::XOR:
         case libflo::opcode::ST:
         case libflo::opcode::MEM:
         case libflo::opcode::NOP:
