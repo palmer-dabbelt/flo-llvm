@@ -162,7 +162,7 @@ int generate_header(const node_list &flo, FILE *f)
                 node->outwid(),
                 node->mangled_d().c_str());
 
-        fprintf(f, "    dat_t<%d> _vcdshadow_%s;\n",
+        fprintf(f, "    dat_t<%d> %s__prev;\n",
                 node->outwid(),
                 node->mangled_d().c_str());
     }
@@ -414,7 +414,7 @@ int generate_compat(const node_list &flo, FILE *f)
             continue;
 
         fprintf(f,
-                "  if ((cycle == 0) || (_vcdshadow_%s != %s).to_ulong()) {\n",
+                "  if ((cycle == 0) || (%s__prev != %s).to_ulong()) {\n",
                 node->mangled_d().c_str(),
                 node->mangled_d().c_str()
             );
@@ -424,7 +424,7 @@ int generate_compat(const node_list &flo, FILE *f)
                 short_name.find(node->d())->second.c_str()
             );
 
-        fprintf(f, "    _vcdshadow_%s = %s;\n",
+        fprintf(f, "    %s__prev = %s;\n",
                 node->mangled_d().c_str(),
                 node->mangled_d().c_str()
             );
