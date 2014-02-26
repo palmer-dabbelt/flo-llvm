@@ -548,7 +548,7 @@ int generate_llvmir(const node_list &flo, FILE *f)
              * this operation succeed. */
             auto i64cnt = constant<uint32_t>((node->outwid() + 63) / 64);
 
-            lo->comment("Chisel Node: %s", node->to_string().c_str());
+            lo->comment(" *** Chisel Node: %s", node->to_string().c_str());
 
             bool nop = false;
             switch (node->opcode()) {
@@ -726,6 +726,8 @@ int generate_llvmir(const node_list &flo, FILE *f)
              * its cooresponding computation, but only when the node
              * appears in the Chisel header. */
             if (node->exported() == true && nop == false) {
+                lo->comment("  Writeback\n");
+
                 /* This generates a pointer that can be passed to C++,
                  * in other words, an array-of-uints. */
                 auto ptr64 = pointer<builtin<uint64_t>>();
