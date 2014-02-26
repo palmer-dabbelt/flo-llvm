@@ -33,7 +33,7 @@ static const std::vector<std::string>
 mangle_s(const std::vector<std::string> &s);
 
 node::node(const libflo::node_ptr n)
-    : libflo::node(n->d(), n->op(), n->outwid(), n->s()),
+    : libflo::node(n->d(), n->op(), n->alt_width(), n->s()),
       _mangled_d(mangle_name(n->d())),
       _mangled_s(mangle_s(n->s())),
       _exported(strcmp(n->d().c_str(), _mangled_d.c_str()) != 0)
