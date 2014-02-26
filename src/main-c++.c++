@@ -566,6 +566,28 @@ int generate_llvmir(const node_list &flo, FILE *f)
                 lo->operate(and_op(node->dv(), node->sv(0), node->sv(1)));
                 break;
 
+            case libflo::opcode::CAT:
+            {
+                auto sw = constant<uint64_t>(node->outwid() - node->width());
+                auto o = constant<uint64_t>(node->width());
+
+                auto d = node->dv();
+                auto s = fix_t(sw, node->sv(0).name());
+                auto t = node->sv(1);
+
+                auto se = fix_t(node->outwid());
+                auto te = fix_t(node->outwid());
+                lo->operate(zero_ext_op(se, s));
+                lo->operate(zero_ext_op(te, t));
+
+                auto ss = fix_t(node->outwid());
+                lo->operate(lsh_op(ss, se, o));
+
+                lo->operate(or_op(d, te, ss));
+
+                break;
+            }
+
             case libflo::opcode::EQ:
                 lo->operate(cmp_eq_op(node->dv(), node->sv(0), node->sv(1)));
                 break;
@@ -598,6 +620,7 @@ int generate_llvmir(const node_list &flo, FILE *f)
                 lo->operate(or_op(node->dv(), node->sv(0), node->sv(1)));
                 break;
 
+            case libflo::opcode::IN:
             case libflo::opcode::REG:
             {
                 auto ptr64 = pointer<builtin<uint64_t>>();
@@ -657,6 +680,14 @@ int generate_llvmir(const node_list &flo, FILE *f)
                 break;
             }
 
+            case libflo::opcode::RSH:
+            {
+                auto shifted = fix_t(node->width());
+                lo->operate(lrsh_op(shifted, node->sv(0), node->sv(1)));
+                lo->operate(zext_trunc_op(node->dv(), shifted));
+                break;
+            }
+
             case libflo::opcode::RST:
                 lo->operate(unsafemov_op(node->dv(), rst));
                 break;
@@ -665,18 +696,18 @@ int generate_llvmir(const node_list &flo, FILE *f)
                 lo->operate(sub_op(node->dv(), node->sv(0), node->sv(1)));
                 break;
 
-            case libflo::opcode::IN:
+            case libflo::opcode::XOR:
+                lo->operate(xor_op(node->dv(), node->sv(0), node->sv(1)));
+                break;
+
             case libflo::opcode::RND:
             case libflo::opcode::EAT:
             case libflo::opcode::LIT:
-            case libflo::opcode::CAT:
-            case libflo::opcode::RSH:
             case libflo::opcode::MSK:
             case libflo::opcode::LD:
             case libflo::opcode::NEQ:
             case libflo::opcode::ARSH:
             case libflo::opcode::LSH:
-            case libflo::opcode::XOR:
             case libflo::opcode::ST:
             case libflo::opcode::MEM:
             case libflo::opcode::NOP:

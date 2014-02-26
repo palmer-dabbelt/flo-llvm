@@ -171,6 +171,7 @@ namespace libcodegen {
     /* Bitwise logical operations. */
     LIBCODEGEN__DEF_ALU_OP_1_3(and, "and")
     LIBCODEGEN__DEF_ALU_OP_1_3(or, "or")
+    LIBCODEGEN__DEF_ALU_OP_1_3(xor, "xor")
 
     /* Performs a left shift. */
     LIBCODEGEN__DEF_ALU_OP_2_3o(lsh, "shl")
