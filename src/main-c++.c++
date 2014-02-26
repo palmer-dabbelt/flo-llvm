@@ -738,7 +738,7 @@ int generate_llvmir(const node_list &flo, FILE *f)
                  * be compiled into NOPs by the LLVM optimizer. */
                 auto shifted = std::vector<fix_t>();
                 for (size_t i = 0; i < i64cnt; ++i) {
-                    shifted.push_back(fix_t(node->width()));
+                    shifted.push_back(fix_t(node->outwid()));
                     auto offset = constant<uint32_t>(i * 64);
                     lo->operate(lrsh_op(shifted[i], node->dv(), offset));
                 }
