@@ -372,10 +372,26 @@ int generate_compat(const node_list &flo, FILE *f)
 
         /* Figure out if we're going up or down a module and perform
          * that move. */
-        if (strsta(last_path, module) && strsta(module, last_path)) {
+        if (strcmp(module, last_path.c_str()) == 0) {
         } else if (strsta(last_path, module)) {
             fprintf(f, "    fprintf(f, \"$upscope $end\\n\");\n");
         } else if (strsta(module, last_path)) {
+            /* Determine a slightly shorter name for the module, which
+             * is what VCD uses.  This is just the last component of
+             * the module name, the remainder can be determined by the
+             * hierarchy. */
+            char *lastmodule = module;
+            for (size_t i = 0; i < strlen(module); i++)
+                if (module[i] == ':')
+                    lastmodule = module + i;
+            if (*lastmodule == ':')
+                lastmodule++;
+
+            fprintf(f, "    fprintf(f, \"$scope module %s $end\\n\");\n",
+                    lastmodule);
+        } else {
+            fprintf(f, "    fprintf(f, \"$upscope $end\\n\");\n");
+
             /* Determine a slightly shorter name for the module, which
              * is what VCD uses.  This is just the last component of
              * the module name, the remainder can be determined by the
