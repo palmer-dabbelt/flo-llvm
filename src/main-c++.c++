@@ -74,6 +74,10 @@ make_width_map(const node_list &flo);
 /* Returns TRUE if the haystack starts with the needle. */
 static bool strsta(const std::string haystack, const std::string needle);
 
+/* Produces a dot-seperated name, which is expected by the Chisel test
+ * harness. */
+static const std::string get_dot_name(const std::string chisel_name);
+
 int main(int argc, const char **argv)
 {
     /* Prints the version if it was asked for. */
@@ -289,6 +293,8 @@ int generate_compat(const node_list &flo, FILE *f)
     /* init just sets everything to zero, which is easy to do in C++
      * (it'll be fairly short). */
     fprintf(f, "void %s_t::init(bool r)\n{\n", dut_name.c_str());
+    fprintf(f, "  nodes.clear();\n");
+    fprintf(f, "  mems.clear();\n");
     for (auto it = flo.nodes(); !it.done(); ++it) {
         auto node = *it;
 
@@ -296,6 +302,12 @@ int generate_compat(const node_list &flo, FILE *f)
             continue;
 
         fprintf(f, "  this->%s = 0;\n", node->mangled_d().c_str());
+
+        auto dot_name = get_dot_name(node->d());
+        fprintf(f, "  nodes[\"%s\"] = &%s;\n",
+                dot_name.c_str(),
+                node->mangled_d().c_str()
+            );
     }
     fprintf(f, "}\n");
 
@@ -824,4 +836,19 @@ bool strsta(const std::string haystack, const std::string needle)
     const char *n = needle.c_str();
 
     return (strncmp(h, n, strlen(n)) == 0);
+}
+
+const std::string get_dot_name(const std::string chisel_name)
+{
+    char buffer[BUFFER_SIZE];
+    snprintf(buffer, BUFFER_SIZE, "%s", chisel_name.c_str());
+
+    for (size_t i = 0; i < strlen(buffer); ++i) {
+        while (buffer[i] == ':' && buffer[i+1] == ':')
+            strcpy(buffer + i, buffer + i + 1);
+        if (buffer[i] == ':')
+            buffer[i] = '.';
+    }
+
+    return buffer;
 }
