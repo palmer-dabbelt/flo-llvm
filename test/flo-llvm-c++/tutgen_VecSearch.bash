@@ -6,7 +6,7 @@ int main (int argc, char* argv[]) {
   VecSearch_t* c = new VecSearch_t();
   c->init();
   FILE *f = fopen("VecSearch.vcd", "w");
-  FILE *tee = fopen("VecSearch.stdio", "w");
+  FILE *tee = fopen("VecSearch.stdin", "w");
   c->read_eval_print(f, tee);
 }
 EOF
@@ -2113,10 +2113,12 @@ class mod_t {
     for (;;) {
       std::string str_in;
       getline(cin,str_in);
-      if (teefile != NULL)
+      if (teefile != NULL) {
           fprintf(teefile, "%s\n", str_in.c_str());
+          fflush(teefile);
+      }
       if (strcmp("", str_in.c_str()) == 0)
-          return;
+          abort();
       std::vector< std::string > tokens = tokenize(str_in);
       std::string cmd = tokens[0];
       if (cmd == "peek") {
@@ -2223,6 +2225,22 @@ b111 N1
 b1101 N9
 EOF
 cat >test.stdin <<EOF
+reset 5
+step 1
+peek VecSearch.io_out
+step 1
+peek VecSearch.io_out
+step 1
+peek VecSearch.io_out
+step 1
+peek VecSearch.io_out
+step 1
+peek VecSearch.io_out
+step 1
+peek VecSearch.io_out
+step 1
+peek VecSearch.io_out
+quit
 EOF
 cat >test.flo <<EOF
 reset = rst

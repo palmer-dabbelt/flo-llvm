@@ -6,7 +6,7 @@ int main (int argc, char* argv[]) {
   Functional_t* c = new Functional_t();
   c->init();
   FILE *f = fopen("Functional.vcd", "w");
-  FILE *tee = fopen("Functional.stdio", "w");
+  FILE *tee = fopen("Functional.stdin", "w");
   c->read_eval_print(f, tee);
 }
 EOF
@@ -2113,10 +2113,12 @@ class mod_t {
     for (;;) {
       std::string str_in;
       getline(cin,str_in);
-      if (teefile != NULL)
+      if (teefile != NULL) {
           fprintf(teefile, "%s\n", str_in.c_str());
+          fflush(teefile);
+      }
       if (strcmp("", str_in.c_str()) == 0)
-          return;
+          abort();
       std::vector< std::string > tokens = tokenize(str_in);
       std::string cmd = tokens[0];
       if (cmd == "peek") {
@@ -2189,47 +2191,89 @@ b0000000000000000 N2
 #3
 #4
 #5
-b0111000101000001 N0
-b0001111000100100 N1
-b0111000101000001 N2
+b1001010001101011 N0
+b1001100001011011 N1
+b1001010001101011 N2
 #6
-b0110110011011000 N0
-b1110110001001111 N1
-b0110110011011000 N2
+b1001100101001010 N0
+b1000011111110000 N1
+b1001100101001010 N2
 #7
-b0001010110101100 N0
-b0111001100010001 N1
-b0001010110101100 N2
+b0100000110000100 N0
+b1000100010010011 N1
+b0100000110000100 N2
 #8
-b1010100001000001 N0
-b1011000110001100 N1
-b1010100001000001 N2
+b1001001101101010 N0
+b1011010010011101 N1
+b1001001101101010 N2
 #9
-b0001110000100000 N0
-b0000000101000001 N1
-b0001110000100000 N2
+b0001001001101000 N0
+b0100110101101011 N1
+b0001001001101000 N2
 #10
-b0111010111100110 N0
-b1000100100110000 N1
-b0111010111100110 N2
+b0100110010011110 N0
+b1100001100100010 N1
+b0100110010011110 N2
 #11
-b1010010101010101 N0
-b1001101001011001 N1
-b1010010101010101 N2
+b0001110111001001 N0
+b1000001110000111 N1
+b0001110111001001 N2
 #12
-b1111100101001101 N0
-b1100010100000001 N1
-b1111100101001101 N2
+b0100011100010011 N0
+b0100011011101001 N1
+b0100011100010011 N2
 #13
-b1101101000000111 N0
-b0101100100010101 N1
-b1101101000000111 N2
+b0000110110011100 N0
+b1000011100110111 N1
+b0000110110011100 N2
 #14
-b1011111010110001 N0
-b1111000111101010 N1
-b1011111010110001 N2
+b1011101101011010 N0
+b1100110000100010 N1
+b1011101101011010 N2
 EOF
 cat >test.stdin <<EOF
+reset 5
+poke Functional.io_x 0x985b
+poke Functional.io_y 0x946b
+step 1
+peek Functional.io_z
+poke Functional.io_x 0x87f0
+poke Functional.io_y 0x994a
+step 1
+peek Functional.io_z
+poke Functional.io_x 0x8893
+poke Functional.io_y 0x4184
+step 1
+peek Functional.io_z
+poke Functional.io_x 0xb49d
+poke Functional.io_y 0x936a
+step 1
+peek Functional.io_z
+poke Functional.io_x 0x4d6b
+poke Functional.io_y 0x1268
+step 1
+peek Functional.io_z
+poke Functional.io_x 0xc322
+poke Functional.io_y 0x4c9e
+step 1
+peek Functional.io_z
+poke Functional.io_x 0x8387
+poke Functional.io_y 0x1dc9
+step 1
+peek Functional.io_z
+poke Functional.io_x 0x46e9
+poke Functional.io_y 0x4713
+step 1
+peek Functional.io_z
+poke Functional.io_x 0x8737
+poke Functional.io_y 0xd9c
+step 1
+peek Functional.io_z
+poke Functional.io_x 0xcc22
+poke Functional.io_y 0xbb5a
+step 1
+peek Functional.io_z
+quit
 EOF
 cat >test.flo <<EOF
 Functional::io_y = in/16

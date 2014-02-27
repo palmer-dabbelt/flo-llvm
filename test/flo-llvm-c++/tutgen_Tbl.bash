@@ -6,7 +6,7 @@ int main (int argc, char* argv[]) {
   Tbl_t* c = new Tbl_t();
   c->init();
   FILE *f = fopen("Tbl.vcd", "w");
-  FILE *tee = fopen("Tbl.stdio", "w");
+  FILE *tee = fopen("Tbl.stdin", "w");
   c->read_eval_print(f, tee);
 }
 EOF
@@ -2113,10 +2113,12 @@ class mod_t {
     for (;;) {
       std::string str_in;
       getline(cin,str_in);
-      if (teefile != NULL)
+      if (teefile != NULL) {
           fprintf(teefile, "%s\n", str_in.c_str());
+          fflush(teefile);
+      }
       if (strcmp("", str_in.c_str()) == 0)
-          return;
+          abort();
       std::vector< std::string > tokens = tokenize(str_in);
       std::string cmd = tokens[0];
       if (cmd == "peek") {
@@ -2699,55 +2701,105 @@ b00000000 N257
 #3
 #4
 #5
-b01000111 N256
-b01000111 N257
+b10011100 N256
+b10011100 N257
 #6
-b10001001 N256
-b10001001 N257
+b11000110 N256
+b11000110 N257
 #7
+b01110011 N256
+b01110011 N257
+#8
+b00101100 N256
+b00101100 N257
+#9
+b11101001 N256
+b11101001 N257
+#10
 b00101111 N256
 b00101111 N257
-#8
-b11000010 N256
-b11000010 N257
-#9
-b10000110 N256
-b10000110 N257
-#10
-b01001101 N256
-b01001101 N257
 #11
-b01000000 N256
-b01000000 N257
+b01011000 N256
+b01011000 N257
 #12
-b10101000 N256
-b10101000 N257
+b01101001 N256
+b01101001 N257
 #13
-b01101000 N256
-b01101000 N257
+b11111000 N256
+b11111000 N257
 #14
-b10011110 N256
-b10011110 N257
+b00101000 N256
+b00101000 N257
 #15
-b00111110 N256
-b00111110 N257
+b10111000 N256
+b10111000 N257
 #16
-b00010111 N256
-b00010111 N257
+b10000001 N256
+b10000001 N257
 #17
-b10101111 N256
-b10101111 N257
+b10111101 N256
+b10111101 N257
 #18
-b11111110 N256
-b11111110 N257
+b11111101 N256
+b11111101 N257
 #19
-b11110011 N256
-b11110011 N257
+b00100001 N256
+b00100001 N257
 #20
-b11110110 N256
-b11110110 N257
+b10010100 N256
+b10010100 N257
 EOF
 cat >test.stdin <<EOF
+reset 5
+poke Tbl.io_addr 0x9c
+step 1
+peek Tbl.io_out
+poke Tbl.io_addr 0xc6
+step 1
+peek Tbl.io_out
+poke Tbl.io_addr 0x73
+step 1
+peek Tbl.io_out
+poke Tbl.io_addr 0x2c
+step 1
+peek Tbl.io_out
+poke Tbl.io_addr 0xe9
+step 1
+peek Tbl.io_out
+poke Tbl.io_addr 0x2f
+step 1
+peek Tbl.io_out
+poke Tbl.io_addr 0x58
+step 1
+peek Tbl.io_out
+poke Tbl.io_addr 0x69
+step 1
+peek Tbl.io_out
+poke Tbl.io_addr 0xf8
+step 1
+peek Tbl.io_out
+poke Tbl.io_addr 0x28
+step 1
+peek Tbl.io_out
+poke Tbl.io_addr 0xb8
+step 1
+peek Tbl.io_out
+poke Tbl.io_addr 0x81
+step 1
+peek Tbl.io_out
+poke Tbl.io_addr 0xbd
+step 1
+peek Tbl.io_out
+poke Tbl.io_addr 0xfd
+step 1
+peek Tbl.io_out
+poke Tbl.io_addr 0x21
+step 1
+peek Tbl.io_out
+poke Tbl.io_addr 0x94
+step 1
+peek Tbl.io_out
+quit
 EOF
 cat >test.flo <<EOF
 Tbl::r_0 = out/8 0

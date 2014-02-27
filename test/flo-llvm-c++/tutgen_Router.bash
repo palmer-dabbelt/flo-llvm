@@ -6,7 +6,7 @@ int main (int argc, char* argv[]) {
   Router_t* c = new Router_t();
   c->init();
   FILE *f = fopen("Router.vcd", "w");
-  FILE *tee = fopen("Router.stdio", "w");
+  FILE *tee = fopen("Router.stdin", "w");
   c->read_eval_print(f, tee);
 }
 EOF
@@ -2113,10 +2113,12 @@ class mod_t {
     for (;;) {
       std::string str_in;
       getline(cin,str_in);
-      if (teefile != NULL)
+      if (teefile != NULL) {
           fprintf(teefile, "%s\n", str_in.c_str());
+          fflush(teefile);
+      }
       if (strcmp("", str_in.c_str()) == 0)
-          return;
+          abort();
       std::vector< std::string > tokens = tokenize(str_in);
       std::string cmd = tokens[0];
       if (cmd == "peek") {
@@ -2277,6 +2279,40 @@ b1 N19
 b0000000000000000000000000000000000000000000000000000000000000001 N21
 EOF
 cat >test.stdin <<EOF
+reset 5
+poke Router.io_in_valid 0x0
+poke Router.io_writes_valid 0x0
+poke Router.io_reads_valid 0x1
+poke Router.io_replies_ready 0x1
+poke Router.io_reads_bits_addr 0x0
+step 1
+peek Router.io_replies_bits
+poke Router.io_in_valid 0x0
+poke Router.io_reads_valid 0x0
+poke Router.io_writes_valid 0x1
+poke Router.io_writes_bits_addr 0x0
+poke Router.io_writes_bits_data 0x1
+step 1
+poke Router.io_in_valid 0x0
+poke Router.io_writes_valid 0x0
+poke Router.io_reads_valid 0x1
+poke Router.io_replies_ready 0x1
+poke Router.io_reads_bits_addr 0x0
+step 1
+peek Router.io_replies_bits
+poke Router.io_outs_0_ready 0x1
+poke Router.io_outs_1_ready 0x1
+poke Router.io_outs_2_ready 0x1
+poke Router.io_outs_3_ready 0x1
+poke Router.io_reads_valid 0x0
+poke Router.io_writes_valid 0x0
+poke Router.io_in_valid 0x1
+poke Router.io_in_bits_header 0x0
+poke Router.io_in_bits_body 0x1
+step 1
+peek Router.io_outs_0_valid
+peek Router.io_outs_1_valid
+quit
 EOF
 cat >test.flo <<EOF
 Router::io_replies_ready = in/1

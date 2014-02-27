@@ -6,7 +6,7 @@ int main (int argc, char* argv[]) {
   Stack_t* c = new Stack_t();
   c->init();
   FILE *f = fopen("Stack.vcd", "w");
-  FILE *tee = fopen("Stack.stdio", "w");
+  FILE *tee = fopen("Stack.stdin", "w");
   c->read_eval_print(f, tee);
 }
 EOF
@@ -2113,10 +2113,12 @@ class mod_t {
     for (;;) {
       std::string str_in;
       getline(cin,str_in);
-      if (teefile != NULL)
+      if (teefile != NULL) {
           fprintf(teefile, "%s\n", str_in.c_str());
+          fflush(teefile);
+      }
       if (strcmp("", str_in.c_str()) == 0)
-          return;
+          abort();
       std::vector< std::string > tokens = tokenize(str_in);
       std::string cmd = tokens[0];
       if (cmd == "peek") {
@@ -2198,80 +2200,185 @@ b00000000000000000000000000000000 N7
 #3
 #4
 #5
+b00000000000000000000000011010110 N5
+#6
 b1 N1
 b1 N2
+b1 N3
 b0001 N4
-b00000000000000000000000001111110 N5
-#6
-b0010 N4
-b00000000000000000000000000110001 N5
-b00000000000000000000000001111110 N6
+b00000000000000000000000011010101 N5
 #7
 b0 N1
 b0 N2
-b1 N3
-b00000000000000000000000010001100 N5
-b00000000000000000000000001111110 N7
+b0 N3
+b00000000000000000000000001101011 N5
 #8
 b1 N2
-b0 N3
-b00000000000000000000000000111110 N5
-b00000000000000000000000000110001 N6
+b00000000000000000000000011011101 N5
+b00000000000000000000000011010101 N6
 #9
-b0 N2
-b00000000000000000000000001011001 N5
-b00000000000000000000000000110001 N7
-#10
 b1 N1
-b1 N2
+b0010 N4
+b00000000000000000000000001010110 N5
+b00000000000000000000000011010101 N7
+#10
 b1 N3
 b0011 N4
-b00000000000000000000000000001111 N5
+b00000000000000000000000011100010 N5
+b00000000000000000000000001010110 N6
 #11
-b0 N2
-b00000000000000000000000011000000 N5
+b0 N3
+b0100 N4
+b00000000000000000000000010101101 N5
+b00000000000000000000000011100010 N6
+b00000000000000000000000001010110 N7
 #12
 b0 N1
-b0 N3
-b00000000000000000000000010000101 N5
+b00000000000000000000000011111110 N5
+b00000000000000000000000010101101 N6
+b00000000000000000000000011100010 N7
 #13
-b1 N3
-b00000000000000000000000000110101 N5
-#14
-b0 N3
-b00000000000000000000000000000001 N5
-#15
-b1 N2
-b00000000000000000000000000100100 N5
-b00000000000000000000000000001111 N6
-#16
-b1 N3
-b0010 N4
-b00000000000000000000000001110101 N5
-b00000000000000000000000000001111 N7
-#17
 b1 N1
-b0 N3
-b0011 N4
-b00000000000000000000000000011111 N5
-b00000000000000000000000000110001 N6
-#18
-b0 N1
 b0 N2
 b1 N3
-b00000000000000000000000010110000 N5
-b00000000000000000000000000110001 N7
-#19
-b1 N1
-b0 N3
-b00000000000000000000000011001100 N5
-#20
+b00000000000000000000000011111000 N5
+b00000000000000000000000010101101 N7
+#14
 b0 N1
 b1 N2
-b00000000000000000000000000011110 N5
-b00000000000000000000000000011111 N6
+b0011 N4
+b00000000000000000000000001000100 N5
+#15
+b1 N1
+b0 N2
+b0 N3
+b00000000000000000000000001000011 N5
+#16
+b1 N2
+b0100 N4
+b00000000000000000000000000000100 N5
+b00000000000000000000000011100010 N6
+#17
+b0101 N4
+b00000000000000000000000001100000 N5
+b00000000000000000000000000000100 N6
+b00000000000000000000000011100010 N7
+#18
+b1 N3
+b0110 N4
+b00000000000000000000000000010000 N5
+b00000000000000000000000001100000 N6
+b00000000000000000000000000000100 N7
+#19
+b0 N1
+b0 N2
+b0 N3
+b00000000000000000000000010010011 N5
+b00000000000000000000000001100000 N7
+#20
+b1 N1
+b1 N3
+b00000000000000000000000001011101 N5
 EOF
 cat >test.stdin <<EOF
+reset 5
+poke Stack.io_pop 0x0
+poke Stack.io_push 0x0
+poke Stack.io_en 0x0
+poke Stack.io_dataIn 0xd6
+step 1
+peek Stack.io_dataOut
+poke Stack.io_pop 0x1
+poke Stack.io_push 0x1
+poke Stack.io_en 0x1
+poke Stack.io_dataIn 0xd5
+step 1
+peek Stack.io_dataOut
+poke Stack.io_pop 0x0
+poke Stack.io_push 0x0
+poke Stack.io_en 0x0
+poke Stack.io_dataIn 0x6b
+step 1
+peek Stack.io_dataOut
+poke Stack.io_pop 0x0
+poke Stack.io_push 0x0
+poke Stack.io_en 0x1
+poke Stack.io_dataIn 0xdd
+step 1
+peek Stack.io_dataOut
+poke Stack.io_pop 0x0
+poke Stack.io_push 0x1
+poke Stack.io_en 0x1
+poke Stack.io_dataIn 0x56
+step 1
+peek Stack.io_dataOut
+poke Stack.io_pop 0x1
+poke Stack.io_push 0x1
+poke Stack.io_en 0x1
+poke Stack.io_dataIn 0xe2
+step 1
+peek Stack.io_dataOut
+poke Stack.io_pop 0x0
+poke Stack.io_push 0x1
+poke Stack.io_en 0x1
+poke Stack.io_dataIn 0xad
+step 1
+peek Stack.io_dataOut
+poke Stack.io_pop 0x0
+poke Stack.io_push 0x0
+poke Stack.io_en 0x1
+poke Stack.io_dataIn 0xfe
+step 1
+peek Stack.io_dataOut
+poke Stack.io_pop 0x1
+poke Stack.io_push 0x1
+poke Stack.io_en 0x0
+poke Stack.io_dataIn 0xf8
+step 1
+peek Stack.io_dataOut
+poke Stack.io_pop 0x1
+poke Stack.io_push 0x0
+poke Stack.io_en 0x1
+poke Stack.io_dataIn 0x44
+step 1
+peek Stack.io_dataOut
+poke Stack.io_pop 0x0
+poke Stack.io_push 0x1
+poke Stack.io_en 0x0
+poke Stack.io_dataIn 0x43
+step 1
+peek Stack.io_dataOut
+poke Stack.io_pop 0x0
+poke Stack.io_push 0x1
+poke Stack.io_en 0x1
+poke Stack.io_dataIn 0x4
+step 1
+peek Stack.io_dataOut
+poke Stack.io_pop 0x0
+poke Stack.io_push 0x1
+poke Stack.io_en 0x1
+poke Stack.io_dataIn 0x60
+step 1
+peek Stack.io_dataOut
+poke Stack.io_pop 0x1
+poke Stack.io_push 0x1
+poke Stack.io_en 0x1
+poke Stack.io_dataIn 0x10
+step 1
+peek Stack.io_dataOut
+poke Stack.io_pop 0x0
+poke Stack.io_push 0x0
+poke Stack.io_en 0x0
+poke Stack.io_dataIn 0x93
+step 1
+peek Stack.io_dataOut
+poke Stack.io_pop 0x1
+poke Stack.io_push 0x1
+poke Stack.io_en 0x0
+poke Stack.io_dataIn 0x5d
+step 1
+peek Stack.io_dataOut
+quit
 EOF
 cat >test.flo <<EOF
 reset = rst

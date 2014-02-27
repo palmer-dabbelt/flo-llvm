@@ -6,7 +6,7 @@ int main (int argc, char* argv[]) {
   GCD_t* c = new GCD_t();
   c->init();
   FILE *f = fopen("GCD.vcd", "w");
-  FILE *tee = fopen("GCD.stdio", "w");
+  FILE *tee = fopen("GCD.stdin", "w");
   c->read_eval_print(f, tee);
 }
 EOF
@@ -2113,10 +2113,12 @@ class mod_t {
     for (;;) {
       std::string str_in;
       getline(cin,str_in);
-      if (teefile != NULL)
+      if (teefile != NULL) {
           fprintf(teefile, "%s\n", str_in.c_str());
+          fflush(teefile);
+      }
       if (strcmp("", str_in.c_str()) == 0)
-          return;
+          abort();
       std::vector< std::string > tokens = tokenize(str_in);
       std::string cmd = tokens[0];
       if (cmd == "peek") {
@@ -2218,6 +2220,38 @@ b0000000000000000 N5
 b1 N6
 EOF
 cat >test.stdin <<EOF
+reset 5
+poke GCD.io_a 0x40
+poke GCD.io_b 0x30
+poke GCD.io_e 0x1
+step 1
+poke GCD.io_a 0x40
+poke GCD.io_b 0x30
+poke GCD.io_e 0x0
+step 1
+peek GCD.io_v
+poke GCD.io_a 0x40
+poke GCD.io_b 0x30
+poke GCD.io_e 0x0
+step 1
+peek GCD.io_v
+poke GCD.io_a 0x40
+poke GCD.io_b 0x30
+poke GCD.io_e 0x0
+step 1
+peek GCD.io_v
+poke GCD.io_a 0x40
+poke GCD.io_b 0x30
+poke GCD.io_e 0x0
+step 1
+peek GCD.io_v
+poke GCD.io_a 0x40
+poke GCD.io_b 0x30
+poke GCD.io_e 0x0
+step 1
+peek GCD.io_v
+peek GCD.io_z
+quit
 EOF
 cat >test.flo <<EOF
 GCD::io_z = out/16 GCD::x

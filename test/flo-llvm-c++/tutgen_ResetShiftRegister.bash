@@ -6,7 +6,7 @@ int main (int argc, char* argv[]) {
   ResetShiftRegister_t* c = new ResetShiftRegister_t();
   c->init();
   FILE *f = fopen("ResetShiftRegister.vcd", "w");
-  FILE *tee = fopen("ResetShiftRegister.stdio", "w");
+  FILE *tee = fopen("ResetShiftRegister.stdin", "w");
   c->read_eval_print(f, tee);
 }
 EOF
@@ -2113,10 +2113,12 @@ class mod_t {
     for (;;) {
       std::string str_in;
       getline(cin,str_in);
-      if (teefile != NULL)
+      if (teefile != NULL) {
           fprintf(teefile, "%s\n", str_in.c_str());
+          fflush(teefile);
+      }
       if (strcmp("", str_in.c_str()) == 0)
-          return;
+          abort();
       std::vector< std::string > tokens = tokenize(str_in);
       std::string cmd = tokens[0];
       if (cmd == "peek") {
@@ -2198,40 +2200,129 @@ b0000 N7
 #3
 #4
 #5
+b0001 N1
 b1 N2
+b0001 N3
 #6
+b0000 N1
+b0000 N3
+b0001 N4
 #7
 b0 N2
 #8
 b0001 N1
-#9
 b1 N2
 b0001 N3
-#10
-b0001 N4
-#11
+b0000 N4
+b0001 N5
+#9
+b0000 N1
 b0 N2
+#10
+b0001 N1
+b1 N2
+b0001 N4
+b0000 N5
+b0001 N6
+#11
+b0001 N5
+b0000 N6
+b0001 N7
 #12
+b0 N2
+b0000 N7
+#13
+b0000 N1
+#14
+b0001 N1
+#15
+b1 N2
+b0001 N6
+#16
+b0 N2
+b0001 N7
+#17
 b0000 N1
 b1 N2
 b0000 N3
-b0001 N5
-#13
-b0001 N1
-b0 N2
-#14
-b0000 N1
-#15
-b0001 N1
-#16
-b0000 N1
-#17
 #18
 b0001 N1
+b0 N2
 #19
+b0000 N1
 #20
+b0001 N1
+b1 N2
+b0001 N3
+b0000 N4
 EOF
 cat >test.stdin <<EOF
+reset 5
+poke ResetShiftRegister.io_in 0x1
+poke ResetShiftRegister.io_shift 0x1
+step 1
+peek ResetShiftRegister.io_out
+poke ResetShiftRegister.io_in 0x0
+poke ResetShiftRegister.io_shift 0x1
+step 1
+peek ResetShiftRegister.io_out
+poke ResetShiftRegister.io_in 0x0
+poke ResetShiftRegister.io_shift 0x0
+step 1
+peek ResetShiftRegister.io_out
+poke ResetShiftRegister.io_in 0x1
+poke ResetShiftRegister.io_shift 0x1
+step 1
+peek ResetShiftRegister.io_out
+poke ResetShiftRegister.io_in 0x0
+poke ResetShiftRegister.io_shift 0x0
+step 1
+peek ResetShiftRegister.io_out
+poke ResetShiftRegister.io_in 0x1
+poke ResetShiftRegister.io_shift 0x1
+step 1
+peek ResetShiftRegister.io_out
+poke ResetShiftRegister.io_in 0x1
+poke ResetShiftRegister.io_shift 0x1
+step 1
+peek ResetShiftRegister.io_out
+poke ResetShiftRegister.io_in 0x1
+poke ResetShiftRegister.io_shift 0x0
+step 1
+peek ResetShiftRegister.io_out
+poke ResetShiftRegister.io_in 0x0
+poke ResetShiftRegister.io_shift 0x0
+step 1
+peek ResetShiftRegister.io_out
+poke ResetShiftRegister.io_in 0x1
+poke ResetShiftRegister.io_shift 0x0
+step 1
+peek ResetShiftRegister.io_out
+poke ResetShiftRegister.io_in 0x1
+poke ResetShiftRegister.io_shift 0x1
+step 1
+peek ResetShiftRegister.io_out
+poke ResetShiftRegister.io_in 0x1
+poke ResetShiftRegister.io_shift 0x0
+step 1
+peek ResetShiftRegister.io_out
+poke ResetShiftRegister.io_in 0x0
+poke ResetShiftRegister.io_shift 0x1
+step 1
+peek ResetShiftRegister.io_out
+poke ResetShiftRegister.io_in 0x1
+poke ResetShiftRegister.io_shift 0x0
+step 1
+peek ResetShiftRegister.io_out
+poke ResetShiftRegister.io_in 0x0
+poke ResetShiftRegister.io_shift 0x0
+step 1
+peek ResetShiftRegister.io_out
+poke ResetShiftRegister.io_in 0x1
+poke ResetShiftRegister.io_shift 0x1
+step 1
+peek ResetShiftRegister.io_out
+quit
 EOF
 cat >test.flo <<EOF
 reset = rst

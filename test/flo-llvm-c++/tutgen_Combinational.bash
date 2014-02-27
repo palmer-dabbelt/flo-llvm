@@ -6,7 +6,7 @@ int main (int argc, char* argv[]) {
   Combinational_t* c = new Combinational_t();
   c->init();
   FILE *f = fopen("Combinational.vcd", "w");
-  FILE *tee = fopen("Combinational.stdio", "w");
+  FILE *tee = fopen("Combinational.stdin", "w");
   c->read_eval_print(f, tee);
 }
 EOF
@@ -2113,10 +2113,12 @@ class mod_t {
     for (;;) {
       std::string str_in;
       getline(cin,str_in);
-      if (teefile != NULL)
+      if (teefile != NULL) {
           fprintf(teefile, "%s\n", str_in.c_str());
+          fflush(teefile);
+      }
       if (strcmp("", str_in.c_str()) == 0)
-          return;
+          abort();
       std::vector< std::string > tokens = tokenize(str_in);
       std::string cmd = tokens[0];
       if (cmd == "peek") {
@@ -2189,47 +2191,89 @@ b0000000000000000 N2
 #3
 #4
 #5
-b0001001110110101 N0
-b0111011101111111 N1
-b1000101100110100 N2
+b1001111011001011 N0
+b1110000000111100 N1
+b0111111100000111 N2
 #6
-b1100011000001101 N0
-b0010110101111110 N1
-b1111001110001011 N2
+b0110010011110100 N0
+b1011100110101100 N1
+b0001111010100000 N2
 #7
-b1100100101000111 N0
-b1101101110101000 N1
-b1010010011101111 N2
+b0111101010101011 N0
+b1001111111011101 N1
+b0001101010001000 N2
 #8
-b0010111001010011 N0
-b1001010111110101 N1
-b1100010001001000 N2
+b1011111110011111 N0
+b1011110000010011 N1
+b0111101110110010 N2
 #9
-b1101001001000110 N0
-b0011110010100110 N1
-b0000111011101100 N2
+b0000001111011101 N0
+b1110000010001001 N1
+b1110010001100110 N2
 #10
-b0000011001000100 N0
-b1001001010011010 N1
-b1001100011011110 N2
+b1111110011100000 N0
+b1111001100000110 N1
+b1110111111100110 N2
 #11
-b1000001111011110 N0
-b0000110010110111 N1
-b1001000010010101 N2
+b0000001110001001 N0
+b0100100101000000 N1
+b0100110011001001 N2
 #12
-b0010001000110001 N0
-b0110000011010100 N1
-b1000001100000101 N2
+b0100110111001001 N0
+b1000011101000100 N1
+b1101010100001101 N2
 #13
-b0000001101011101 N0
-b0001010000100000 N1
-b0001011101111101 N2
+b1101100001111100 N0
+b1100000010000011 N1
+b1001100011111111 N2
 #14
-b1010001001001101 N0
-b1011110101001010 N1
-b0101111110010111 N2
+b1010000001110110 N0
+b1101010110001011 N1
+b0111011000000001 N2
 EOF
 cat >test.stdin <<EOF
+reset 5
+poke Combinational.io_x 0xe03c
+poke Combinational.io_y 0x9ecb
+step 1
+peek Combinational.io_z
+poke Combinational.io_x 0xb9ac
+poke Combinational.io_y 0x64f4
+step 1
+peek Combinational.io_z
+poke Combinational.io_x 0x9fdd
+poke Combinational.io_y 0x7aab
+step 1
+peek Combinational.io_z
+poke Combinational.io_x 0xbc13
+poke Combinational.io_y 0xbf9f
+step 1
+peek Combinational.io_z
+poke Combinational.io_x 0xe089
+poke Combinational.io_y 0x3dd
+step 1
+peek Combinational.io_z
+poke Combinational.io_x 0xf306
+poke Combinational.io_y 0xfce0
+step 1
+peek Combinational.io_z
+poke Combinational.io_x 0x4940
+poke Combinational.io_y 0x389
+step 1
+peek Combinational.io_z
+poke Combinational.io_x 0x8744
+poke Combinational.io_y 0x4dc9
+step 1
+peek Combinational.io_z
+poke Combinational.io_x 0xc083
+poke Combinational.io_y 0xd87c
+step 1
+peek Combinational.io_z
+poke Combinational.io_x 0xd58b
+poke Combinational.io_y 0xa076
+step 1
+peek Combinational.io_z
+quit
 EOF
 cat >test.flo <<EOF
 Combinational::io_y = in/16

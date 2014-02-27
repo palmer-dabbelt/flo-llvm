@@ -6,7 +6,7 @@ int main (int argc, char* argv[]) {
   FullAdder2_t* c = new FullAdder2_t();
   c->init();
   FILE *f = fopen("FullAdder2.vcd", "w");
-  FILE *tee = fopen("FullAdder2.stdio", "w");
+  FILE *tee = fopen("FullAdder2.stdin", "w");
   c->read_eval_print(f, tee);
 }
 EOF
@@ -2113,10 +2113,12 @@ class mod_t {
     for (;;) {
       std::string str_in;
       getline(cin,str_in);
-      if (teefile != NULL)
+      if (teefile != NULL) {
           fprintf(teefile, "%s\n", str_in.c_str());
+          fflush(teefile);
+      }
       if (strcmp("", str_in.c_str()) == 0)
-          return;
+          abort();
       std::vector< std::string > tokens = tokenize(str_in);
       std::string cmd = tokens[0];
       if (cmd == "peek") {
@@ -2202,6 +2204,8 @@ b00 N8
 #4
 EOF
 cat >test.stdin <<EOF
+reset 5
+quit
 EOF
 cat >test.flo <<EOF
 FullAdder2::io_cin = in/2

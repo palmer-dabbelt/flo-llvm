@@ -6,7 +6,7 @@ int main (int argc, char* argv[]) {
   HiLoMultiplier_t* c = new HiLoMultiplier_t();
   c->init();
   FILE *f = fopen("HiLoMultiplier.vcd", "w");
-  FILE *tee = fopen("HiLoMultiplier.stdio", "w");
+  FILE *tee = fopen("HiLoMultiplier.stdin", "w");
   c->read_eval_print(f, tee);
 }
 EOF
@@ -2113,10 +2113,12 @@ class mod_t {
     for (;;) {
       std::string str_in;
       getline(cin,str_in);
-      if (teefile != NULL)
+      if (teefile != NULL) {
           fprintf(teefile, "%s\n", str_in.c_str());
+          fflush(teefile);
+      }
       if (strcmp("", str_in.c_str()) == 0)
-          return;
+          abort();
       std::vector< std::string > tokens = tokenize(str_in);
       std::string cmd = tokens[0];
       if (cmd == "peek") {
@@ -2193,31 +2195,53 @@ b0000000000000000 N4
 #3
 #4
 #5
-b0001110011000110 N0
-b0111000011111111 N1
-b00001100101100110100100100111010 N2
-b0000110010110011 N3
-b0100100100111010 N4
+b0011000111101101 N0
+b1000000110110011 N1
+b00011001010010110101010110110111 N2
+b0001100101001011 N3
+b0101010110110111 N4
 #6
-b1110100101000111 N0
-b1000100000101110 N1
-b01111100000101111010001011000010 N2
-b0111110000010111 N3
-b1010001011000010 N4
+b0100001000001010 N0
+b1000000001010010 N1
+b00100001000110100010011100110100 N2
+b0010000100011010 N3
+b0010011100110100 N4
 #7
-b1110101011110110 N0
-b0110101001000110 N1
-b01100001100010100001101101000100 N2
-b0110000110001010 N3
-b0001101101000100 N4
+b0011010011011001 N0
+b0110001011000011 N1
+b00010100011000110101001101001011 N2
+b0001010001100011 N3
+b0101001101001011 N4
 #8
-b1111111110100001 N0
-b1011011001000110 N1
-b10110110000000100101110000000110 N2
-b1011011000000010 N3
-b0101110000000110 N4
+b0111010011110100 N0
+b1001001110000001 N1
+b01000011011000110000101011110100 N2
+b0100001101100011 N3
+b0000101011110100 N4
 EOF
 cat >test.stdin <<EOF
+reset 5
+poke HiLoMultiplier.io_A 0x81b3
+poke HiLoMultiplier.io_B 0x31ed
+step 1
+peek HiLoMultiplier.io_Lo
+peek HiLoMultiplier.io_Hi
+poke HiLoMultiplier.io_A 0x8052
+poke HiLoMultiplier.io_B 0x420a
+step 1
+peek HiLoMultiplier.io_Lo
+peek HiLoMultiplier.io_Hi
+poke HiLoMultiplier.io_A 0x62c3
+poke HiLoMultiplier.io_B 0x34d9
+step 1
+peek HiLoMultiplier.io_Lo
+peek HiLoMultiplier.io_Hi
+poke HiLoMultiplier.io_A 0x9381
+poke HiLoMultiplier.io_B 0x74f4
+step 1
+peek HiLoMultiplier.io_Lo
+peek HiLoMultiplier.io_Hi
+quit
 EOF
 cat >test.flo <<EOF
 HiLoMultiplier::io_B = in/16

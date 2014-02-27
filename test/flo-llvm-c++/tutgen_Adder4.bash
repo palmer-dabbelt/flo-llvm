@@ -6,7 +6,7 @@ int main (int argc, char* argv[]) {
   Adder4_t* c = new Adder4_t();
   c->init();
   FILE *f = fopen("Adder4.vcd", "w");
-  FILE *tee = fopen("Adder4.stdio", "w");
+  FILE *tee = fopen("Adder4.stdin", "w");
   c->read_eval_print(f, tee);
 }
 EOF
@@ -2113,10 +2113,12 @@ class mod_t {
     for (;;) {
       std::string str_in;
       getline(cin,str_in);
-      if (teefile != NULL)
+      if (teefile != NULL) {
           fprintf(teefile, "%s\n", str_in.c_str());
+          fflush(teefile);
+      }
       if (strcmp("", str_in.c_str()) == 0)
-          return;
+          abort();
       std::vector< std::string > tokens = tokenize(str_in);
       std::string cmd = tokens[0];
       if (cmd == "peek") {
@@ -2277,83 +2279,92 @@ b0 N42
 #3
 #4
 #5
-b0101 N2
-b1 N3
-b0100 N4
-b1 N6
-b1 N7
-b01 N17
-b1 N23
-b1 N24
-b001 N27
-b1 N30
-b1 N31
-b1 N32
-b1 N36
-b1001 N37
-#6
 b1 N0
 b1 N1
-b0100 N2
-b0 N3
+b1100 N2
 b1010 N4
-b0 N6
+b1 N7
 b1 N14
 b1 N15
 b1 N16
 b11 N17
-b0 N24
+b1 N23
 b1 N25
 b1 N26
 b111 N27
-b0 N30
-b0 N31
-b0 N32
+b1 N33
 b1 N34
-b1 N35
-b1111 N37
-#7
-b0 N0
-b0 N1
-b0010 N2
-b1011 N4
-b1 N5
-b1 N6
+b0111 N37
+b1 N40
+b1 N41
+b1 N42
+#6
+b1110 N2
+b1000 N4
 b1 N13
-b0 N15
+b0 N14
+#7
+b1001 N2
+b1 N3
+b1110 N4
+b1 N6
+b0 N7
+b1 N9
+b1 N11
+b1 N12
+b0 N13
+b1 N14
 b0 N16
-b01 N17
-b1 N20
+b00 N17
+b1 N18
 b1 N21
 b1 N22
 b0 N23
-b0 N25
-b101 N27
-b1101 N37
+b1 N24
+b0 N26
+b000 N27
+b1 N28
+b1 N31
+b1 N32
+b1 N36
+b1000 N37
+b1 N38
+b1 N39
 #8
-b0110 N2
-b0001 N4
-b0 N14
-b1 N15
-b1 N16
-b11 N17
-b0 N20
-b0 N21
-b0 N22
+b1101 N2
+b1010 N4
 b1 N23
-b1 N25
-b111 N27
-b0 N34
-b0 N35
-b0 N36
-b0111 N37
+b0 N24
+b0 N28
+b1 N29
 EOF
 cat >test.stdin <<EOF
 reset 5
-poke Adder4.io_A 0x9
-poke Adder4.io_B 0x7
+poke Adder4.io_A 0xa
+poke Adder4.io_B 0xc
 poke Adder4.io_Cin 0x1
 step 1
+peek Adder4.io_Sum
+peek Adder4.io_Cout
+poke Adder4.io_A 0x8
+poke Adder4.io_B 0xe
+poke Adder4.io_Cin 0x1
+step 1
+peek Adder4.io_Sum
+peek Adder4.io_Cout
+poke Adder4.io_A 0xe
+poke Adder4.io_B 0x9
+poke Adder4.io_Cin 0x1
+step 1
+peek Adder4.io_Sum
+peek Adder4.io_Cout
+poke Adder4.io_A 0xa
+poke Adder4.io_B 0xd
+poke Adder4.io_Cin 0x1
+step 1
+peek Adder4.io_Sum
+peek Adder4.io_Cout
+quit
 EOF
 cat >test.flo <<EOF
 Adder4::io_Cin = in/1
