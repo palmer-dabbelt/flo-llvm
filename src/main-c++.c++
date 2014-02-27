@@ -145,7 +145,7 @@ int generate_header(const node_list &flo, FILE *f)
     /* FIXME: Don't depend on Chisel's emulator.h, it kind of
      * defeats the point of doing all this in the first
      * place... */
-    fprintf(f, "#include <emulator.h>\n");
+    fprintf(f, "#include \"emulator.h\"\n");
     fprintf(f, "class %s_t {\n", class_name(flo).c_str());
     fprintf(f, "  public:\n");
 

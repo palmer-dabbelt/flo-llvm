@@ -1,4 +1,5 @@
 #include "tempdir.bash"
+#include "emulator.bash"
 
 cat >test.flo <<EOF
 Fib::io_ok = out/1 Fib::valid

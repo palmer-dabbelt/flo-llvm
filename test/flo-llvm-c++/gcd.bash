@@ -1,4 +1,5 @@
 #include "tempdir.bash"
+#include "emulator.bash"
 
 cat >test.flo <<EOF
 reset = rst
