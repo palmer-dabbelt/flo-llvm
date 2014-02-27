@@ -146,7 +146,7 @@ int generate_header(const node_list &flo, FILE *f)
      * defeats the point of doing all this in the first
      * place... */
     fprintf(f, "#include \"emulator.h\"\n");
-    fprintf(f, "class %s_t {\n", class_name(flo).c_str());
+    fprintf(f, "class %s_t: public mod_t {\n", class_name(flo).c_str());
     fprintf(f, "  public:\n");
 
     /* Declares the variables that need to be present in the C++
@@ -172,7 +172,8 @@ int generate_header(const node_list &flo, FILE *f)
      * the emitted LLVM IR.  These must exactly match the
      * Chisel-emitted definitions. */
     fprintf(f, "  public:\n");
-    fprintf(f, "    void init(bool random_init);\n");
+    fprintf(f, "    void init(bool random_init = false);\n");
+    fprintf(f, "    int clock(dat_t<1> reset);\n");
     fprintf(f, "    void clock_lo(dat_t<1> reset);\n");
     fprintf(f, "    void clock_hi(dat_t<1> reset);\n");
     fprintf(f, "    void dump(FILE *file, int clock);\n");
@@ -273,6 +274,10 @@ int generate_compat(const node_list &flo, FILE *f)
 
     /* End the 'extern "C"' block above. */
     fprintf(f, "};\n");
+
+    /* The clock function just calls the other two clock functions. */
+    fprintf(f, "int %s_t::clock(dat_t<1> rd)\n", dut_name.c_str());
+    fprintf(f, "  { clock_hi(rd); clock_lo(rd); return 0; }\n");
 
     /* Actually define the (non mangled) implementation of the Chisel
      * C++ interface, which in fact only calls the LLVM-generated
