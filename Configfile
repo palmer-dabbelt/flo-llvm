@@ -34,7 +34,7 @@ TESTSRC     += gcd.bash
 # These tests all come from the Chisel tutorial
 TESTSRC += tutgen_Adder4.bash
 TESTSRC += tutgen_Adder.bash
-#TESTSRC += tutgen_ByteSelector.bash
+TESTSRC += tutgen_ByteSelector.bash
 TESTSRC += tutgen_Combinational.bash
 #TESTSRC += tutgen_Darken.bash
 #TESTSRC += tutgen_EnableShiftRegister.bash
