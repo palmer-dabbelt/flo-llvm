@@ -47,6 +47,7 @@ private:
 
     /* FIXME: This should be removed. */
     const std::vector<std::string> _mangled_s;
+    const std::vector<std::string> _unmangled_s;
 
     /* This is set to TRUE whenever this symbol should be exported
      * into the Chisel header file, and FALSE otherwise. */
@@ -61,6 +62,12 @@ public:
     const std::string mangled_d(void) const { return _mangled_d; }
     const std::string mangled_s(size_t i) const { return _mangled_s[i]; }
     bool exported(void) const { return _exported; }
+
+    /* Returns TRUE if the indexed source is exported, and FALSE
+     * otherwise.  This is used for registers: if the indexed source
+     * is not exported then a special shadow temporary must be
+     * created, otherwise we're OK. */
+    bool source_exported(size_t i) const;
 
     /* Accesses the source and destination operands as libcodegen
      * types.  Essentially this makes sure you can't mess up the name
@@ -91,6 +98,13 @@ public:
                              libcodegen::pointer<libcodegen::builtin<uint64_t>>
                              >
         > set_func(void) const;
+
+    /* A special helper function that determines if this node's source
+     * needs to be exported into the header file.  This is really just
+     * a hack to deal with registers... :( */
+    bool need_export_source(void) const
+        { return opcode() == libflo::opcode::REG && !source_exported(1); }
+    const std::string source_to_export(void) const { return _mangled_s[1]; }
 };
 
 #endif

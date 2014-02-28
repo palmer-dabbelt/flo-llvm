@@ -143,6 +143,15 @@ int main(int argc, const char **argv)
 
 int generate_header(const node_list &flo, FILE *f)
 {
+    /* Fill out a big map of symbols that need to be exported despite
+     * the fact that their name may not say that they do. */
+    std::map<const std::string, bool> extra_exports;
+    for (auto it = flo.nodes(); !it.done(); ++it) {
+        auto node = *it;
+        if (node->need_export_source())
+            extra_exports[node->source_to_export()] = true;
+    }
+
     /* Figures out the class name, printing that out. */
     fprintf(f, "#include <stdio.h>\n");
     fprintf(f, "#include <stdint.h>\n");
@@ -159,7 +168,8 @@ int generate_header(const node_list &flo, FILE *f)
     for (auto it = flo.nodes(); !it.done(); ++it) {
         auto node = *it;
 
-        if (!node->exported())
+        bool extra = extra_exports.find(node->d()) != extra_exports.end();
+        if (!node->exported() && !extra)
             continue;
 
         fprintf(f, "    dat_t<%d> %s;\n",
@@ -192,6 +202,15 @@ int generate_compat(const node_list &flo, FILE *f)
 {
     auto dut_name = class_name(flo);
 
+    /* Fill out a big map of symbols that need to be exported despite
+     * the fact that their name may not say that they do. */
+    std::map<const std::string, bool> extra_exports;
+    for (auto it = flo.nodes(); !it.done(); ++it) {
+        auto node = *it;
+        if (node->need_export_source())
+            extra_exports[node->source_to_export()] = true;
+    }
+
     /* The whole point of this is to work around the C++ name
      * mangling. */
     fprintf(f, "extern \"C\" {\n");
@@ -203,7 +222,8 @@ int generate_compat(const node_list &flo, FILE *f)
     for (auto it = flo.nodes(); !it.done(); ++it) {
         auto node = *it;
 
-        if (node->exported() == false)
+        bool extra = extra_exports.find(node->d()) != extra_exports.end();
+        if (!node->exported() && !extra)
             continue;
 
         fprintf(f, "  dat_t<%d> *_llvmflo_%s_ptr(%s_t *d)\n",
@@ -479,6 +499,15 @@ int generate_llvmir(const node_list &flo, FILE *f)
     /* This writer outputs LLVM IR to the given file. */
     llvm out(f);
 
+    /* Fill out a big map of symbols that need to be exported despite
+     * the fact that their name may not say that they do. */
+    std::map<const std::string, bool> extra_exports;
+    for (auto it = flo.nodes(); !it.done(); ++it) {
+        auto node = *it;
+        if (node->need_export_source())
+            extra_exports[node->source_to_export()] = true;
+    }
+
     /* Generate declarations for some external functions that get used
      * by generated code below. */
     function< builtin<void>,
@@ -507,7 +536,10 @@ int generate_llvmir(const node_list &flo, FILE *f)
     for (auto it = flo.nodes(); !it.done(); ++it) {
         auto node = *it;
 
-        if (node->exported() == false)
+        bool needs_export = node->exported();
+        if (extra_exports.find(node->d()) != extra_exports.end())
+            needs_export = true;
+        if (needs_export == false)
             continue;
 
         out.declare(node->ptr_func());
@@ -581,7 +613,9 @@ int generate_llvmir(const node_list &flo, FILE *f)
              * this operation succeed. */
             auto i64cnt = constant<uint32_t>((node->outwid() + 63) / 64);
 
+            lo->comment("");
             lo->comment(" *** Chisel Node: %s", node->to_string().c_str());
+            lo->comment("");
 
             bool nop = false;
             switch (node->opcode()) {
@@ -656,6 +690,8 @@ int generate_llvmir(const node_list &flo, FILE *f)
             case libflo::opcode::IN:
             case libflo::opcode::REG:
             {
+                nop = true;
+
                 auto ptr64 = pointer<builtin<uint64_t>>();
                 auto ptrC = pointer<builtin<void>>();
 
@@ -755,11 +791,17 @@ int generate_llvmir(const node_list &flo, FILE *f)
                 break;
             }
 
+            /* Some nodes need to be exported even when their name
+             * doesn't suggest that they do. */
+            bool needs_export = node->exported();
+            if (extra_exports.find(node->d()) != extra_exports.end())
+                needs_export = true;
+
             /* Every node that's in the Chisel header gets stored after
              * its cooresponding computation, but only when the node
              * appears in the Chisel header. */
-            if (node->exported() == true && nop == false) {
-                lo->comment("  Writeback\n");
+            if (needs_export == true && nop == false) {
+                lo->comment("  Writeback");
 
                 /* This generates a pointer that can be passed to C++,
                  * in other words, an array-of-uints. */

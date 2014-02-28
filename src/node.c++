@@ -36,6 +36,7 @@ node::node(const libflo::node_ptr n)
     : libflo::node(n->d(), n->op(), n->alt_width(), n->s()),
       _mangled_d(mangle_name(n->d())),
       _mangled_s(mangle_s(n->s())),
+      _unmangled_s(n->s()),
       _exported(strcmp(n->d().c_str(), _mangled_d.c_str()) != 0)
       
 {
@@ -61,6 +62,14 @@ const std::vector<std::string> mangle_s(const std::vector<std::string> &s)
         out.push_back(mangle_name(*it));
 
     return out;
+}
+
+bool node::source_exported(size_t i) const
+{
+    if (_mangled_s.size() == 0)
+        return true;
+
+    return (strcmp(_unmangled_s[i].c_str(), _mangled_s[i].c_str()) != 0);
 }
 
 libcodegen::fix_t node::dv(void) const
