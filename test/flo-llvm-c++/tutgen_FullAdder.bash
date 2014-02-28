@@ -2203,50 +2203,42 @@ b0 N8
 #3
 #4
 #5
+#6
+#7
 b1 N1
 b1 N3
 b1 N4
-#6
-b1 N0
-b0 N4
-b1 N6
-b1 N8
-#7
-b0 N0
-b1 N2
-b0 N3
-b0 N6
-b1 N7
 #8
-b0 N2
-b1 N3
-b1 N4
-b0 N7
-b0 N8
+b1 N0
+b0 N1
+b1 N2
+b0 N4
+b1 N5
+b1 N8
 EOF
 cat >test.stdin <<EOF
 reset 5
 poke FullAdder.io_a 0x0
-poke FullAdder.io_b 0x1
+poke FullAdder.io_b 0x0
+poke FullAdder.io_cin 0x0
+step 1
+peek FullAdder.io_sum
+peek FullAdder.io_cout
+poke FullAdder.io_a 0x0
+poke FullAdder.io_b 0x0
 poke FullAdder.io_cin 0x0
 step 1
 peek FullAdder.io_sum
 peek FullAdder.io_cout
 poke FullAdder.io_a 0x0
 poke FullAdder.io_b 0x1
-poke FullAdder.io_cin 0x1
+poke FullAdder.io_cin 0x0
 step 1
 peek FullAdder.io_sum
 peek FullAdder.io_cout
 poke FullAdder.io_a 0x1
-poke FullAdder.io_b 0x1
-poke FullAdder.io_cin 0x0
-step 1
-peek FullAdder.io_sum
-peek FullAdder.io_cout
-poke FullAdder.io_a 0x0
-poke FullAdder.io_b 0x1
-poke FullAdder.io_cin 0x0
+poke FullAdder.io_b 0x0
+poke FullAdder.io_cin 0x1
 step 1
 peek FullAdder.io_sum
 peek FullAdder.io_cout

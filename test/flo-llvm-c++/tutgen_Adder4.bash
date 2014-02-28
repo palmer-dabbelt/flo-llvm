@@ -2279,42 +2279,60 @@ b0 N42
 #3
 #4
 #5
-b1 N0
-b1 N1
-b1100 N2
-b1010 N4
-b1 N7
-b1 N14
-b1 N15
-b1 N16
-b11 N17
-b1 N23
-b1 N25
-b1 N26
-b111 N27
-b1 N33
-b1 N34
-b0111 N37
-b1 N40
-b1 N41
-b1 N42
-#6
-b1110 N2
-b1000 N4
-b1 N13
-b0 N14
-#7
-b1001 N2
+b0011 N2
 b1 N3
-b1110 N4
-b1 N6
-b0 N7
-b1 N9
+b0101 N4
+b1 N5
+b1 N10
 b1 N11
 b1 N12
+b1 N13
+b1 N15
+b1 N19
+b1 N21
+b1 N22
+b1 N24
+b1 N25
+b1 N28
+b1 N31
+b1 N32
+b1 N36
+b1000 N37
+#6
+b0100 N2
+b0 N3
+b0001 N4
+b1 N6
+b1 N7
+b0 N10
+b0 N11
+b0 N12
 b0 N13
+b0 N15
+b01 N17
+b0 N19
+b0 N21
+b0 N22
+b1 N23
+b0 N24
+b1 N26
+b101 N27
+b0 N28
+b0 N31
+b0 N32
+b0 N36
+b0101 N37
+#7
+b0001 N2
+b1 N3
+b0111 N4
+b0 N6
+b0 N7
+b1 N10
+b1 N11
+b1 N12
 b1 N14
-b0 N16
+b1 N15
 b00 N17
 b1 N18
 b1 N21
@@ -2328,39 +2346,54 @@ b1 N31
 b1 N32
 b1 N36
 b1000 N37
-b1 N38
-b1 N39
 #8
-b1101 N2
-b1010 N4
-b1 N23
-b0 N24
+b0010 N2
+b0 N3
+b1101 N4
+b1 N6
+b1 N7
+b0 N10
+b0 N11
+b0 N12
+b1 N13
+b0 N14
+b1 N16
+b11 N17
+b0 N18
+b0 N21
+b0 N22
+b1 N26
+b111 N27
 b0 N28
-b1 N29
+b0 N31
+b0 N32
+b1 N34
+b1 N35
+b1111 N37
 EOF
 cat >test.stdin <<EOF
 reset 5
-poke Adder4.io_A 0xa
-poke Adder4.io_B 0xc
-poke Adder4.io_Cin 0x1
+poke Adder4.io_A 0x5
+poke Adder4.io_B 0x3
+poke Adder4.io_Cin 0x0
 step 1
 peek Adder4.io_Sum
 peek Adder4.io_Cout
-poke Adder4.io_A 0x8
-poke Adder4.io_B 0xe
-poke Adder4.io_Cin 0x1
+poke Adder4.io_A 0x1
+poke Adder4.io_B 0x4
+poke Adder4.io_Cin 0x0
 step 1
 peek Adder4.io_Sum
 peek Adder4.io_Cout
-poke Adder4.io_A 0xe
-poke Adder4.io_B 0x9
-poke Adder4.io_Cin 0x1
+poke Adder4.io_A 0x7
+poke Adder4.io_B 0x1
+poke Adder4.io_Cin 0x0
 step 1
 peek Adder4.io_Sum
 peek Adder4.io_Cout
-poke Adder4.io_A 0xa
-poke Adder4.io_B 0xd
-poke Adder4.io_Cin 0x1
+poke Adder4.io_A 0xd
+poke Adder4.io_B 0x2
+poke Adder4.io_Cin 0x0
 step 1
 peek Adder4.io_Sum
 peek Adder4.io_Cout

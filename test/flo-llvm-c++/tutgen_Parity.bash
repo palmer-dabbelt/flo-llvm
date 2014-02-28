@@ -2192,34 +2192,43 @@ b0 N3
 #3
 #4
 #5
-#6
-#7
 b1 N1
 b1 N2
-#8
-b0 N2
-b1 N3
-#9
-b1 N2
-b0 N3
-#10
-b0 N2
-b1 N3
-#11
-b1 N2
-b0 N3
-#12
-b0 N2
-b1 N3
-#13
-b1 N2
-b0 N3
-#14
+#6
 b0 N1
 b1 N3
+#7
+b1 N1
+b0 N2
+#8
+b0 N1
+b0 N3
+#9
+#10
+b1 N1
+b1 N2
+#11
+b0 N2
+b1 N3
+#12
+b0 N1
+b0 N3
+#13
+#14
+b1 N1
+b1 N2
 EOF
 cat >test.stdin <<EOF
 reset 5
+poke Parity.io_in 0x1
+step 1
+peek Parity.io_out
+poke Parity.io_in 0x0
+step 1
+peek Parity.io_out
+poke Parity.io_in 0x1
+step 1
+peek Parity.io_out
 poke Parity.io_in 0x0
 step 1
 peek Parity.io_out
@@ -2232,22 +2241,13 @@ peek Parity.io_out
 poke Parity.io_in 0x1
 step 1
 peek Parity.io_out
-poke Parity.io_in 0x1
-step 1
-peek Parity.io_out
-poke Parity.io_in 0x1
-step 1
-peek Parity.io_out
-poke Parity.io_in 0x1
-step 1
-peek Parity.io_out
-poke Parity.io_in 0x1
-step 1
-peek Parity.io_out
-poke Parity.io_in 0x1
+poke Parity.io_in 0x0
 step 1
 peek Parity.io_out
 poke Parity.io_in 0x0
+step 1
+peek Parity.io_out
+poke Parity.io_in 0x1
 step 1
 peek Parity.io_out
 quit

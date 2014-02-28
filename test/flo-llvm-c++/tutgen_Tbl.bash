@@ -2701,102 +2701,102 @@ b00000000 N257
 #3
 #4
 #5
-b10011100 N256
-b10011100 N257
+b01101100 N256
+b01101100 N257
 #6
-b11000110 N256
-b11000110 N257
+b01101010 N256
+b01101010 N257
 #7
-b01110011 N256
-b01110011 N257
+b10100110 N256
+b10100110 N257
 #8
-b00101100 N256
-b00101100 N257
+b00101010 N256
+b00101010 N257
 #9
-b11101001 N256
-b11101001 N257
-#10
-b00101111 N256
-b00101111 N257
-#11
-b01011000 N256
-b01011000 N257
-#12
-b01101001 N256
-b01101001 N257
-#13
-b11111000 N256
-b11111000 N257
-#14
-b00101000 N256
-b00101000 N257
-#15
-b10111000 N256
-b10111000 N257
-#16
-b10000001 N256
-b10000001 N257
-#17
-b10111101 N256
-b10111101 N257
-#18
-b11111101 N256
-b11111101 N257
-#19
 b00100001 N256
 b00100001 N257
+#10
+b10101101 N256
+b10101101 N257
+#11
+b01111111 N256
+b01111111 N257
+#12
+b01101010 N256
+b01101010 N257
+#13
+b00100000 N256
+b00100000 N257
+#14
+b10111110 N256
+b10111110 N257
+#15
+b11001001 N256
+b11001001 N257
+#16
+b11001100 N256
+b11001100 N257
+#17
+b00010001 N256
+b00010001 N257
+#18
+b01100010 N256
+b01100010 N257
+#19
+b10101010 N256
+b10101010 N257
 #20
-b10010100 N256
-b10010100 N257
+b10010010 N256
+b10010010 N257
 EOF
 cat >test.stdin <<EOF
 reset 5
-poke Tbl.io_addr 0x9c
+poke Tbl.io_addr 0x6c
 step 1
 peek Tbl.io_out
-poke Tbl.io_addr 0xc6
+poke Tbl.io_addr 0x6a
 step 1
 peek Tbl.io_out
-poke Tbl.io_addr 0x73
+poke Tbl.io_addr 0xa6
 step 1
 peek Tbl.io_out
-poke Tbl.io_addr 0x2c
-step 1
-peek Tbl.io_out
-poke Tbl.io_addr 0xe9
-step 1
-peek Tbl.io_out
-poke Tbl.io_addr 0x2f
-step 1
-peek Tbl.io_out
-poke Tbl.io_addr 0x58
-step 1
-peek Tbl.io_out
-poke Tbl.io_addr 0x69
-step 1
-peek Tbl.io_out
-poke Tbl.io_addr 0xf8
-step 1
-peek Tbl.io_out
-poke Tbl.io_addr 0x28
-step 1
-peek Tbl.io_out
-poke Tbl.io_addr 0xb8
-step 1
-peek Tbl.io_out
-poke Tbl.io_addr 0x81
-step 1
-peek Tbl.io_out
-poke Tbl.io_addr 0xbd
-step 1
-peek Tbl.io_out
-poke Tbl.io_addr 0xfd
+poke Tbl.io_addr 0x2a
 step 1
 peek Tbl.io_out
 poke Tbl.io_addr 0x21
 step 1
 peek Tbl.io_out
-poke Tbl.io_addr 0x94
+poke Tbl.io_addr 0xad
+step 1
+peek Tbl.io_out
+poke Tbl.io_addr 0x7f
+step 1
+peek Tbl.io_out
+poke Tbl.io_addr 0x6a
+step 1
+peek Tbl.io_out
+poke Tbl.io_addr 0x20
+step 1
+peek Tbl.io_out
+poke Tbl.io_addr 0xbe
+step 1
+peek Tbl.io_out
+poke Tbl.io_addr 0xc9
+step 1
+peek Tbl.io_out
+poke Tbl.io_addr 0xcc
+step 1
+peek Tbl.io_out
+poke Tbl.io_addr 0x11
+step 1
+peek Tbl.io_out
+poke Tbl.io_addr 0x62
+step 1
+peek Tbl.io_out
+poke Tbl.io_addr 0xaa
+step 1
+peek Tbl.io_out
+poke Tbl.io_addr 0x92
 step 1
 peek Tbl.io_out
 quit

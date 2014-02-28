@@ -2201,74 +2201,80 @@ b0000 N7
 #4
 #5
 b0001 N1
+#6
 b1 N2
 b0001 N3
-#6
-b0001 N4
 #7
-b0001 N5
+b0001 N4
 #8
+b0 N2
+#9
+b0000 N1
+b1 N2
+b0000 N3
+b0001 N5
+#10
+b0 N2
+#11
+b0001 N1
+#12
+b1 N2
+b0001 N3
+b0000 N4
+b0001 N6
+#13
+b0001 N4
+b0000 N5
+b0001 N7
+#14
 b0000 N1
 b0000 N3
-b0001 N6
-#9
-b0000 N4
-b0001 N7
-#10
-b0000 N5
-#11
-b0 N2
-#12
-b0001 N1
-#13
-b0000 N1
-b1 N2
+b0001 N5
 b0000 N6
-#14
-b0 N2
-b0000 N7
 #15
-#16
 b0001 N1
-b1 N2
 b0001 N3
+b0000 N4
+b0001 N6
+b0000 N7
+#16
+b0000 N1
+b0000 N3
+b0001 N4
+b0000 N5
+b0001 N7
 #17
-b0 N2
+b0000 N4
+b0001 N5
+b0000 N6
 #18
+b0001 N1
+b0001 N3
+b0000 N5
+b0001 N6
+b0000 N7
 #19
+b0000 N1
+b0 N2
+b0001 N7
+#20
+b0001 N1
 b1 N2
 b0001 N4
-#20
-b0001 N5
+b0000 N6
 EOF
 cat >test.stdin <<EOF
 reset 5
 poke EnableShiftRegister.io_in 0x1
-poke EnableShiftRegister.io_shift 0x1
-step 1
-peek EnableShiftRegister.io_out
-poke EnableShiftRegister.io_in 0x1
-poke EnableShiftRegister.io_shift 0x1
-step 1
-peek EnableShiftRegister.io_out
-poke EnableShiftRegister.io_in 0x1
-poke EnableShiftRegister.io_shift 0x1
-step 1
-peek EnableShiftRegister.io_out
-poke EnableShiftRegister.io_in 0x0
-poke EnableShiftRegister.io_shift 0x1
-step 1
-peek EnableShiftRegister.io_out
-poke EnableShiftRegister.io_in 0x0
-poke EnableShiftRegister.io_shift 0x1
-step 1
-peek EnableShiftRegister.io_out
-poke EnableShiftRegister.io_in 0x0
-poke EnableShiftRegister.io_shift 0x1
-step 1
-peek EnableShiftRegister.io_out
-poke EnableShiftRegister.io_in 0x0
 poke EnableShiftRegister.io_shift 0x0
+step 1
+peek EnableShiftRegister.io_out
+poke EnableShiftRegister.io_in 0x1
+poke EnableShiftRegister.io_shift 0x1
+step 1
+peek EnableShiftRegister.io_out
+poke EnableShiftRegister.io_in 0x1
+poke EnableShiftRegister.io_shift 0x1
 step 1
 peek EnableShiftRegister.io_out
 poke EnableShiftRegister.io_in 0x1
@@ -2283,24 +2289,40 @@ poke EnableShiftRegister.io_in 0x0
 poke EnableShiftRegister.io_shift 0x0
 step 1
 peek EnableShiftRegister.io_out
+poke EnableShiftRegister.io_in 0x1
+poke EnableShiftRegister.io_shift 0x0
+step 1
+peek EnableShiftRegister.io_out
+poke EnableShiftRegister.io_in 0x1
+poke EnableShiftRegister.io_shift 0x1
+step 1
+peek EnableShiftRegister.io_out
+poke EnableShiftRegister.io_in 0x1
+poke EnableShiftRegister.io_shift 0x1
+step 1
+peek EnableShiftRegister.io_out
+poke EnableShiftRegister.io_in 0x0
+poke EnableShiftRegister.io_shift 0x1
+step 1
+peek EnableShiftRegister.io_out
+poke EnableShiftRegister.io_in 0x1
+poke EnableShiftRegister.io_shift 0x1
+step 1
+peek EnableShiftRegister.io_out
+poke EnableShiftRegister.io_in 0x0
+poke EnableShiftRegister.io_shift 0x1
+step 1
+peek EnableShiftRegister.io_out
+poke EnableShiftRegister.io_in 0x0
+poke EnableShiftRegister.io_shift 0x1
+step 1
+peek EnableShiftRegister.io_out
+poke EnableShiftRegister.io_in 0x1
+poke EnableShiftRegister.io_shift 0x1
+step 1
+peek EnableShiftRegister.io_out
 poke EnableShiftRegister.io_in 0x0
 poke EnableShiftRegister.io_shift 0x0
-step 1
-peek EnableShiftRegister.io_out
-poke EnableShiftRegister.io_in 0x1
-poke EnableShiftRegister.io_shift 0x1
-step 1
-peek EnableShiftRegister.io_out
-poke EnableShiftRegister.io_in 0x1
-poke EnableShiftRegister.io_shift 0x0
-step 1
-peek EnableShiftRegister.io_out
-poke EnableShiftRegister.io_in 0x1
-poke EnableShiftRegister.io_shift 0x0
-step 1
-peek EnableShiftRegister.io_out
-poke EnableShiftRegister.io_in 0x1
-poke EnableShiftRegister.io_shift 0x1
 step 1
 peek EnableShiftRegister.io_out
 poke EnableShiftRegister.io_in 0x1

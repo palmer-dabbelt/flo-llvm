@@ -2191,86 +2191,86 @@ b0000000000000000 N2
 #3
 #4
 #5
-b1001111011001011 N0
-b1110000000111100 N1
-b0111111100000111 N2
+b0011110101100100 N0
+b0100001001110110 N1
+b0111111111011010 N2
 #6
-b0110010011110100 N0
-b1011100110101100 N1
-b0001111010100000 N2
+b1111011011010001 N0
+b0000001110100100 N1
+b1111101001110101 N2
 #7
-b0111101010101011 N0
-b1001111111011101 N1
-b0001101010001000 N2
+b0111111011011001 N0
+b1100001001111110 N1
+b0100000101010111 N2
 #8
-b1011111110011111 N0
-b1011110000010011 N1
-b0111101110110010 N2
+b0000111101111110 N0
+b0110000001011011 N1
+b0110111111011001 N2
 #9
-b0000001111011101 N0
-b1110000010001001 N1
-b1110010001100110 N2
+b1001001010101000 N0
+b0111011111011101 N1
+b0000101010000101 N2
 #10
-b1111110011100000 N0
-b1111001100000110 N1
-b1110111111100110 N2
+b0010111000101110 N0
+b1111000111111011 N1
+b0010000000101001 N2
 #11
-b0000001110001001 N0
-b0100100101000000 N1
-b0100110011001001 N2
+b1101000100110100 N0
+b1100101111100111 N1
+b1001110100011011 N2
 #12
-b0100110111001001 N0
-b1000011101000100 N1
-b1101010100001101 N2
+b1110111100111010 N0
+b0101001110001100 N1
+b0100001011000110 N2
 #13
-b1101100001111100 N0
-b1100000010000011 N1
-b1001100011111111 N2
+b0001100011001110 N0
+b1111111111001000 N1
+b0001100010010110 N2
 #14
-b1010000001110110 N0
-b1101010110001011 N1
-b0111011000000001 N2
+b1000110111110001 N0
+b1011011110001100 N1
+b0100010101111101 N2
 EOF
 cat >test.stdin <<EOF
 reset 5
-poke Combinational.io_x 0xe03c
-poke Combinational.io_y 0x9ecb
+poke Combinational.io_x 0x4276
+poke Combinational.io_y 0x3d64
 step 1
 peek Combinational.io_z
-poke Combinational.io_x 0xb9ac
-poke Combinational.io_y 0x64f4
+poke Combinational.io_x 0x3a4
+poke Combinational.io_y 0xf6d1
 step 1
 peek Combinational.io_z
-poke Combinational.io_x 0x9fdd
-poke Combinational.io_y 0x7aab
+poke Combinational.io_x 0xc27e
+poke Combinational.io_y 0x7ed9
 step 1
 peek Combinational.io_z
-poke Combinational.io_x 0xbc13
-poke Combinational.io_y 0xbf9f
+poke Combinational.io_x 0x605b
+poke Combinational.io_y 0xf7e
 step 1
 peek Combinational.io_z
-poke Combinational.io_x 0xe089
-poke Combinational.io_y 0x3dd
+poke Combinational.io_x 0x77dd
+poke Combinational.io_y 0x92a8
 step 1
 peek Combinational.io_z
-poke Combinational.io_x 0xf306
-poke Combinational.io_y 0xfce0
+poke Combinational.io_x 0xf1fb
+poke Combinational.io_y 0x2e2e
 step 1
 peek Combinational.io_z
-poke Combinational.io_x 0x4940
-poke Combinational.io_y 0x389
+poke Combinational.io_x 0xcbe7
+poke Combinational.io_y 0xd134
 step 1
 peek Combinational.io_z
-poke Combinational.io_x 0x8744
-poke Combinational.io_y 0x4dc9
+poke Combinational.io_x 0x538c
+poke Combinational.io_y 0xef3a
 step 1
 peek Combinational.io_z
-poke Combinational.io_x 0xc083
-poke Combinational.io_y 0xd87c
+poke Combinational.io_x 0xffc8
+poke Combinational.io_y 0x18ce
 step 1
 peek Combinational.io_z
-poke Combinational.io_x 0xd58b
-poke Combinational.io_y 0xa076
+poke Combinational.io_x 0xb78c
+poke Combinational.io_y 0x8df1
 step 1
 peek Combinational.io_z
 quit

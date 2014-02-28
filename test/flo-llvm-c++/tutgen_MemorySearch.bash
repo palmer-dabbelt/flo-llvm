@@ -2212,7 +2212,7 @@ b000 N13
 #3
 #4
 #5
-b1111 N0
+b0010 N0
 b1 N1
 b0 N2
 b0 N3
@@ -2223,100 +2223,98 @@ b001 N12
 b010 N12
 b001 N13
 #8
-b1 N2
-b1 N3
+b011 N12
 b010 N13
 #9
-b0111 N0
-b1 N1
-b0 N2
-b0 N3
-b000 N12
+b100 N12
+b011 N13
 #10
-b0 N1
-b001 N12
-b000 N13
+b1 N2
+b1 N3
+b100 N13
 #11
-b010 N12
-b001 N13
+b0011 N0
+b1 N1
+b0 N2
+b0 N3
+b000 N12
 #12
-b011 N12
-b010 N13
+b0 N1
+b001 N12
+b000 N13
 #13
-b100 N12
-b011 N13
+b010 N12
+b001 N13
 #14
-b101 N12
-b100 N13
-#15
-b110 N12
-b101 N13
-#16
-b111 N12
-b110 N13
-#17
-b1 N2
-b1 N3
-b111 N13
-#18
-b1111 N0
-b1 N1
-b0 N2
-b0 N3
-b000 N12
-#19
-b0 N1
-b001 N12
-b000 N13
-#20
-b010 N12
-b001 N13
-#21
-b1 N2
-b1 N3
-b010 N13
-#22
-b1000 N0
-b1 N1
-b0 N2
-b0 N3
-b000 N12
-#23
-b0 N1
-b001 N12
-b000 N13
-#24
-b010 N12
-b001 N13
-#25
 b011 N12
 b010 N13
-#26
+#15
 b100 N12
 b011 N13
-#27
+#16
 b101 N12
 b100 N13
-#28
+#17
 b110 N12
 b101 N13
-#29
+#18
 b111 N12
 b110 N13
-#30
+#19
 b1 N2
 b1 N3
 b111 N13
-#31
-b1010 N0
+#20
+b0110 N0
 b1 N1
 b0 N2
 b0 N3
 b000 N12
+#21
+b0 N1
+b001 N12
+b000 N13
+#22
+b010 N12
+b001 N13
+#23
+b011 N12
+b010 N13
+#24
+b100 N12
+b011 N13
+#25
+b101 N12
+b100 N13
+#26
+b110 N12
+b101 N13
+#27
+b111 N12
+b110 N13
+#28
+b1 N2
+b1 N3
+b111 N13
+#29
+b0000 N0
+b1 N1
+b0 N2
+b0 N3
+b000 N12
+#30
+b0 N1
+b1 N2
+b1 N3
+b000 N13
+#31
+b0010 N0
+b1 N1
+b0 N2
+b0 N3
 #32
 b0 N1
 b001 N12
-b000 N13
 #33
 b010 N12
 b001 N13
@@ -2327,43 +2325,43 @@ b010 N13
 b100 N12
 b011 N13
 #36
-b101 N12
-b100 N13
-#37
-b110 N12
-b101 N13
-#38
-b111 N12
-b110 N13
-#39
 b1 N2
 b1 N3
-b111 N13
-#40
-b0010 N0
+b100 N13
+#37
+b1100 N0
 b1 N1
 b0 N2
 b0 N3
 b000 N12
-#41
+#38
 b0 N1
 b001 N12
 b000 N13
-#42
+#39
 b010 N12
 b001 N13
-#43
+#40
 b011 N12
 b010 N13
-#44
+#41
 b100 N12
 b011 N13
+#42
+b101 N12
+b100 N13
+#43
+b110 N12
+b101 N13
+#44
+b111 N12
+b110 N13
 #45
 b1 N2
 b1 N3
-b100 N13
+b111 N13
 #46
-b0100 N0
+b1001 N0
 b1 N1
 b0 N2
 b0 N3
@@ -2373,150 +2371,155 @@ b0 N1
 b001 N12
 b000 N13
 #48
-b1 N2
-b1 N3
+b010 N12
 b001 N13
 #49
-b0101 N0
-b1 N1
-b0 N2
-b0 N3
-b000 N12
+b011 N12
+b010 N13
 #50
-b0 N1
-b001 N12
-b000 N13
+b100 N12
+b011 N13
 #51
-b010 N12
-b001 N13
+b101 N12
+b100 N13
 #52
-b011 N12
-b010 N13
+b110 N12
+b101 N13
 #53
-b100 N12
-b011 N13
+b111 N12
+b110 N13
 #54
-b101 N12
-b100 N13
+b1 N2
+b1 N3
+b111 N13
 #55
-b1 N2
-b1 N3
-b101 N13
-#56
-b0111 N0
-b1 N1
-b0 N2
-b0 N3
-b000 N12
-#57
-b0 N1
-b001 N12
-b000 N13
-#58
-b010 N12
-b001 N13
-#59
-b011 N12
-b010 N13
-#60
-b100 N12
-b011 N13
-#61
-b101 N12
-b100 N13
-#62
-b110 N12
-b101 N13
-#63
-b111 N12
-b110 N13
-#64
-b1 N2
-b1 N3
-b111 N13
-#65
-b1001 N0
-b1 N1
-b0 N2
-b0 N3
-b000 N12
-#66
-b0 N1
-b001 N12
-b000 N13
-#67
-b010 N12
-b001 N13
-#68
-b011 N12
-b010 N13
-#69
-b100 N12
-b011 N13
-#70
-b101 N12
-b100 N13
-#71
-b110 N12
-b101 N13
-#72
-b111 N12
-b110 N13
-#73
-b1 N2
-b1 N3
-b111 N13
-#74
-b0110 N0
-b1 N1
-b0 N2
-b0 N3
-b000 N12
-#75
-b0 N1
-b001 N12
-b000 N13
-#76
-b010 N12
-b001 N13
-#77
-b011 N12
-b010 N13
-#78
-b100 N12
-b011 N13
-#79
-b101 N12
-b100 N13
-#80
-b110 N12
-b101 N13
-#81
-b111 N12
-b110 N13
-#82
-b1 N2
-b1 N3
-b111 N13
-#83
 b0000 N0
 b1 N1
 b0 N2
 b0 N3
 b000 N12
-#84
+#56
 b0 N1
 b1 N2
 b1 N3
 b000 N13
-#85
-b0101 N0
+#57
+b0100 N0
 b1 N1
 b0 N2
 b0 N3
+#58
+b0 N1
+b001 N12
+#59
+b1 N2
+b1 N3
+b001 N13
+#60
+b1001 N0
+b1 N1
+b0 N2
+b0 N3
+b000 N12
+#61
+b0 N1
+b001 N12
+b000 N13
+#62
+b010 N12
+b001 N13
+#63
+b011 N12
+b010 N13
+#64
+b100 N12
+b011 N13
+#65
+b101 N12
+b100 N13
+#66
+b110 N12
+b101 N13
+#67
+b111 N12
+b110 N13
+#68
+b1 N2
+b1 N3
+b111 N13
+#69
+b1000 N0
+b1 N1
+b0 N2
+b0 N3
+b000 N12
+#70
+b0 N1
+b001 N12
+b000 N13
+#71
+b010 N12
+b001 N13
+#72
+b011 N12
+b010 N13
+#73
+b100 N12
+b011 N13
+#74
+b101 N12
+b100 N13
+#75
+b110 N12
+b101 N13
+#76
+b111 N12
+b110 N13
+#77
+b1 N2
+b1 N3
+b111 N13
+#78
+b0000 N0
+b1 N1
+b0 N2
+b0 N3
+b000 N12
+#79
+b0 N1
+b1 N2
+b1 N3
+b000 N13
+#80
+b1 N1
+b0 N2
+b0 N3
+#81
+b0 N1
+b1 N2
+b1 N3
+#82
+b0100 N0
+b1 N1
+b0 N2
+b0 N3
+#83
+b0 N1
+b001 N12
+#84
+b1 N2
+b1 N3
+b001 N13
+#85
+b0011 N0
+b1 N1
+b0 N2
+b0 N3
+b000 N12
 #86
 b0 N1
 b001 N12
+b000 N13
 #87
 b010 N12
 b001 N13
@@ -2530,218 +2533,50 @@ b011 N13
 b101 N12
 b100 N13
 #91
-b1 N2
-b1 N3
+b110 N12
 b101 N13
 #92
-b1001 N0
-b1 N1
-b0 N2
-b0 N3
-b000 N12
+b111 N12
+b110 N13
 #93
-b0 N1
-b001 N12
-b000 N13
+b1 N2
+b1 N3
+b111 N13
 #94
-b010 N12
-b001 N13
+b0110 N0
+b1 N1
+b0 N2
+b0 N3
+b000 N12
 #95
-b011 N12
-b010 N13
+b0 N1
+b001 N12
+b000 N13
 #96
-b100 N12
-b011 N13
+b010 N12
+b001 N13
 #97
-b101 N12
-b100 N13
+b011 N12
+b010 N13
 #98
-b110 N12
-b101 N13
+b100 N12
+b011 N13
 #99
-b111 N12
-b110 N13
+b101 N12
+b100 N13
 #100
-b1 N2
-b1 N3
-b111 N13
+b110 N12
+b101 N13
 #101
-b0001 N0
-b1 N1
-b0 N2
-b0 N3
-b000 N12
+b111 N12
+b110 N13
 #102
-b0 N1
-b001 N12
-b000 N13
-#103
-b010 N12
-b001 N13
-#104
-b011 N12
-b010 N13
-#105
-b100 N12
-b011 N13
-#106
-b101 N12
-b100 N13
-#107
-b110 N12
-b101 N13
-#108
-b111 N12
-b110 N13
-#109
-b1 N2
-b1 N3
-b111 N13
-#110
-b1001 N0
-b1 N1
-b0 N2
-b0 N3
-b000 N12
-#111
-b0 N1
-b001 N12
-b000 N13
-#112
-b010 N12
-b001 N13
-#113
-b011 N12
-b010 N13
-#114
-b100 N12
-b011 N13
-#115
-b101 N12
-b100 N13
-#116
-b110 N12
-b101 N13
-#117
-b111 N12
-b110 N13
-#118
 b1 N2
 b1 N3
 b111 N13
 EOF
 cat >test.stdin <<EOF
 reset 5
-poke MemorySearch.io_en 0x1
-poke MemorySearch.io_target 0xf
-step 1
-poke MemorySearch.io_en 0x0
-step 1
-peek MemorySearch.io_done
-poke MemorySearch.io_en 0x0
-step 1
-peek MemorySearch.io_done
-poke MemorySearch.io_en 0x0
-step 1
-peek MemorySearch.io_done
-peek MemorySearch.io_address
-poke MemorySearch.io_en 0x1
-poke MemorySearch.io_target 0x7
-step 1
-poke MemorySearch.io_en 0x0
-step 1
-peek MemorySearch.io_done
-poke MemorySearch.io_en 0x0
-step 1
-peek MemorySearch.io_done
-poke MemorySearch.io_en 0x0
-step 1
-peek MemorySearch.io_done
-poke MemorySearch.io_en 0x0
-step 1
-peek MemorySearch.io_done
-poke MemorySearch.io_en 0x0
-step 1
-peek MemorySearch.io_done
-poke MemorySearch.io_en 0x0
-step 1
-peek MemorySearch.io_done
-poke MemorySearch.io_en 0x0
-step 1
-peek MemorySearch.io_done
-poke MemorySearch.io_en 0x0
-step 1
-peek MemorySearch.io_done
-peek MemorySearch.io_address
-poke MemorySearch.io_en 0x1
-poke MemorySearch.io_target 0xf
-step 1
-poke MemorySearch.io_en 0x0
-step 1
-peek MemorySearch.io_done
-poke MemorySearch.io_en 0x0
-step 1
-peek MemorySearch.io_done
-poke MemorySearch.io_en 0x0
-step 1
-peek MemorySearch.io_done
-peek MemorySearch.io_address
-poke MemorySearch.io_en 0x1
-poke MemorySearch.io_target 0x8
-step 1
-poke MemorySearch.io_en 0x0
-step 1
-peek MemorySearch.io_done
-poke MemorySearch.io_en 0x0
-step 1
-peek MemorySearch.io_done
-poke MemorySearch.io_en 0x0
-step 1
-peek MemorySearch.io_done
-poke MemorySearch.io_en 0x0
-step 1
-peek MemorySearch.io_done
-poke MemorySearch.io_en 0x0
-step 1
-peek MemorySearch.io_done
-poke MemorySearch.io_en 0x0
-step 1
-peek MemorySearch.io_done
-poke MemorySearch.io_en 0x0
-step 1
-peek MemorySearch.io_done
-poke MemorySearch.io_en 0x0
-step 1
-peek MemorySearch.io_done
-peek MemorySearch.io_address
-poke MemorySearch.io_en 0x1
-poke MemorySearch.io_target 0xa
-step 1
-poke MemorySearch.io_en 0x0
-step 1
-peek MemorySearch.io_done
-poke MemorySearch.io_en 0x0
-step 1
-peek MemorySearch.io_done
-poke MemorySearch.io_en 0x0
-step 1
-peek MemorySearch.io_done
-poke MemorySearch.io_en 0x0
-step 1
-peek MemorySearch.io_done
-poke MemorySearch.io_en 0x0
-step 1
-peek MemorySearch.io_done
-poke MemorySearch.io_en 0x0
-step 1
-peek MemorySearch.io_done
-poke MemorySearch.io_en 0x0
-step 1
-peek MemorySearch.io_done
-poke MemorySearch.io_en 0x0
-step 1
-peek MemorySearch.io_done
-peek MemorySearch.io_address
 poke MemorySearch.io_en 0x1
 poke MemorySearch.io_target 0x2
 step 1
@@ -2762,67 +2597,7 @@ step 1
 peek MemorySearch.io_done
 peek MemorySearch.io_address
 poke MemorySearch.io_en 0x1
-poke MemorySearch.io_target 0x4
-step 1
-poke MemorySearch.io_en 0x0
-step 1
-peek MemorySearch.io_done
-poke MemorySearch.io_en 0x0
-step 1
-peek MemorySearch.io_done
-peek MemorySearch.io_address
-poke MemorySearch.io_en 0x1
-poke MemorySearch.io_target 0x5
-step 1
-poke MemorySearch.io_en 0x0
-step 1
-peek MemorySearch.io_done
-poke MemorySearch.io_en 0x0
-step 1
-peek MemorySearch.io_done
-poke MemorySearch.io_en 0x0
-step 1
-peek MemorySearch.io_done
-poke MemorySearch.io_en 0x0
-step 1
-peek MemorySearch.io_done
-poke MemorySearch.io_en 0x0
-step 1
-peek MemorySearch.io_done
-poke MemorySearch.io_en 0x0
-step 1
-peek MemorySearch.io_done
-peek MemorySearch.io_address
-poke MemorySearch.io_en 0x1
-poke MemorySearch.io_target 0x7
-step 1
-poke MemorySearch.io_en 0x0
-step 1
-peek MemorySearch.io_done
-poke MemorySearch.io_en 0x0
-step 1
-peek MemorySearch.io_done
-poke MemorySearch.io_en 0x0
-step 1
-peek MemorySearch.io_done
-poke MemorySearch.io_en 0x0
-step 1
-peek MemorySearch.io_done
-poke MemorySearch.io_en 0x0
-step 1
-peek MemorySearch.io_done
-poke MemorySearch.io_en 0x0
-step 1
-peek MemorySearch.io_done
-poke MemorySearch.io_en 0x0
-step 1
-peek MemorySearch.io_done
-poke MemorySearch.io_en 0x0
-step 1
-peek MemorySearch.io_done
-peek MemorySearch.io_address
-poke MemorySearch.io_en 0x1
-poke MemorySearch.io_target 0x9
+poke MemorySearch.io_target 0x3
 step 1
 poke MemorySearch.io_en 0x0
 step 1
@@ -2885,8 +2660,33 @@ step 1
 peek MemorySearch.io_done
 peek MemorySearch.io_address
 poke MemorySearch.io_en 0x1
-poke MemorySearch.io_target 0x5
+poke MemorySearch.io_target 0x2
 step 1
+poke MemorySearch.io_en 0x0
+step 1
+peek MemorySearch.io_done
+poke MemorySearch.io_en 0x0
+step 1
+peek MemorySearch.io_done
+poke MemorySearch.io_en 0x0
+step 1
+peek MemorySearch.io_done
+poke MemorySearch.io_en 0x0
+step 1
+peek MemorySearch.io_done
+poke MemorySearch.io_en 0x0
+step 1
+peek MemorySearch.io_done
+peek MemorySearch.io_address
+poke MemorySearch.io_en 0x1
+poke MemorySearch.io_target 0xc
+step 1
+poke MemorySearch.io_en 0x0
+step 1
+peek MemorySearch.io_done
+poke MemorySearch.io_en 0x0
+step 1
+peek MemorySearch.io_done
 poke MemorySearch.io_en 0x0
 step 1
 peek MemorySearch.io_done
@@ -2935,7 +2735,24 @@ step 1
 peek MemorySearch.io_done
 peek MemorySearch.io_address
 poke MemorySearch.io_en 0x1
-poke MemorySearch.io_target 0x1
+poke MemorySearch.io_target 0x0
+step 1
+poke MemorySearch.io_en 0x0
+step 1
+peek MemorySearch.io_done
+peek MemorySearch.io_address
+poke MemorySearch.io_en 0x1
+poke MemorySearch.io_target 0x4
+step 1
+poke MemorySearch.io_en 0x0
+step 1
+peek MemorySearch.io_done
+poke MemorySearch.io_en 0x0
+step 1
+peek MemorySearch.io_done
+peek MemorySearch.io_address
+poke MemorySearch.io_en 0x1
+poke MemorySearch.io_target 0x9
 step 1
 poke MemorySearch.io_en 0x0
 step 1
@@ -2963,7 +2780,87 @@ step 1
 peek MemorySearch.io_done
 peek MemorySearch.io_address
 poke MemorySearch.io_en 0x1
-poke MemorySearch.io_target 0x9
+poke MemorySearch.io_target 0x8
+step 1
+poke MemorySearch.io_en 0x0
+step 1
+peek MemorySearch.io_done
+poke MemorySearch.io_en 0x0
+step 1
+peek MemorySearch.io_done
+poke MemorySearch.io_en 0x0
+step 1
+peek MemorySearch.io_done
+poke MemorySearch.io_en 0x0
+step 1
+peek MemorySearch.io_done
+poke MemorySearch.io_en 0x0
+step 1
+peek MemorySearch.io_done
+poke MemorySearch.io_en 0x0
+step 1
+peek MemorySearch.io_done
+poke MemorySearch.io_en 0x0
+step 1
+peek MemorySearch.io_done
+poke MemorySearch.io_en 0x0
+step 1
+peek MemorySearch.io_done
+peek MemorySearch.io_address
+poke MemorySearch.io_en 0x1
+poke MemorySearch.io_target 0x0
+step 1
+poke MemorySearch.io_en 0x0
+step 1
+peek MemorySearch.io_done
+peek MemorySearch.io_address
+poke MemorySearch.io_en 0x1
+poke MemorySearch.io_target 0x0
+step 1
+poke MemorySearch.io_en 0x0
+step 1
+peek MemorySearch.io_done
+peek MemorySearch.io_address
+poke MemorySearch.io_en 0x1
+poke MemorySearch.io_target 0x4
+step 1
+poke MemorySearch.io_en 0x0
+step 1
+peek MemorySearch.io_done
+poke MemorySearch.io_en 0x0
+step 1
+peek MemorySearch.io_done
+peek MemorySearch.io_address
+poke MemorySearch.io_en 0x1
+poke MemorySearch.io_target 0x3
+step 1
+poke MemorySearch.io_en 0x0
+step 1
+peek MemorySearch.io_done
+poke MemorySearch.io_en 0x0
+step 1
+peek MemorySearch.io_done
+poke MemorySearch.io_en 0x0
+step 1
+peek MemorySearch.io_done
+poke MemorySearch.io_en 0x0
+step 1
+peek MemorySearch.io_done
+poke MemorySearch.io_en 0x0
+step 1
+peek MemorySearch.io_done
+poke MemorySearch.io_en 0x0
+step 1
+peek MemorySearch.io_done
+poke MemorySearch.io_en 0x0
+step 1
+peek MemorySearch.io_done
+poke MemorySearch.io_en 0x0
+step 1
+peek MemorySearch.io_done
+peek MemorySearch.io_address
+poke MemorySearch.io_en 0x1
+poke MemorySearch.io_target 0x6
 step 1
 poke MemorySearch.io_en 0x0
 step 1
@@ -2993,9 +2890,9 @@ peek MemorySearch.io_address
 quit
 EOF
 cat >test.flo <<EOF
-T0 = eq/1 MemorySearch::index 7
+T0 = eq/3 MemorySearch::index 7
 MemorySearch::io_target = in/4
-T1 = eq/1 T2 MemorySearch::io_target
+T1 = eq/4 T2 MemorySearch::io_target
 T3 = or/1 T1 T0
 MemorySearch::io_en = in/1
 T4 = not/1 MemorySearch::io_en

@@ -2191,86 +2191,86 @@ b0000000000000000 N2
 #3
 #4
 #5
-b1001010001101011 N0
-b1001100001011011 N1
-b1001010001101011 N2
+b0010101011101111 N0
+b1110111101101111 N1
+b0010101011101111 N2
 #6
-b1001100101001010 N0
-b1000011111110000 N1
-b1001100101001010 N2
+b1001000111010110 N0
+b1010000111010010 N1
+b1001000111010110 N2
 #7
-b0100000110000100 N0
-b1000100010010011 N1
-b0100000110000100 N2
+b0011010110011100 N0
+b0001100000100000 N1
+b0011010110011100 N2
 #8
-b1001001101101010 N0
-b1011010010011101 N1
-b1001001101101010 N2
+b1001110101100110 N0
+b1011010101011111 N1
+b1001110101100110 N2
 #9
-b0001001001101000 N0
-b0100110101101011 N1
-b0001001001101000 N2
+b0000101001100000 N0
+b0001010101101111 N1
+b0000101001100000 N2
 #10
-b0100110010011110 N0
-b1100001100100010 N1
-b0100110010011110 N2
+b0111101111000110 N0
+b1010111111001101 N1
+b0111101111000110 N2
 #11
-b0001110111001001 N0
-b1000001110000111 N1
-b0001110111001001 N2
+b1001111001101011 N0
+b0100101100110110 N1
+b1001111001101011 N2
 #12
-b0100011100010011 N0
-b0100011011101001 N1
-b0100011100010011 N2
+b0011001001111000 N0
+b1110110110111100 N1
+b0011001001111000 N2
 #13
-b0000110110011100 N0
-b1000011100110111 N1
-b0000110110011100 N2
+b1111111111111110 N0
+b0111111011000111 N1
+b1111111111111110 N2
 #14
-b1011101101011010 N0
-b1100110000100010 N1
-b1011101101011010 N2
+b0011110111010011 N0
+b0011101000111110 N1
+b0011110111010011 N2
 EOF
 cat >test.stdin <<EOF
 reset 5
-poke Functional.io_x 0x985b
-poke Functional.io_y 0x946b
+poke Functional.io_x 0xef6f
+poke Functional.io_y 0x2aef
 step 1
 peek Functional.io_z
-poke Functional.io_x 0x87f0
-poke Functional.io_y 0x994a
+poke Functional.io_x 0xa1d2
+poke Functional.io_y 0x91d6
 step 1
 peek Functional.io_z
-poke Functional.io_x 0x8893
-poke Functional.io_y 0x4184
+poke Functional.io_x 0x1820
+poke Functional.io_y 0x359c
 step 1
 peek Functional.io_z
-poke Functional.io_x 0xb49d
-poke Functional.io_y 0x936a
+poke Functional.io_x 0xb55f
+poke Functional.io_y 0x9d66
 step 1
 peek Functional.io_z
-poke Functional.io_x 0x4d6b
-poke Functional.io_y 0x1268
+poke Functional.io_x 0x156f
+poke Functional.io_y 0xa60
 step 1
 peek Functional.io_z
-poke Functional.io_x 0xc322
-poke Functional.io_y 0x4c9e
+poke Functional.io_x 0xafcd
+poke Functional.io_y 0x7bc6
 step 1
 peek Functional.io_z
-poke Functional.io_x 0x8387
-poke Functional.io_y 0x1dc9
+poke Functional.io_x 0x4b36
+poke Functional.io_y 0x9e6b
 step 1
 peek Functional.io_z
-poke Functional.io_x 0x46e9
-poke Functional.io_y 0x4713
+poke Functional.io_x 0xedbc
+poke Functional.io_y 0x3278
 step 1
 peek Functional.io_z
-poke Functional.io_x 0x8737
-poke Functional.io_y 0xd9c
+poke Functional.io_x 0x7ec7
+poke Functional.io_y 0xfffe
 step 1
 peek Functional.io_z
-poke Functional.io_x 0xcc22
-poke Functional.io_y 0xbb5a
+poke Functional.io_x 0x3a3e
+poke Functional.io_y 0x3dd3
 step 1
 peek Functional.io_z
 quit

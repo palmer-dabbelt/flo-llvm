@@ -2200,182 +2200,160 @@ b00000000000000000000000000000000 N7
 #3
 #4
 #5
-b00000000000000000000000011010110 N5
+b1 N1
+b00000000000000000000000010000011 N5
 #6
-b1 N1
-b1 N2
-b1 N3
-b0001 N4
-b00000000000000000000000011010101 N5
+b0 N1
+b00000000000000000000000010010000 N5
 #7
-b0 N1
-b0 N2
-b0 N3
-b00000000000000000000000001101011 N5
+b1 N2
+b00000000000000000000000000001110 N5
 #8
-b1 N2
-b00000000000000000000000011011101 N5
-b00000000000000000000000011010101 N6
+b1 N1
+b0001 N4
+b00000000000000000000000011001010 N5
 #9
-b1 N1
-b0010 N4
-b00000000000000000000000001010110 N5
-b00000000000000000000000011010101 N7
+b0 N1
+b0 N2
+b1 N3
+b00000000000000000000000011100101 N5
 #10
-b1 N3
-b0011 N4
-b00000000000000000000000011100010 N5
-b00000000000000000000000001010110 N6
+b0 N3
+b00000000000000000000000001101110 N5
 #11
-b0 N3
-b0100 N4
-b00000000000000000000000010101101 N5
-b00000000000000000000000011100010 N6
-b00000000000000000000000001010110 N7
+b1 N2
+b1 N3
+b0000 N4
+b00000000000000000000000010110010 N5
+b00000000000000000000000011001010 N6
 #12
-b0 N1
-b00000000000000000000000011111110 N5
-b00000000000000000000000010101101 N6
-b00000000000000000000000011100010 N7
+b0 N3
+b00000000000000000000000001011100 N5
+b00000000000000000000000011001010 N7
 #13
-b1 N1
 b0 N2
-b1 N3
-b00000000000000000000000011111000 N5
-b00000000000000000000000010101101 N7
+b00000000000000000000000000000011 N5
 #14
-b0 N1
 b1 N2
-b0011 N4
-b00000000000000000000000001000100 N5
+b00000000000000000000000010000000 N5
 #15
-b1 N1
-b0 N2
-b0 N3
-b00000000000000000000000001000011 N5
+b1 N3
+b00000000000000000000000010001010 N5
 #16
-b1 N2
-b0100 N4
-b00000000000000000000000000000100 N5
-b00000000000000000000000011100010 N6
-#17
-b0101 N4
-b00000000000000000000000001100000 N5
-b00000000000000000000000000000100 N6
-b00000000000000000000000011100010 N7
-#18
-b1 N3
-b0110 N4
-b00000000000000000000000000010000 N5
-b00000000000000000000000001100000 N6
-b00000000000000000000000000000100 N7
-#19
-b0 N1
+b1 N1
 b0 N2
 b0 N3
-b00000000000000000000000010010011 N5
-b00000000000000000000000001100000 N7
-#20
-b1 N1
+b00000000000000000000000010110000 N5
+#17
+b00000000000000000000000011110110 N5
+#18
+b0 N1
+b1 N2
+b00000000000000000000000000111101 N5
+#19
 b1 N3
-b00000000000000000000000001011101 N5
+b00000000000000000000000001110011 N5
+#20
+b0 N2
+b0 N3
+b00000000000000000000000011011110 N5
 EOF
 cat >test.stdin <<EOF
 reset 5
 poke Stack.io_pop 0x0
-poke Stack.io_push 0x0
-poke Stack.io_en 0x0
-poke Stack.io_dataIn 0xd6
-step 1
-peek Stack.io_dataOut
-poke Stack.io_pop 0x1
 poke Stack.io_push 0x1
-poke Stack.io_en 0x1
-poke Stack.io_dataIn 0xd5
+poke Stack.io_en 0x0
+poke Stack.io_dataIn 0x83
 step 1
 peek Stack.io_dataOut
 poke Stack.io_pop 0x0
 poke Stack.io_push 0x0
 poke Stack.io_en 0x0
-poke Stack.io_dataIn 0x6b
+poke Stack.io_dataIn 0x90
 step 1
 peek Stack.io_dataOut
 poke Stack.io_pop 0x0
 poke Stack.io_push 0x0
 poke Stack.io_en 0x1
-poke Stack.io_dataIn 0xdd
+poke Stack.io_dataIn 0xe
 step 1
 peek Stack.io_dataOut
 poke Stack.io_pop 0x0
 poke Stack.io_push 0x1
 poke Stack.io_en 0x1
-poke Stack.io_dataIn 0x56
-step 1
-peek Stack.io_dataOut
-poke Stack.io_pop 0x1
-poke Stack.io_push 0x1
-poke Stack.io_en 0x1
-poke Stack.io_dataIn 0xe2
-step 1
-peek Stack.io_dataOut
-poke Stack.io_pop 0x0
-poke Stack.io_push 0x1
-poke Stack.io_en 0x1
-poke Stack.io_dataIn 0xad
-step 1
-peek Stack.io_dataOut
-poke Stack.io_pop 0x0
-poke Stack.io_push 0x0
-poke Stack.io_en 0x1
-poke Stack.io_dataIn 0xfe
-step 1
-peek Stack.io_dataOut
-poke Stack.io_pop 0x1
-poke Stack.io_push 0x1
-poke Stack.io_en 0x0
-poke Stack.io_dataIn 0xf8
+poke Stack.io_dataIn 0xca
 step 1
 peek Stack.io_dataOut
 poke Stack.io_pop 0x1
 poke Stack.io_push 0x0
-poke Stack.io_en 0x1
-poke Stack.io_dataIn 0x44
-step 1
-peek Stack.io_dataOut
-poke Stack.io_pop 0x0
-poke Stack.io_push 0x1
 poke Stack.io_en 0x0
-poke Stack.io_dataIn 0x43
-step 1
-peek Stack.io_dataOut
-poke Stack.io_pop 0x0
-poke Stack.io_push 0x1
-poke Stack.io_en 0x1
-poke Stack.io_dataIn 0x4
-step 1
-peek Stack.io_dataOut
-poke Stack.io_pop 0x0
-poke Stack.io_push 0x1
-poke Stack.io_en 0x1
-poke Stack.io_dataIn 0x60
-step 1
-peek Stack.io_dataOut
-poke Stack.io_pop 0x1
-poke Stack.io_push 0x1
-poke Stack.io_en 0x1
-poke Stack.io_dataIn 0x10
+poke Stack.io_dataIn 0xe5
 step 1
 peek Stack.io_dataOut
 poke Stack.io_pop 0x0
 poke Stack.io_push 0x0
 poke Stack.io_en 0x0
-poke Stack.io_dataIn 0x93
+poke Stack.io_dataIn 0x6e
 step 1
 peek Stack.io_dataOut
 poke Stack.io_pop 0x1
+poke Stack.io_push 0x0
+poke Stack.io_en 0x1
+poke Stack.io_dataIn 0xb2
+step 1
+peek Stack.io_dataOut
+poke Stack.io_pop 0x0
+poke Stack.io_push 0x0
+poke Stack.io_en 0x1
+poke Stack.io_dataIn 0x5c
+step 1
+peek Stack.io_dataOut
+poke Stack.io_pop 0x0
+poke Stack.io_push 0x0
+poke Stack.io_en 0x0
+poke Stack.io_dataIn 0x3
+step 1
+peek Stack.io_dataOut
+poke Stack.io_pop 0x0
+poke Stack.io_push 0x0
+poke Stack.io_en 0x1
+poke Stack.io_dataIn 0x80
+step 1
+peek Stack.io_dataOut
+poke Stack.io_pop 0x1
+poke Stack.io_push 0x0
+poke Stack.io_en 0x1
+poke Stack.io_dataIn 0x8a
+step 1
+peek Stack.io_dataOut
+poke Stack.io_pop 0x0
 poke Stack.io_push 0x1
 poke Stack.io_en 0x0
-poke Stack.io_dataIn 0x5d
+poke Stack.io_dataIn 0xb0
+step 1
+peek Stack.io_dataOut
+poke Stack.io_pop 0x0
+poke Stack.io_push 0x1
+poke Stack.io_en 0x0
+poke Stack.io_dataIn 0xf6
+step 1
+peek Stack.io_dataOut
+poke Stack.io_pop 0x0
+poke Stack.io_push 0x0
+poke Stack.io_en 0x1
+poke Stack.io_dataIn 0x3d
+step 1
+peek Stack.io_dataOut
+poke Stack.io_pop 0x1
+poke Stack.io_push 0x0
+poke Stack.io_en 0x1
+poke Stack.io_dataIn 0x73
+step 1
+peek Stack.io_dataOut
+poke Stack.io_pop 0x0
+poke Stack.io_push 0x0
+poke Stack.io_en 0x0
+poke Stack.io_dataIn 0xde
 step 1
 peek Stack.io_dataOut
 quit

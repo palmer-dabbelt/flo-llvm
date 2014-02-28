@@ -2269,7 +2269,7 @@ T7 = mux/16 T6 T4 GCD::y
 GCD::io_b = in/16
 T8 = mux/16 GCD::io_e GCD::io_b T7
 GCD::y = reg/16 1 T8
-T9 = eq/1 GCD::y 0
+T9 = eq/16 GCD::y 0
 GCD::io_v = out/1 T9
 EOF
 ln -s GCD.vcd test.vcd

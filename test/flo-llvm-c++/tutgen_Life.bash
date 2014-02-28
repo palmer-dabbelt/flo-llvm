@@ -2339,7 +2339,7 @@ b0 N29
 b0 N30
 b0 N31
 b000 N32
-b1 N33
+b0 N33
 b1 N34
 b0 N35
 b0 N36
@@ -2369,7 +2369,7 @@ b0 N59
 b0 N60
 b0 N61
 b000 N62
-b0 N63
+b1 N63
 b1 N64
 b0 N65
 b0 N66
@@ -2379,7 +2379,7 @@ b0 N69
 b0 N70
 b0 N71
 b000 N72
-b1 N73
+b0 N73
 b1 N74
 b0 N75
 b0 N76
@@ -2389,7 +2389,7 @@ b0 N79
 b0 N80
 b0 N81
 b000 N82
-b0 N83
+b1 N83
 b1 N84
 b0 N85
 b0 N86
@@ -2416,25 +2416,25 @@ b0 N106
 b0 N107
 b0 N108
 #1
-b1 N8
-b1 N9
-b001 N11
-b1 N28
-b1 N31
-b010 N32
-b1 N40
-b001 N42
-b1 N58
-b1 N61
-b010 N62
-b1 N70
-b001 N72
-b1 N88
-b1 N91
-b010 N92
-b1 N96
-b1 N103
-b1 N104
+b1 N5
+b1 N6
+b1 N10
+b010 N11
+b1 N20
+b001 N22
+b1 N38
+b1 N41
+b010 N42
+b1 N50
+b001 N52
+b1 N68
+b1 N71
+b010 N72
+b1 N80
+b001 N82
+b1 N95
+b1 N97
+b1 N98
 b1 N105
 b1 N106
 #2
@@ -2442,567 +2442,481 @@ b1 N106
 #4
 #5
 b0 N1
+b1 N12
 b0 N13
 b0 N23
 b0 N24
 b0 N34
+b1 N43
 b0 N44
 b0 N54
-b1 N63
+b0 N63
 b0 N64
-b0 N73
+b1 N73
 b0 N74
+b0 N83
 b0 N84
-b1 N93
 #6
-b0 N8
-b0 N9
-b000 N11
-b1 N17
-b1 N18
-b1 N21
-b010 N22
-b1 N23
-b0 N28
-b1 N30
-b0 N31
-b001 N32
-b0 N33
-b0 N40
-b000 N42
-b1 N48
-b1 N51
-b010 N52
-b1 N53
-b0 N58
-b1 N60
-b0 N61
-b001 N62
-b0 N63
-b0 N70
-b000 N72
-b1 N78
-b1 N81
-b010 N82
-b1 N83
-b0 N88
-b1 N90
-b0 N91
-b001 N92
-b0 N93
-b1 N94
-b0 N96
-b1 N97
-b1 N98
+b0 N5
+b0 N6
+b1 N8
+b1 N9
+b0 N10
+b001 N11
+b0 N12
+b0 N20
+b000 N22
+b1 N28
+b1 N31
+b010 N32
+b1 N33
+b0 N38
+b1 N40
+b0 N41
+b001 N42
+b0 N43
+b0 N50
+b000 N52
+b1 N58
+b1 N61
+b010 N62
+b1 N63
+b0 N68
+b1 N70
+b0 N71
+b001 N72
+b0 N73
+b0 N80
+b000 N82
+b1 N88
+b1 N91
+b010 N92
+b1 N93
+b0 N95
+b1 N96
+b0 N97
+b0 N98
+b1 N101
+b1 N102
 b0 N105
 b0 N106
+b1 N107
+b1 N108
 #7
-b1 N5
-b1 N6
-b1 N10
-b010 N11
-b1 N12
-b0 N17
-b0 N18
-b1 N20
-b0 N21
-b001 N22
-b0 N23
-b0 N30
-b000 N32
-b1 N38
-b1 N41
-b010 N42
-b1 N43
-b0 N48
-b1 N50
-b0 N51
-b001 N52
-b0 N53
-b0 N60
-b000 N62
-b1 N68
-b1 N71
-b010 N72
-b1 N73
-b0 N78
-b1 N80
-b0 N81
-b001 N82
-b0 N83
-b0 N90
-b000 N92
-b0 N94
-b1 N95
-b0 N97
-b0 N98
-b1 N99
-b1 N100
-b0 N103
-b0 N104
-b1 N105
-b1 N106
+b0 N8
+b0 N9
+b000 N11
+b1 N17
+b1 N18
+b1 N21
+b010 N22
+b1 N23
+b0 N28
+b1 N30
+b0 N31
+b001 N32
+b0 N33
+b0 N40
+b000 N42
+b1 N48
+b1 N51
+b010 N52
+b1 N53
+b0 N58
+b1 N60
+b0 N61
+b001 N62
+b0 N63
+b0 N70
+b000 N72
+b1 N78
+b1 N81
+b010 N82
+b1 N83
+b0 N88
+b1 N90
+b0 N91
+b001 N92
+b0 N93
+b1 N94
+b0 N96
+b1 N97
+b1 N98
+b0 N101
+b0 N102
+b1 N103
+b1 N104
+b0 N107
+b0 N108
 #8
-b0 N5
-b0 N6
-b1 N8
-b1 N9
-b0 N10
-b001 N11
-b0 N12
-b0 N20
-b000 N22
-b1 N28
-b1 N31
-b010 N32
-b1 N33
-b0 N38
-b1 N40
-b0 N41
-b001 N42
-b0 N43
-b0 N50
-b000 N52
-b1 N58
-b1 N61
-b010 N62
-b1 N63
-b0 N68
-b1 N70
-b0 N71
-b001 N72
-b0 N73
-b0 N80
-b000 N82
-b1 N88
-b1 N91
-b010 N92
-b1 N93
-b0 N95
-b1 N96
-b0 N99
-b0 N100
-b1 N101
-b1 N102
-b0 N105
-b0 N106
-b1 N107
-b1 N108
+b1 N5
+b1 N6
+b1 N10
+b010 N11
+b1 N12
+b0 N17
+b0 N18
+b1 N20
+b0 N21
+b001 N22
+b0 N23
+b0 N30
+b000 N32
+b1 N38
+b1 N41
+b010 N42
+b1 N43
+b0 N48
+b1 N50
+b0 N51
+b001 N52
+b0 N53
+b0 N60
+b000 N62
+b1 N68
+b1 N71
+b010 N72
+b1 N73
+b0 N78
+b1 N80
+b0 N81
+b001 N82
+b0 N83
+b0 N90
+b000 N92
+b0 N94
+b1 N95
+b0 N97
+b0 N98
+b1 N99
+b1 N100
+b0 N103
+b0 N104
+b1 N105
+b1 N106
 #9
-b0 N8
-b0 N9
-b000 N11
-b1 N17
-b1 N18
-b1 N21
-b010 N22
-b1 N23
-b0 N28
-b1 N30
-b0 N31
-b001 N32
-b0 N33
-b0 N40
-b000 N42
-b1 N48
-b1 N51
-b010 N52
-b1 N53
-b0 N58
-b1 N60
-b0 N61
-b001 N62
-b0 N63
-b0 N70
-b000 N72
-b1 N78
-b1 N81
-b010 N82
-b1 N83
-b0 N88
-b1 N90
-b0 N91
-b001 N92
-b0 N93
-b1 N94
-b0 N96
-b1 N97
-b1 N98
-b0 N101
-b0 N102
-b1 N103
-b1 N104
-b0 N107
-b0 N108
+b0 N5
+b0 N6
+b1 N8
+b1 N9
+b0 N10
+b001 N11
+b0 N12
+b0 N20
+b000 N22
+b1 N28
+b1 N31
+b010 N32
+b1 N33
+b0 N38
+b1 N40
+b0 N41
+b001 N42
+b0 N43
+b0 N50
+b000 N52
+b1 N58
+b1 N61
+b010 N62
+b1 N63
+b0 N68
+b1 N70
+b0 N71
+b001 N72
+b0 N73
+b0 N80
+b000 N82
+b1 N88
+b1 N91
+b010 N92
+b1 N93
+b0 N95
+b1 N96
+b0 N99
+b0 N100
+b1 N101
+b1 N102
+b0 N105
+b0 N106
+b1 N107
+b1 N108
 #10
-b1 N5
-b1 N6
-b1 N10
-b010 N11
-b1 N12
-b0 N17
-b0 N18
-b1 N20
-b0 N21
-b001 N22
-b0 N23
-b0 N30
-b000 N32
-b1 N38
-b1 N41
-b010 N42
-b1 N43
-b0 N48
-b1 N50
-b0 N51
-b001 N52
-b0 N53
-b0 N60
-b000 N62
-b1 N68
-b1 N71
-b010 N72
-b1 N73
-b0 N78
-b1 N80
-b0 N81
-b001 N82
-b0 N83
-b0 N90
-b000 N92
-b0 N94
-b1 N95
-b0 N97
-b0 N98
-b1 N99
-b1 N100
-b0 N103
-b0 N104
-b1 N105
-b1 N106
+b0 N8
+b0 N9
+b000 N11
+b1 N17
+b1 N18
+b1 N21
+b010 N22
+b1 N23
+b0 N28
+b1 N30
+b0 N31
+b001 N32
+b0 N33
+b0 N40
+b000 N42
+b1 N48
+b1 N51
+b010 N52
+b1 N53
+b0 N58
+b1 N60
+b0 N61
+b001 N62
+b0 N63
+b0 N70
+b000 N72
+b1 N78
+b1 N81
+b010 N82
+b1 N83
+b0 N88
+b1 N90
+b0 N91
+b001 N92
+b0 N93
+b1 N94
+b0 N96
+b1 N97
+b1 N98
+b0 N101
+b0 N102
+b1 N103
+b1 N104
+b0 N107
+b0 N108
 #11
-b0 N5
-b0 N6
-b1 N8
-b1 N9
-b0 N10
-b001 N11
-b0 N12
-b0 N20
-b000 N22
-b1 N28
-b1 N31
-b010 N32
-b1 N33
-b0 N38
-b1 N40
-b0 N41
-b001 N42
-b0 N43
-b0 N50
-b000 N52
-b1 N58
-b1 N61
-b010 N62
-b1 N63
-b0 N68
-b1 N70
-b0 N71
-b001 N72
-b0 N73
-b0 N80
-b000 N82
-b1 N88
-b1 N91
-b010 N92
-b1 N93
-b0 N95
-b1 N96
-b0 N99
-b0 N100
-b1 N101
-b1 N102
-b0 N105
-b0 N106
-b1 N107
-b1 N108
+b1 N5
+b1 N6
+b1 N10
+b010 N11
+b1 N12
+b0 N17
+b0 N18
+b1 N20
+b0 N21
+b001 N22
+b0 N23
+b0 N30
+b000 N32
+b1 N38
+b1 N41
+b010 N42
+b1 N43
+b0 N48
+b1 N50
+b0 N51
+b001 N52
+b0 N53
+b0 N60
+b000 N62
+b1 N68
+b1 N71
+b010 N72
+b1 N73
+b0 N78
+b1 N80
+b0 N81
+b001 N82
+b0 N83
+b0 N90
+b000 N92
+b0 N94
+b1 N95
+b0 N97
+b0 N98
+b1 N99
+b1 N100
+b0 N103
+b0 N104
+b1 N105
+b1 N106
 #12
-b0 N8
-b0 N9
-b000 N11
-b1 N17
-b1 N18
-b1 N21
-b010 N22
-b1 N23
-b0 N28
-b1 N30
-b0 N31
-b001 N32
-b0 N33
-b0 N40
-b000 N42
-b1 N48
-b1 N51
-b010 N52
-b1 N53
-b0 N58
-b1 N60
-b0 N61
-b001 N62
-b0 N63
-b0 N70
-b000 N72
-b1 N78
-b1 N81
-b010 N82
-b1 N83
-b0 N88
-b1 N90
-b0 N91
-b001 N92
-b0 N93
-b1 N94
-b0 N96
-b1 N97
-b1 N98
-b0 N101
-b0 N102
-b1 N103
-b1 N104
-b0 N107
-b0 N108
+b0 N5
+b0 N6
+b1 N8
+b1 N9
+b0 N10
+b001 N11
+b0 N12
+b0 N20
+b000 N22
+b1 N28
+b1 N31
+b010 N32
+b1 N33
+b0 N38
+b1 N40
+b0 N41
+b001 N42
+b0 N43
+b0 N50
+b000 N52
+b1 N58
+b1 N61
+b010 N62
+b1 N63
+b0 N68
+b1 N70
+b0 N71
+b001 N72
+b0 N73
+b0 N80
+b000 N82
+b1 N88
+b1 N91
+b010 N92
+b1 N93
+b0 N95
+b1 N96
+b0 N99
+b0 N100
+b1 N101
+b1 N102
+b0 N105
+b0 N106
+b1 N107
+b1 N108
 #13
-b1 N5
-b1 N6
-b1 N10
-b010 N11
-b1 N12
-b0 N17
-b0 N18
-b1 N20
-b0 N21
-b001 N22
-b0 N23
-b0 N30
-b000 N32
-b1 N38
-b1 N41
-b010 N42
-b1 N43
-b0 N48
-b1 N50
-b0 N51
-b001 N52
-b0 N53
-b0 N60
-b000 N62
-b1 N68
-b1 N71
-b010 N72
-b1 N73
-b0 N78
-b1 N80
-b0 N81
-b001 N82
-b0 N83
-b0 N90
-b000 N92
-b0 N94
-b1 N95
-b0 N97
-b0 N98
-b1 N99
-b1 N100
-b0 N103
-b0 N104
-b1 N105
-b1 N106
+b0 N8
+b0 N9
+b000 N11
+b1 N17
+b1 N18
+b1 N21
+b010 N22
+b1 N23
+b0 N28
+b1 N30
+b0 N31
+b001 N32
+b0 N33
+b0 N40
+b000 N42
+b1 N48
+b1 N51
+b010 N52
+b1 N53
+b0 N58
+b1 N60
+b0 N61
+b001 N62
+b0 N63
+b0 N70
+b000 N72
+b1 N78
+b1 N81
+b010 N82
+b1 N83
+b0 N88
+b1 N90
+b0 N91
+b001 N92
+b0 N93
+b1 N94
+b0 N96
+b1 N97
+b1 N98
+b0 N101
+b0 N102
+b1 N103
+b1 N104
+b0 N107
+b0 N108
 #14
-b0 N5
-b0 N6
-b1 N8
-b1 N9
-b0 N10
-b001 N11
-b0 N12
-b0 N20
-b000 N22
-b1 N28
-b1 N31
-b010 N32
-b1 N33
-b0 N38
-b1 N40
-b0 N41
-b001 N42
-b0 N43
-b0 N50
-b000 N52
-b1 N58
-b1 N61
-b010 N62
-b1 N63
-b0 N68
-b1 N70
-b0 N71
-b001 N72
-b0 N73
-b0 N80
-b000 N82
-b1 N88
-b1 N91
-b010 N92
-b1 N93
-b0 N95
-b1 N96
-b0 N99
-b0 N100
-b1 N101
-b1 N102
-b0 N105
-b0 N106
-b1 N107
-b1 N108
+b1 N5
+b1 N6
+b1 N10
+b010 N11
+b1 N12
+b0 N17
+b0 N18
+b1 N20
+b0 N21
+b001 N22
+b0 N23
+b0 N30
+b000 N32
+b1 N38
+b1 N41
+b010 N42
+b1 N43
+b0 N48
+b1 N50
+b0 N51
+b001 N52
+b0 N53
+b0 N60
+b000 N62
+b1 N68
+b1 N71
+b010 N72
+b1 N73
+b0 N78
+b1 N80
+b0 N81
+b001 N82
+b0 N83
+b0 N90
+b000 N92
+b0 N94
+b1 N95
+b0 N97
+b0 N98
+b1 N99
+b1 N100
+b0 N103
+b0 N104
+b1 N105
+b1 N106
 #15
-b0 N8
-b0 N9
-b000 N11
-b1 N17
-b1 N18
-b1 N21
-b010 N22
-b1 N23
-b0 N28
-b1 N30
-b0 N31
-b001 N32
-b0 N33
-b0 N40
-b000 N42
-b1 N48
-b1 N51
-b010 N52
-b1 N53
-b0 N58
-b1 N60
-b0 N61
-b001 N62
-b0 N63
-b0 N70
-b000 N72
-b1 N78
-b1 N81
-b010 N82
-b1 N83
-b0 N88
-b1 N90
-b0 N91
-b001 N92
-b0 N93
-b1 N94
-b0 N96
-b1 N97
-b1 N98
-b0 N101
-b0 N102
-b1 N103
-b1 N104
-b0 N107
-b0 N108
+b0 N5
+b0 N6
+b1 N8
+b1 N9
+b0 N10
+b001 N11
+b0 N12
+b0 N20
+b000 N22
+b1 N28
+b1 N31
+b010 N32
+b1 N33
+b0 N38
+b1 N40
+b0 N41
+b001 N42
+b0 N43
+b0 N50
+b000 N52
+b1 N58
+b1 N61
+b010 N62
+b1 N63
+b0 N68
+b1 N70
+b0 N71
+b001 N72
+b0 N73
+b0 N80
+b000 N82
+b1 N88
+b1 N91
+b010 N92
+b1 N93
+b0 N95
+b1 N96
+b0 N99
+b0 N100
+b1 N101
+b1 N102
+b0 N105
+b0 N106
+b1 N107
+b1 N108
 #16
-b1 N5
-b1 N6
-b1 N10
-b010 N11
-b1 N12
-b0 N17
-b0 N18
-b1 N20
-b0 N21
-b001 N22
-b0 N23
-b0 N30
-b000 N32
-b1 N38
-b1 N41
-b010 N42
-b1 N43
-b0 N48
-b1 N50
-b0 N51
-b001 N52
-b0 N53
-b0 N60
-b000 N62
-b1 N68
-b1 N71
-b010 N72
-b1 N73
-b0 N78
-b1 N80
-b0 N81
-b001 N82
-b0 N83
-b0 N90
-b000 N92
-b0 N94
-b1 N95
-b0 N97
-b0 N98
-b1 N99
-b1 N100
-b0 N103
-b0 N104
-b1 N105
-b1 N106
-#17
-b0 N5
-b0 N6
-b1 N8
-b1 N9
-b0 N10
-b001 N11
-b0 N12
-b0 N20
-b000 N22
-b1 N28
-b1 N31
-b010 N32
-b1 N33
-b0 N38
-b1 N40
-b0 N41
-b001 N42
-b0 N43
-b0 N50
-b000 N52
-b1 N58
-b1 N61
-b010 N62
-b1 N63
-b0 N68
-b1 N70
-b0 N71
-b001 N72
-b0 N73
-b0 N80
-b000 N82
-b1 N88
-b1 N91
-b010 N92
-b1 N93
-b0 N95
-b1 N96
-b0 N99
-b0 N100
-b1 N101
-b1 N102
-b0 N105
-b0 N106
-b1 N107
-b1 N108
-#18
 b0 N8
 b0 N9
 b000 N11
@@ -3048,7 +2962,7 @@ b1 N103
 b1 N104
 b0 N107
 b0 N108
-#19
+#17
 b1 N5
 b1 N6
 b1 N10
@@ -3094,7 +3008,7 @@ b0 N103
 b0 N104
 b1 N105
 b1 N106
-#20
+#18
 b0 N5
 b0 N6
 b1 N8
@@ -3140,6 +3054,98 @@ b0 N105
 b0 N106
 b1 N107
 b1 N108
+#19
+b0 N8
+b0 N9
+b000 N11
+b1 N17
+b1 N18
+b1 N21
+b010 N22
+b1 N23
+b0 N28
+b1 N30
+b0 N31
+b001 N32
+b0 N33
+b0 N40
+b000 N42
+b1 N48
+b1 N51
+b010 N52
+b1 N53
+b0 N58
+b1 N60
+b0 N61
+b001 N62
+b0 N63
+b0 N70
+b000 N72
+b1 N78
+b1 N81
+b010 N82
+b1 N83
+b0 N88
+b1 N90
+b0 N91
+b001 N92
+b0 N93
+b1 N94
+b0 N96
+b1 N97
+b1 N98
+b0 N101
+b0 N102
+b1 N103
+b1 N104
+b0 N107
+b0 N108
+#20
+b1 N5
+b1 N6
+b1 N10
+b010 N11
+b1 N12
+b0 N17
+b0 N18
+b1 N20
+b0 N21
+b001 N22
+b0 N23
+b0 N30
+b000 N32
+b1 N38
+b1 N41
+b010 N42
+b1 N43
+b0 N48
+b1 N50
+b0 N51
+b001 N52
+b0 N53
+b0 N60
+b000 N62
+b1 N68
+b1 N71
+b010 N72
+b1 N73
+b0 N78
+b1 N80
+b0 N81
+b001 N82
+b0 N83
+b0 N90
+b000 N92
+b0 N94
+b1 N95
+b0 N97
+b0 N98
+b1 N99
+b1 N100
+b0 N103
+b0 N104
+b1 N105
+b1 N106
 EOF
 cat >test.stdin <<EOF
 reset 5
@@ -3343,14 +3349,14 @@ T21 = or/1 T14 T16
 T22 = not/1 T21
 T23 = and/1 T22 T20
 T24 = mux/1 T23 0 T19
-T25 = eq/1 Life:Cell_8::count 3
+T25 = eq/3 Life:Cell_8::count 3
 T26 = not/1 Life:Cell_8::isAlive
 T27 = and/1 T26 T25
 T28 = or/1 T21 T20
 T29 = not/1 T28
 T30 = and/1 T29 T27
 T31 = mux/1 T30 1 T24
-Life:Cell_8::isAlive__update = mux/1 Life:Cell_8::reset 0 T31
+Life:Cell_8::isAlive__update = mux/1 Life:Cell_8::reset 1 T31
 Life:Cell_8::isAlive = reg/1 1 Life:Cell_8::isAlive__update
 Life:Cell_7::reset = mov/1 reset
 Life:Cell_7::io_nbrs_7 = in/1
@@ -3387,14 +3393,14 @@ T53 = or/1 T46 T48
 T54 = not/1 T53
 T55 = and/1 T54 T52
 T56 = mux/1 T55 0 T51
-T57 = eq/1 Life:Cell_7::count 3
+T57 = eq/3 Life:Cell_7::count 3
 T58 = not/1 Life:Cell_7::isAlive
 T59 = and/1 T58 T57
 T60 = or/1 T53 T52
 T61 = not/1 T60
 T62 = and/1 T61 T59
 T63 = mux/1 T62 1 T56
-Life:Cell_7::isAlive__update = mux/1 Life:Cell_7::reset 0 T63
+Life:Cell_7::isAlive__update = mux/1 Life:Cell_7::reset 1 T63
 Life:Cell_7::isAlive = reg/1 1 Life:Cell_7::isAlive__update
 Life:Cell_6::reset = mov/1 reset
 Life:Cell_6::io_nbrs_7 = in/1
@@ -3430,14 +3436,14 @@ T85 = or/1 T78 T80
 T86 = not/1 T85
 T87 = and/1 T86 T84
 T88 = mux/1 T87 0 T83
-T89 = eq/1 Life:Cell_6::count 3
+T89 = eq/3 Life:Cell_6::count 3
 T90 = not/1 Life:Cell_6::isAlive
 T91 = and/1 T90 T89
 T92 = or/1 T85 T84
 T93 = not/1 T92
 T94 = and/1 T93 T91
 T95 = mux/1 T94 1 T88
-Life:Cell_6::isAlive__update = mux/1 Life:Cell_6::reset 0 T95
+Life:Cell_6::isAlive__update = mux/1 Life:Cell_6::reset 1 T95
 Life:Cell_6::isAlive = reg/1 1 Life:Cell_6::isAlive__update
 Life:Cell_5::reset = mov/1 reset
 Life:Cell_5::io_nbrs_7 = in/1
@@ -3473,7 +3479,7 @@ T117 = or/1 T110 T112
 T118 = not/1 T117
 T119 = and/1 T118 T116
 T120 = mux/1 T119 0 T115
-T121 = eq/1 Life:Cell_5::count 3
+T121 = eq/3 Life:Cell_5::count 3
 T122 = not/1 Life:Cell_5::isAlive
 T123 = and/1 T122 T121
 T124 = or/1 T117 T116
@@ -3516,7 +3522,7 @@ T149 = or/1 T142 T144
 T150 = not/1 T149
 T151 = and/1 T150 T148
 T152 = mux/1 T151 0 T147
-T153 = eq/1 Life:Cell_4::count 3
+T153 = eq/3 Life:Cell_4::count 3
 T154 = not/1 Life:Cell_4::isAlive
 T155 = and/1 T154 T153
 T156 = or/1 T149 T148
@@ -3559,14 +3565,14 @@ T181 = or/1 T174 T176
 T182 = not/1 T181
 T183 = and/1 T182 T180
 T184 = mux/1 T183 0 T179
-T185 = eq/1 Life:Cell_3::count 3
+T185 = eq/3 Life:Cell_3::count 3
 T186 = not/1 Life:Cell_3::isAlive
 T187 = and/1 T186 T185
 T188 = or/1 T181 T180
 T189 = not/1 T188
 T190 = and/1 T189 T187
 T191 = mux/1 T190 1 T184
-Life:Cell_3::isAlive__update = mux/1 Life:Cell_3::reset 1 T191
+Life:Cell_3::isAlive__update = mux/1 Life:Cell_3::reset 0 T191
 Life:Cell_3::isAlive = reg/1 1 Life:Cell_3::isAlive__update
 Life:Cell_2::reset = mov/1 reset
 Life:Cell_2::io_nbrs_7 = in/1
@@ -3602,14 +3608,14 @@ T213 = or/1 T206 T208
 T214 = not/1 T213
 T215 = and/1 T214 T212
 T216 = mux/1 T215 0 T211
-T217 = eq/1 Life:Cell_2::count 3
+T217 = eq/3 Life:Cell_2::count 3
 T218 = not/1 Life:Cell_2::isAlive
 T219 = and/1 T218 T217
 T220 = or/1 T213 T212
 T221 = not/1 T220
 T222 = and/1 T221 T219
 T223 = mux/1 T222 1 T216
-Life:Cell_2::isAlive__update = mux/1 Life:Cell_2::reset 1 T223
+Life:Cell_2::isAlive__update = mux/1 Life:Cell_2::reset 0 T223
 Life:Cell_2::isAlive = reg/1 1 Life:Cell_2::isAlive__update
 Life:Cell_1::reset = mov/1 reset
 Life:Cell_1::io_nbrs_7 = in/1
@@ -3645,14 +3651,14 @@ T245 = or/1 T238 T240
 T246 = not/1 T245
 T247 = and/1 T246 T244
 T248 = mux/1 T247 0 T243
-T249 = eq/1 Life:Cell_1::count 3
+T249 = eq/3 Life:Cell_1::count 3
 T250 = not/1 Life:Cell_1::isAlive
 T251 = and/1 T250 T249
 T252 = or/1 T245 T244
 T253 = not/1 T252
 T254 = and/1 T253 T251
 T255 = mux/1 T254 1 T248
-Life:Cell_1::isAlive__update = mux/1 Life:Cell_1::reset 0 T255
+Life:Cell_1::isAlive__update = mux/1 Life:Cell_1::reset 1 T255
 Life:Cell_1::isAlive = reg/1 1 Life:Cell_1::isAlive__update
 Life:Cell_0::reset = mov/1 reset
 Life:Cell_0::io_nbrs_7 = in/1
@@ -3688,14 +3694,14 @@ T277 = or/1 T270 T272
 T278 = not/1 T277
 T279 = and/1 T278 T276
 T280 = mux/1 T279 0 T275
-T281 = eq/1 Life:Cell_0::count 3
+T281 = eq/3 Life:Cell_0::count 3
 T282 = not/1 Life:Cell_0::isAlive
 T283 = and/1 T282 T281
 T284 = or/1 T277 T276
 T285 = not/1 T284
 T286 = and/1 T285 T283
 T287 = mux/1 T286 1 T280
-Life:Cell_0::isAlive__update = mux/1 Life:Cell_0::reset 0 T287
+Life:Cell_0::isAlive__update = mux/1 Life:Cell_0::reset 1 T287
 Life:Cell_0::isAlive = reg/1 1 Life:Cell_0::isAlive__update
 Life::io_state_0 = out/1 Life:Cell_0::io_out
 Life::io_state_1 = out/1 Life:Cell_1::io_out

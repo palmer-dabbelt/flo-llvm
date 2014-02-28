@@ -2200,257 +2200,237 @@ b0 N5
 b1 N0
 b1 N1
 #6
+b0 N0
+b0 N1
 b1 N2
 #7
+b1 N0
+b1 N1
+b0 N2
 b1 N3
 #8
+b0 N0
+b0 N1
+b1 N2
+b0 N3
 b1 N4
 #9
-b0 N0
-b0 N1
+b0 N2
+b1 N3
+b0 N4
 b1 N5
 #10
-b0 N2
-#11
-b0 N3
-#12
-b1 N0
-b1 N1
-b0 N4
-#13
-b0 N0
-b0 N1
-b1 N2
-b0 N5
-#14
-b0 N2
-b1 N3
-#15
-b1 N0
-b1 N1
 b0 N3
 b1 N4
-#16
-b0 N0
-b0 N1
-b1 N2
+b0 N5
+#11
+b1 N0
+b1 N1
 b0 N4
 b1 N5
-#17
-b0 N2
-b1 N3
+#12
+b1 N2
 b0 N5
-#18
-b0 N3
+#13
+b1 N3
+#14
 b1 N4
+#15
+b0 N0
+b0 N1
+b1 N5
+#16
+b0 N2
+#17
+b0 N3
+#18
+b0 N4
 #19
 b1 N0
 b1 N1
-b0 N4
-b1 N5
+b0 N5
 #20
 b1 N2
-b0 N5
 #21
-b0 N0
-b0 N1
 b1 N3
 #22
-b0 N2
+b0 N0
+b0 N1
 b1 N4
 #23
-b0 N3
+b0 N2
 b1 N5
 #24
-b0 N4
-#25
-b0 N5
-#26
-#27
-#28
-#29
-#30
-#31
 b1 N0
 b1 N1
-#32
+b0 N3
+#25
 b1 N2
+b0 N4
+#26
+b1 N3
+b0 N5
+#27
+b1 N4
+#28
+b0 N0
+b0 N1
+b1 N5
+#29
+b0 N2
+#30
+b1 N0
+b1 N1
+b0 N3
+#31
+b0 N0
+b0 N1
+b1 N2
+b0 N4
+#32
+b1 N0
+b1 N1
+b0 N2
+b1 N3
+b0 N5
 #33
 b0 N0
 b0 N1
-b1 N3
-#34
-b1 N0
-b1 N1
-b0 N2
-b1 N4
-#35
-b0 N0
-b0 N1
 b1 N2
 b0 N3
-b1 N5
-#36
-b1 N0
-b1 N1
+b1 N4
+#34
 b0 N2
 b1 N3
 b0 N4
-#37
-b1 N2
+b1 N5
+#35
+b1 N0
+b1 N1
 b0 N3
 b1 N4
+b0 N5
+#36
+b0 N0
+b0 N1
+b1 N2
+b0 N4
+b1 N5
+#37
+b1 N0
+b1 N1
+b0 N2
+b1 N3
 b0 N5
 #38
 b0 N0
 b0 N1
-b1 N3
-b0 N4
-b1 N5
+b1 N2
+b0 N3
+b1 N4
 #39
 b1 N0
 b1 N1
 b0 N2
-b1 N4
-b0 N5
-#40
-b0 N0
-b0 N1
-b1 N2
-b0 N3
-b1 N5
-#41
-b1 N0
-b1 N1
-b0 N2
 b1 N3
 b0 N4
-#42
-b0 N0
-b0 N1
+b1 N5
+#40
 b1 N2
 b0 N3
+b1 N4
+b0 N5
+#41
+b1 N3
+b0 N4
+b1 N5
+#42
 b1 N4
 b0 N5
 #43
-b1 N0
-b1 N1
-b0 N2
-b1 N3
-b0 N4
 b1 N5
 #44
-b0 N0
-b0 N1
-b1 N2
-b0 N3
-b1 N4
-b0 N5
 #45
-b0 N2
-b1 N3
-b0 N4
-b1 N5
+b0 N0
+b0 N1
 #46
-b1 N0
-b1 N1
-b0 N3
-b1 N4
-b0 N5
+b0 N2
 #47
-b0 N0
-b0 N1
-b1 N2
-b0 N4
-b1 N5
+b0 N3
 #48
-b0 N2
-b1 N3
-b0 N5
+b0 N4
 #49
-b0 N3
-b1 N4
+b1 N0
+b1 N1
+b0 N5
 #50
-b0 N4
-b1 N5
+b1 N2
 #51
-b0 N5
+b1 N3
 #52
+b0 N0
+b0 N1
+b1 N4
 #53
+b0 N2
+b1 N5
 #54
-b1 N0
-b1 N1
+b0 N3
 #55
-b1 N2
+b0 N4
 #56
-b0 N0
-b0 N1
-b1 N3
+b1 N0
+b1 N1
+b0 N5
 #57
-b1 N0
-b1 N1
-b0 N2
-b1 N4
+b0 N0
+b0 N1
+b1 N2
 #58
-b0 N0
-b0 N1
-b1 N2
-b0 N3
-b1 N5
+b0 N2
+b1 N3
 #59
-b1 N0
-b1 N1
-b0 N2
-b1 N3
-b0 N4
+b0 N3
+b1 N4
 #60
-b1 N2
-b0 N3
-b1 N4
-b0 N5
-#61
-b0 N0
-b0 N1
-b1 N3
-b0 N4
-b1 N5
-#62
-b0 N2
-b1 N4
-b0 N5
-#63
-b0 N3
-b1 N5
-#64
 b1 N0
 b1 N1
 b0 N4
-#65
+b1 N5
+#61
 b1 N2
 b0 N5
-#66
+#62
 b1 N3
-#67
+#63
 b0 N0
 b0 N1
 b1 N4
-#68
+#64
 b0 N2
 b1 N5
+#65
+b0 N3
+#66
+b1 N0
+b1 N1
+b0 N4
+#67
+b1 N2
+b0 N5
+#68
+b1 N3
 EOF
 cat >test.stdin <<EOF
 reset 5
 poke ShiftRegister.io_in 0x1
 step 1
-poke ShiftRegister.io_in 0x1
-step 1
-poke ShiftRegister.io_in 0x1
+poke ShiftRegister.io_in 0x0
 step 1
 poke ShiftRegister.io_in 0x1
 step 1
 poke ShiftRegister.io_in 0x0
 step 1
-peek ShiftRegister.io_out
 poke ShiftRegister.io_in 0x0
 step 1
 peek ShiftRegister.io_out
@@ -2460,22 +2440,7 @@ peek ShiftRegister.io_out
 poke ShiftRegister.io_in 0x1
 step 1
 peek ShiftRegister.io_out
-poke ShiftRegister.io_in 0x0
-step 1
-peek ShiftRegister.io_out
-poke ShiftRegister.io_in 0x0
-step 1
-peek ShiftRegister.io_out
 poke ShiftRegister.io_in 0x1
-step 1
-peek ShiftRegister.io_out
-poke ShiftRegister.io_in 0x0
-step 1
-peek ShiftRegister.io_out
-poke ShiftRegister.io_in 0x0
-step 1
-peek ShiftRegister.io_out
-poke ShiftRegister.io_in 0x0
 step 1
 peek ShiftRegister.io_out
 poke ShiftRegister.io_in 0x1
@@ -2496,16 +2461,13 @@ peek ShiftRegister.io_out
 poke ShiftRegister.io_in 0x0
 step 1
 peek ShiftRegister.io_out
-poke ShiftRegister.io_in 0x0
+poke ShiftRegister.io_in 0x1
 step 1
 peek ShiftRegister.io_out
-poke ShiftRegister.io_in 0x0
+poke ShiftRegister.io_in 0x1
 step 1
 peek ShiftRegister.io_out
-poke ShiftRegister.io_in 0x0
-step 1
-peek ShiftRegister.io_out
-poke ShiftRegister.io_in 0x0
+poke ShiftRegister.io_in 0x1
 step 1
 peek ShiftRegister.io_out
 poke ShiftRegister.io_in 0x0
@@ -2520,15 +2482,6 @@ peek ShiftRegister.io_out
 poke ShiftRegister.io_in 0x1
 step 1
 peek ShiftRegister.io_out
-poke ShiftRegister.io_in 0x0
-step 1
-peek ShiftRegister.io_out
-poke ShiftRegister.io_in 0x1
-step 1
-peek ShiftRegister.io_out
-poke ShiftRegister.io_in 0x0
-step 1
-peek ShiftRegister.io_out
 poke ShiftRegister.io_in 0x1
 step 1
 peek ShiftRegister.io_out
@@ -2536,9 +2489,6 @@ poke ShiftRegister.io_in 0x1
 step 1
 peek ShiftRegister.io_out
 poke ShiftRegister.io_in 0x0
-step 1
-peek ShiftRegister.io_out
-poke ShiftRegister.io_in 0x1
 step 1
 peek ShiftRegister.io_out
 poke ShiftRegister.io_in 0x0
@@ -2565,10 +2515,28 @@ peek ShiftRegister.io_out
 poke ShiftRegister.io_in 0x0
 step 1
 peek ShiftRegister.io_out
-poke ShiftRegister.io_in 0x0
+poke ShiftRegister.io_in 0x1
 step 1
 peek ShiftRegister.io_out
 poke ShiftRegister.io_in 0x0
+step 1
+peek ShiftRegister.io_out
+poke ShiftRegister.io_in 0x1
+step 1
+peek ShiftRegister.io_out
+poke ShiftRegister.io_in 0x1
+step 1
+peek ShiftRegister.io_out
+poke ShiftRegister.io_in 0x1
+step 1
+peek ShiftRegister.io_out
+poke ShiftRegister.io_in 0x1
+step 1
+peek ShiftRegister.io_out
+poke ShiftRegister.io_in 0x1
+step 1
+peek ShiftRegister.io_out
+poke ShiftRegister.io_in 0x1
 step 1
 peek ShiftRegister.io_out
 poke ShiftRegister.io_in 0x0
@@ -2589,16 +2557,19 @@ peek ShiftRegister.io_out
 poke ShiftRegister.io_in 0x1
 step 1
 peek ShiftRegister.io_out
-poke ShiftRegister.io_in 0x0
-step 1
-peek ShiftRegister.io_out
 poke ShiftRegister.io_in 0x1
 step 1
 peek ShiftRegister.io_out
 poke ShiftRegister.io_in 0x0
 step 1
 peek ShiftRegister.io_out
-poke ShiftRegister.io_in 0x1
+poke ShiftRegister.io_in 0x0
+step 1
+peek ShiftRegister.io_out
+poke ShiftRegister.io_in 0x0
+step 1
+peek ShiftRegister.io_out
+poke ShiftRegister.io_in 0x0
 step 1
 peek ShiftRegister.io_out
 poke ShiftRegister.io_in 0x1
@@ -2626,6 +2597,18 @@ poke ShiftRegister.io_in 0x0
 step 1
 peek ShiftRegister.io_out
 poke ShiftRegister.io_in 0x0
+step 1
+peek ShiftRegister.io_out
+poke ShiftRegister.io_in 0x0
+step 1
+peek ShiftRegister.io_out
+poke ShiftRegister.io_in 0x1
+step 1
+peek ShiftRegister.io_out
+poke ShiftRegister.io_in 0x1
+step 1
+peek ShiftRegister.io_out
+poke ShiftRegister.io_in 0x1
 step 1
 peek ShiftRegister.io_out
 quit
