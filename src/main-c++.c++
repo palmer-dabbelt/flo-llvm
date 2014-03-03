@@ -301,7 +301,7 @@ int generate_compat(const node_list &flo, FILE *f)
 
     /* The clock function just calls the other two clock functions. */
     fprintf(f, "int %s_t::clock(dat_t<1> rd)\n", dut_name.c_str());
-    fprintf(f, "  { clock_hi(rd); clock_lo(rd); return 0; }\n");
+    fprintf(f, "  { clock_lo(rd); clock_hi(rd); return 0; }\n");
 
     /* Actually define the (non mangled) implementation of the Chisel
      * C++ interface, which in fact only calls the LLVM-generated
