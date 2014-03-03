@@ -1,6 +1,29 @@
 set -e
 set -x
 
+# Checks if we've been given a scala file, which means everything can
+# be generated right from here.
+if test -f test.scala
+then
+    cat test.scala
+
+    scalac test.scala -classpath chisel.jar:.
+
+    scala -classpath chisel.jar:. test \
+        --debug --genHarness --compile --test --backend flo --vcd \
+        || true
+
+    scala -classpath chisel.jar:. test \
+        --debug --genHarness --compile --test --backend c --vcd
+
+    mv test.vcd gold.vcd
+    mv test-emulator.cpp harness.c++
+    if test -f test.stdin
+    then
+        cp test.stdin test-in.stdin
+    fi
+fi
+
 # Builds the rest of the C++ emulator, which contains a main() that
 # actually runs the code.
 time $PTEST_BINARY test.flo --header > test.h++
@@ -33,7 +56,7 @@ time opt -O3 exe.llvm -S > opt.llvm
 # Runs the new emulator inside the LLVM interpreter (or probably JIT
 # compiler, if you're using a sane architecture).
 llc opt.llvm -o opt.S
-c++ opt.S -o opt
+c++ -g opt.S -o opt
 if test -f test.stdin
 then
     time cat test.stdin | ./opt
