@@ -18,10 +18,6 @@ then
 
     mv test.vcd gold.vcd
     mv test-emulator.cpp harness.c++
-    if test -f test.stdin
-    then
-        cp test.stdin test-in.stdin
-    fi
 fi
 
 # Builds the rest of the C++ emulator, which contains a main() that
@@ -59,7 +55,8 @@ llc opt.llvm -o opt.S
 c++ -g opt.S -o opt
 if test -f test.stdin
 then
-    time cat test.stdin | ./opt
+    cp test.stdin test.stdin.copy
+    time cat test.stdin.copy | ./opt
 else
     time ./opt --vcd test.vcd --cycles 100
 fi
