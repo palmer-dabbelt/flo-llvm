@@ -18,6 +18,7 @@ then
 
     mv test.vcd gold.vcd
     mv test-emulator.cpp harness.c++
+    cat test.flo
 fi
 
 # Builds the rest of the C++ emulator, which contains a main() that

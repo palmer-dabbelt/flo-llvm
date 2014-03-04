@@ -19,10 +19,12 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#include "dataflow_order.h++"
+#include "flo.h++"
 #include "node.h++"
-#include "node_list.h++"
+#include "operation.h++"
+
 #include "version.h"
+
 #include <libcodegen/arglist.h++>
 #include <libcodegen/builtin.h++>
 #include <libcodegen/constant.h++>
@@ -35,8 +37,7 @@
 #include <libcodegen/op_mem.h++>
 #include <libcodegen/pointer.h++>
 #include <libcodegen/vargs.h++>
-#include <libflo/parse.h++>
-#include <libflo/infer_widths.h++>
+
 #include <algorithm>
 #include <string.h>
 #include <string>
@@ -57,26 +58,12 @@ enum gentype {
 
 /* These generate the different sorts of files that can be produced by
  * the C++ toolchain. */
-static int generate_header(const node_list &flo, FILE *f);
-static int generate_compat(const node_list &flo, FILE *f);
-static int generate_llvmir(const node_list &flo, FILE *f);
-
-/* Produces a class name from a set of Flo nodes. */
-static const std::string class_name(const node_list &flo);
-
-/* Sorts a list of nodes by their d, in alphabetical order. */
-static std::vector<std::string> sort_by_d(const node_list &flo);
-
-/* Creates a map between a name and the width of that name. */
-static std::map<std::string, unsigned>
-make_width_map(const node_list &flo);
+static int generate_header(const flo_ptr flo, FILE *f);
+static int generate_compat(const flo_ptr flo, FILE *f);
+static int generate_llvmir(const flo_ptr flo, FILE *f);
 
 /* Returns TRUE if the haystack starts with the needle. */
 static bool strsta(const std::string haystack, const std::string needle);
-
-/* Produces a dot-seperated name, which is expected by the Chisel test
- * harness. */
-static const std::string get_dot_name(const std::string chisel_name);
 
 int main(int argc, const char **argv)
 {
@@ -110,24 +97,16 @@ int main(int argc, const char **argv)
         type = GENTYPE_COMPAT;
 
     /* Reads the input file and infers the width of every node. */
-    auto flo = libflo::infer_widths(libflo::parse(infn));
-
-    /* Generates the sorts of nodes that the LLVM backend uses (as
-     * opposed to the sorts that libflo uses). */
-    node_list nodes(flo);
-
-    /* Orders the computation such that the dataflow dependencies will
-     * be respected when run serially. */
-    auto df = dataflow_order(nodes);
+    auto flo = flo::parse(infn);
 
     /* Figures out what sort of output to generate. */
     switch (type) {
     case GENTYPE_IR:
-        return generate_llvmir(df, stdout);
+        return generate_llvmir(flo, stdout);
     case GENTYPE_HEADER:
-        return generate_header(df, stdout);
+        return generate_header(flo, stdout);
     case GENTYPE_COMPAT:
-        return generate_compat(df, stdout);
+        return generate_compat(flo, stdout);
     case GENTYPE_ERROR:
         fprintf(stderr, "Unknown generate target '%s'\n", argv[2]);
         fprintf(stderr, "  valid targets are:\n");
@@ -141,17 +120,8 @@ int main(int argc, const char **argv)
     return 0;
 }
 
-int generate_header(const node_list &flo, FILE *f)
+int generate_header(const flo_ptr flo, FILE *f)
 {
-    /* Fill out a big map of symbols that need to be exported despite
-     * the fact that their name may not say that they do. */
-    std::map<const std::string, bool> extra_exports;
-    for (auto it = flo.nodes(); !it.done(); ++it) {
-        auto node = *it;
-        if (node->need_export_source())
-            extra_exports[node->source_to_export()] = true;
-    }
-
     /* Figures out the class name, printing that out. */
     fprintf(f, "#include <stdio.h>\n");
     fprintf(f, "#include <stdint.h>\n");
@@ -159,26 +129,25 @@ int generate_header(const node_list &flo, FILE *f)
      * defeats the point of doing all this in the first
      * place... */
     fprintf(f, "#include \"emulator.h\"\n");
-    fprintf(f, "class %s_t: public mod_t {\n", class_name(flo).c_str());
+    fprintf(f, "class %s_t: public mod_t {\n", flo->class_name().c_str());
     fprintf(f, "  public:\n");
 
     /* Declares the variables that need to be present in the C++
      * header file in order to maintain compatibility with Chisel's
      * output. */
-    for (auto it = flo.nodes(); !it.done(); ++it) {
+    for (auto it = flo->nodes(); !it.done(); ++it) {
         auto node = *it;
 
-        bool extra = extra_exports.find(node->d()) != extra_exports.end();
-        if (!node->exported() && !extra)
+        if (node->exported() == false)
             continue;
 
-        fprintf(f, "    dat_t<%d> %s;\n",
-                node->outwid(),
-                node->mangled_d().c_str());
+        fprintf(f, "    dat_t<%lu> %s;\n",
+                node->width(),
+                node->mangled_name().c_str());
 
-        fprintf(f, "    dat_t<%d> %s__prev;\n",
-                node->outwid(),
-                node->mangled_d().c_str());
+        fprintf(f, "    dat_t<%lu> %s__prev;\n",
+                node->width(),
+                node->mangled_name().c_str());
     }
 
     /* Here we write the class methods that exist in Chisel and will
@@ -198,19 +167,8 @@ int generate_header(const node_list &flo, FILE *f)
     return 0;
 }
 
-int generate_compat(const node_list &flo, FILE *f)
+int generate_compat(const flo_ptr flo, FILE *f)
 {
-    auto dut_name = class_name(flo);
-
-    /* Fill out a big map of symbols that need to be exported despite
-     * the fact that their name may not say that they do. */
-    std::map<const std::string, bool> extra_exports;
-    for (auto it = flo.nodes(); !it.done(); ++it) {
-        auto node = *it;
-        if (node->need_export_source())
-            extra_exports[node->source_to_export()] = true;
-    }
-
     /* The whole point of this is to work around the C++ name
      * mangling. */
     fprintf(f, "extern \"C\" {\n");
@@ -219,68 +177,45 @@ int generate_compat(const node_list &flo, FILE *f)
      * particular fields within the C++ class definition.  The idea
      * here is that I can get around C++ name mangling by exporting
      * these as C names. */
-    for (auto it = flo.nodes(); !it.done(); ++it) {
+    for (auto it = flo->nodes(); !it.done(); ++it) {
         auto node = *it;
 
-        bool extra = extra_exports.find(node->d()) != extra_exports.end();
-        if (!node->exported() && !extra)
+        if (node->exported() == false)
             continue;
 
-        fprintf(f, "  dat_t<%d> *_llvmflo_%s_ptr(%s_t *d)\n",
-                node->outwid(),
-                node->mangled_d().c_str(),
-                dut_name.c_str()
+        fprintf(f, "  dat_t<%lu> *_llvmflo_%s_ptr(%s_t *d)\n",
+                node->width(),
+                node->mangled_name().c_str(),
+                flo->class_name().c_str()
             );
-        fprintf(f, "    { return &(d->%s); }\n", node->mangled_d().c_str());
-    }
 
-    /* Figure out the largest dat_t used by this design, so we can
-     * build a host of functions that allow dat_t accesses. */
-    size_t largest_dat_t = 0;
-    for (auto it = flo.nodes(); !it.done(); ++it) {
-        auto node = *it;
-        if (node->outwid() > largest_dat_t)
-            largest_dat_t = node->outwid();
+        fprintf(f, "    { return &(d->%s); }\n",
+                node->mangled_name().c_str());
     }
 
     /* Goes ahead and emits a dat_t accessor function for each and
      * every dat_t size that's used by this module. */
-    auto dats_emitted = new bool[largest_dat_t + 1];
-    for (size_t i = 0; i <= largest_dat_t; ++i) {
-        dats_emitted[i] = false;
-    }
+    {
+        auto widths = flo->used_widths();
+        for (auto it = widths.begin(); it != widths.end(); ++it) {
+            auto width = *it;
 
-    for (auto it = flo.nodes(); !it.done(); ++it) {
-        auto node = *it;
-
-        /* Checks to see if this accessor width has already been
-         * initialized, in which case we don't initialize the accessor
-         * functions to avoid duplicate symbols. */
-        if (node->outwid() > largest_dat_t) {
-            fprintf(stderr, "node's width of %d is larger than %lu\n",
-                    node->outwid(),
-                    largest_dat_t);
-
-            abort();
-        }
-        if (dats_emitted[node->outwid()] == true)
-            continue;
-        dats_emitted[node->outwid()] = true;
-
-        /* Emits a getter and a setter for dat_ts of this width. */
-        fprintf(f, "  void _llvmdat_%d_get(const dat_t<%d> *d, uint64_t *a)\n",
-                node->outwid(), node->outwid());
+            fprintf(f, "  void _llvmdat_%lu_get("
+                    "const dat_t<%lu> *d, uint64_t *a)\n",
+                    width, width);
         fprintf(f, "  {\n");
-        for (size_t i = 0; i < (node->outwid() + 63) / 64; ++i)
+        for (size_t i = 0; i < (width + 63) / 64; ++i)
             fprintf(f, "    a[%lu] = d->values[%lu];\n", i, i);
         fprintf(f, "  }\n");
 
-        fprintf(f, "  void _llvmdat_%d_set(dat_t<%d> *d, const uint64_t *a)\n",
-                node->outwid(), node->outwid());
+        fprintf(f, "  void _llvmdat_%lu_set("
+                "dat_t<%lu> *d, const uint64_t *a)\n",
+                width, width);
         fprintf(f, "  {\n");
-        for (size_t i = 0; i < (node->outwid() + 63) / 64; ++i)
+        for (size_t i = 0; i < (width + 63) / 64; ++i)
             fprintf(f, "    d->values[%lu] = a[%lu];\n", i, i);
         fprintf(f, "  }\n");
+        }
     }
 
     /* Here's where we elide the last bits of name mangling: these
@@ -288,45 +223,45 @@ int generate_compat(const node_list &flo, FILE *f)
      * actually implement the functions required by Chisel's C++
      * interface. */
     fprintf(f, "  void _llvmflo_%s_init(%s_t *p, bool r);\n",
-            dut_name.c_str(), dut_name.c_str());
+            flo->class_name().c_str(), flo->class_name().c_str());
 
     fprintf(f, "  void _llvmflo_%s_clock_lo(%s_t *p, bool r);\n",
-            dut_name.c_str(), dut_name.c_str());
+            flo->class_name().c_str(), flo->class_name().c_str());
 
     fprintf(f, "  void _llvmflo_%s_clock_hi(%s_t *p, bool r);\n",
-            dut_name.c_str(), dut_name.c_str());
+            flo->class_name().c_str(), flo->class_name().c_str());
 
     /* End the 'extern "C"' block above. */
     fprintf(f, "};\n");
 
     /* The clock function just calls the other two clock functions. */
-    fprintf(f, "int %s_t::clock(dat_t<1> rd)\n", dut_name.c_str());
+    fprintf(f, "int %s_t::clock(dat_t<1> rd)\n", flo->class_name().c_str());
     fprintf(f, "  { clock_lo(rd); clock_hi(rd); return 0; }\n");
 
     /* Actually define the (non mangled) implementation of the Chisel
      * C++ interface, which in fact only calls the LLVM-generated
      * functions. */
-    fprintf(f, "void %s_t::clock_lo(dat_t<1> rd)\n", dut_name.c_str());
+    fprintf(f, "void %s_t::clock_lo(dat_t<1> rd)\n",
+            flo->class_name().c_str());
     fprintf(f, "  { _llvmflo_%s_clock_lo(this, rd.to_ulong()); }\n",
-            dut_name.c_str());
+            flo->class_name().c_str());
 
     /* init just sets everything to zero, which is easy to do in C++
      * (it'll be fairly short). */
-    fprintf(f, "void %s_t::init(bool r)\n{\n", dut_name.c_str());
+    fprintf(f, "void %s_t::init(bool r)\n{\n", flo->class_name().c_str());
     fprintf(f, "  nodes.clear();\n");
     fprintf(f, "  mems.clear();\n");
-    for (auto it = flo.nodes(); !it.done(); ++it) {
+    for (auto it = flo->nodes(); !it.done(); ++it) {
         auto node = *it;
 
         if (node->exported() == false)
             continue;
 
-        fprintf(f, "  this->%s = 0;\n", node->mangled_d().c_str());
+        fprintf(f, "  this->%s = 0;\n", node->mangled_name().c_str());
 
-        auto dot_name = get_dot_name(node->d());
         fprintf(f, "  nodes[\"%s\"] = &%s;\n",
-                dot_name.c_str(),
-                node->mangled_d().c_str()
+                node->chisel_name().c_str(),
+                node->mangled_name().c_str()
             );
     }
     fprintf(f, "}\n");
@@ -334,40 +269,38 @@ int generate_compat(const node_list &flo, FILE *f)
     /* clock_hi just copies data around and therefor is simplest to
      * stick in C++ -- using LLVM IR doesn't really gain us anything
      * here. */
-    fprintf(f, "void %s_t::clock_hi(dat_t<1> rd)\n{\n", dut_name.c_str());
+    fprintf(f, "void %s_t::clock_hi(dat_t<1> rd)\n{\n",
+            flo->class_name().c_str());
     fprintf(f, "  bool r = rd.to_ulong();\n");
-    for (auto it = flo.nodes(); !it.done(); ++it) {
-        auto node = *it;
+    for (auto it = flo->operations(); !it.done(); ++it) {
+        auto op = *it;
 
-        if (node->exported() == false)
-            continue;
-
-        if (node->opcode() != libflo::opcode::REG)
+        /* Only registers need to be copied on */
+        if (op->op() != libflo::opcode::REG)
             continue;
 
         fprintf(f, "  %s = %s;\n",
-                node->mangled_d( ).c_str(),
-                node->mangled_s(1).c_str()
+                op->d()->mangled_name().c_str(),
+                op->t()->mangled_name().c_str()
             );
     }
     fprintf(f, "}\n");
 
     /* VCD dumping is implemented directly in C++ here because I don't
      * really see a reason not to. */
-    fprintf(f, "void %s_t::dump(FILE *f, int cycle)\n{\n", dut_name.c_str());
+    fprintf(f, "void %s_t::dump(FILE *f, int cycle)\n{\n",
+            flo->class_name().c_str());
 
     /* On the first cycle we need to write out the VCD header file. */
-    size_t vcdtmp = 0;
     fprintf(f, "  if (cycle == 0) {\n");
     fprintf(f, "    fprintf(f, \"$timescale 1ps $end\\n\");\n");
     
     std::string last_path = "";
-    auto sorted = sort_by_d(flo);
-    auto width_map = make_width_map(flo);
-    std::map<std::string, std::string> short_name;
-    for (auto it = sorted.begin(); it != sorted.end(); ++it) {
+    for (auto it = flo->nodes_alpha(); !it.done(); ++it) {
+        auto node = *it;
+
         char buffer[BUFFER_SIZE];
-        snprintf(buffer, BUFFER_SIZE, "%s", (*it).c_str());
+        snprintf(buffer, BUFFER_SIZE, "%s", node->name().c_str());
 
         /* Here's where we figure out where in the module heirarchy
          * this node is. */
@@ -427,16 +360,10 @@ int generate_compat(const node_list &flo, FILE *f)
                     lastmodule);
         }
 
-        /* Obtains a short name for this node and stores it for
-         * later. */
-        char sn[BUFFER_SIZE];
-        snprintf(sn, BUFFER_SIZE, "N%lu", vcdtmp++);
-        short_name[*it] = sn;
-
         /* After changing modules, go ahead and output the wire. */
-        fprintf(f, "    fprintf(f, \"$var wire %d %s %s $end\\n\");\n",
-                width_map.find(*it)->second,
-                sn,
+        fprintf(f, "    fprintf(f, \"$var wire %lu %s %s $end\\n\");\n",
+                node->width(),
+                node->vcd_name().c_str(),
                 signal
             );
 
@@ -462,26 +389,26 @@ int generate_compat(const node_list &flo, FILE *f)
 
     fprintf(f, "  fprintf(f, \"#%%lu\\n\", cycle);\n");
 
-    for (auto it = flo.nodes(); !it.done(); ++it) {
+    for (auto it = flo->nodes(); !it.done(); ++it) {
         auto node = *it;
 
-        if (node->exported() == false)
+        if (node->vcd_exported() == false)
             continue;
 
         fprintf(f,
                 "  if ((cycle == 0) || (%s__prev != %s).to_ulong()) {\n",
-                node->mangled_d().c_str(),
-                node->mangled_d().c_str()
+                node->mangled_name().c_str(),
+                node->mangled_name().c_str()
             );
 
         fprintf(f, "    dat_dump(f, %s, \"%s\");\n",
-                node->mangled_d().c_str(),
-                short_name.find(node->d())->second.c_str()
+                node->mangled_name().c_str(),
+                node->vcd_name().c_str()
             );
 
         fprintf(f, "    %s__prev = %s;\n",
-                node->mangled_d().c_str(),
-                node->mangled_d().c_str()
+                node->mangled_name().c_str(),
+                node->mangled_name().c_str()
             );
 
         fprintf(f, "  }\n");
@@ -492,21 +419,10 @@ int generate_compat(const node_list &flo, FILE *f)
     return 0;
 }
 
-int generate_llvmir(const node_list &flo, FILE *f)
+int generate_llvmir(const flo_ptr flo __attribute__((unused)), FILE *f __attribute__((unused)))
 {
-    auto dut_name = class_name(flo);
-
     /* This writer outputs LLVM IR to the given file. */
     llvm out(f);
-
-    /* Fill out a big map of symbols that need to be exported despite
-     * the fact that their name may not say that they do. */
-    std::map<const std::string, bool> extra_exports;
-    for (auto it = flo.nodes(); !it.done(); ++it) {
-        auto node = *it;
-        if (node->need_export_source())
-            extra_exports[node->source_to_export()] = true;
-    }
 
     /* Generate declarations for some external functions that get used
      * by generated code below. */
@@ -533,53 +449,31 @@ int generate_llvmir(const node_list &flo, FILE *f)
      * still need declarations so LLVM can check their types.  Note
      * that here I'm just manually handling this type safety, which is
      * probably nasty... */
-    for (auto it = flo.nodes(); !it.done(); ++it) {
+    for (auto it = flo->nodes(); !it.done(); ++it) {
         auto node = *it;
 
-        bool needs_export = node->exported();
-        if (extra_exports.find(node->d()) != extra_exports.end())
-            needs_export = true;
-        if (needs_export == false)
+        if (node->exported() == false)
             continue;
 
         out.declare(node->ptr_func());
     }
 
-    /* FIXME: This should all go away.  Instead I'm just going to
-     * directly emit the get/set code in the C++ shim.  This way I'll
-     * have a unique function for each variable. */
-    size_t largest_dat_t = 0;
-    for (auto it = flo.nodes(); !it.done(); ++it) {
-        auto node = *it;
-        if (node->outwid() > largest_dat_t)
-            largest_dat_t = node->outwid();
-    }
-    auto dats_emitted = new bool[largest_dat_t + 1];
-    for (size_t i = 0; i <= largest_dat_t; ++i) {
-        dats_emitted[i] = false;
-    }
-    for (auto it = flo.nodes(); !it.done(); ++it) {
-        auto node = *it;
+    /* Emits a header for the getter/setter functions that are used by
+     * this implementation. */
+    /* FIXME: These should be usinc libcodegen */
+    {
+        auto widths = flo->used_widths();
+        for (auto it = widths.begin(); it != widths.end(); ++it) {
+            auto width = *it;
 
-        /* Checks to see if this accessor width has already been
-         * initialized, in which case we don't initialize the accessor
-         * functions to avoid duplicate symbols. */
-        if (node->outwid() > largest_dat_t) {
-            fprintf(stderr, "node's width of %d is larger than %lu\n",
-                    node->outwid(),
-                    largest_dat_t);
-
-            abort();
+            /* Emits a getter and a setter for dat_ts of this width. */
+            fprintf(f,
+                    "declare void @_llvmdat_%lu_get(i8* %%dut, i64* %%a)\n",
+                    width);
+            fprintf(f,
+                    "declare void @_llvmdat_%lu_set(i8* %%dut, i64* %%a)\n",
+                    width);
         }
-        if (dats_emitted[node->outwid()] == true)
-            continue;
-        dats_emitted[node->outwid()] = true;
-
-        /* Emits a getter and a setter for dat_ts of this width. */
-        fprintf(f, "declare void @_llvmdat_%d_get(i8* %%dut, i64* %%a)\n",
-                node->outwid());
-        fprintf(f, "declare void @_llvmdat_%d_set(i8* %%dut, i64* %%a)\n",
-                node->outwid());
     }
 
     /* Here we generate clock_lo, which performs all the logic
@@ -591,7 +485,7 @@ int generate_llvmir(const node_list &flo, FILE *f)
                        builtin<bool>
                        >
               >
-        clock_lo("_llvmflo_%s_clock_lo", dut_name.c_str());
+        clock_lo("_llvmflo_%s_clock_lo", flo->class_name().c_str());
     {
         auto dut = pointer<builtin<void>>("dut");
         auto dut_vec = std::vector<value*>();
@@ -605,97 +499,90 @@ int generate_llvmir(const node_list &flo, FILE *f)
 
         /* The code is already in dataflow order so all we need to do
          * is emit the computation out to LLVM. */
-        for (auto it = flo.nodes(); !it.done(); ++it) {
-            auto node = *it;
+        for (auto it = flo->operations(); !it.done(); ++it) {
+            auto op = *it;
 
             /* This contains a count of the number of i64-wide
              * operations that need to be performed in order to make
              * this operation succeed. */
-            auto i64cnt = constant<uint32_t>((node->outwid() + 63) / 64);
+            auto i64cnt = constant<uint32_t>((op->d()->width() + 63) / 64);
 
             lo->comment("");
-            lo->comment(" *** Chisel Node: %s", node->to_string().c_str());
+            lo->comment(" *** Chisel Node: %s", op->to_string().c_str());
             lo->comment("");
 
             bool nop = false;
-            switch (node->opcode()) {
+            switch (op->op()) {
                 /* The following nodes are just no-ops in this phase, they
                  * only show up in the clock_hi phase. */
             case libflo::opcode::OUT:
-                lo->operate(mov_op(node->dv(), node->sv(0)));
+                lo->operate(mov_op(op->dv(), op->sv()));
                 break;
 
             case libflo::opcode::ADD:
-                lo->operate(add_op(node->dv(), node->sv(0), node->sv(1)));
+                lo->operate(add_op(op->dv(), op->sv(), op->tv()));
                 break;
 
             case libflo::opcode::AND:
-                lo->operate(and_op(node->dv(), node->sv(0), node->sv(1)));
+                lo->operate(and_op(op->dv(), op->sv(), op->tv()));
                 break;
 
             case libflo::opcode::CAT:
             {
-                auto sw = constant<uint64_t>(node->outwid() - node->width());
-                auto o = constant<uint64_t>(node->width());
+                auto se = fix_t(op->d()->width());
+                auto te = fix_t(op->d()->width());
+                lo->operate(zero_ext_op(se, op->sv()));
+                lo->operate(zero_ext_op(te, op->tv()));
 
-                auto d = node->dv();
-                auto s = fix_t(sw, node->sv(0).name());
-                auto t = node->sv(1);
+                auto ss = fix_t(op->d()->width());
+                lo->operate(lsh_op(ss, se, constant<uint64_t>(op->width())));
 
-                auto se = fix_t(node->outwid());
-                auto te = fix_t(node->outwid());
-                lo->operate(zero_ext_op(se, s));
-                lo->operate(zero_ext_op(te, t));
-
-                auto ss = fix_t(node->outwid());
-                lo->operate(lsh_op(ss, se, o));
-
-                lo->operate(or_op(d, te, ss));
+                lo->operate(or_op(op->dv(), te, ss));
 
                 break;
             }
 
             case libflo::opcode::EQ:
-                lo->operate(cmp_eq_op(node->dv(), node->sv(0), node->sv(1)));
+                lo->operate(cmp_eq_op(op->dv(), op->sv(), op->tv()));
                 break;
 
             case libflo::opcode::GTE:
-                lo->operate(cmp_gte_op(node->dv(), node->sv(0), node->sv(1)));
+                lo->operate(cmp_gte_op(op->dv(), op->sv(), op->tv()));
                 break;
 
             case libflo::opcode::LT:
-                lo->operate(cmp_lt_op(node->dv(), node->sv(0), node->sv(1)));
+                lo->operate(cmp_lt_op(op->dv(), op->sv(), op->tv()));
                 break;
 
             case libflo::opcode::MOV:
-                lo->operate(mov_op(node->dv(), node->sv(0)));
+                lo->operate(mov_op(op->dv(), op->sv()));
                 break;
 
             case libflo::opcode::MUL:
             {
-                auto ext0 = fix_t(node->outwid());
-                auto ext1 = fix_t(node->outwid());
+                auto ext0 = fix_t(op->d()->width());
+                auto ext1 = fix_t(op->d()->width());
 
-                lo->operate(zero_ext_op(ext0, node->sv(0)));
-                lo->operate(zero_ext_op(ext1, node->sv(1)));
-                lo->operate(mul_op(node->dv(), ext0, ext1));
-            }
+                lo->operate(zero_ext_op(ext0, op->sv()));
+                lo->operate(zero_ext_op(ext1, op->tv()));
+                lo->operate(mul_op(op->dv(), ext0, ext1));
                 break;
+            }
 
             case libflo::opcode::MUX:
-                lo->operate(mux_op(node->dv(),
-                                   node->sv(0),
-                                   node->sv(1),
-                                   node->sv(2)
+                lo->operate(mux_op(op->dv(),
+                                   op->sv(),
+                                   op->tv(),
+                                   op->uv()
                                 ));
                 break;
 
             case libflo::opcode::NOT:
-                lo->operate(not_op(node->dv(), node->sv(0)));
+                lo->operate(not_op(op->dv(), op->sv()));
                 break;
 
             case libflo::opcode::OR:
-                lo->operate(or_op(node->dv(), node->sv(0), node->sv(1)));
+                lo->operate(or_op(op->dv(), op->sv(0), op->sv(1)));
                 break;
 
             case libflo::opcode::IN:
@@ -710,8 +597,8 @@ int generate_llvmir(const node_list &flo, FILE *f)
                  * structure definiton so it can be converted into an
                  * LLVM operation. */
                 lo->operate(alloca_op(ptr64, i64cnt));
-                lo->operate(call_op(ptrC, node->ptr_func(), dut_vec));
-                lo->operate(call_op(node->get_func(), {&ptrC, &ptr64}));
+                lo->operate(call_op(ptrC, op->d()->ptr_func(), dut_vec));
+                lo->operate(call_op(op->d()->get_func(), {&ptrC, &ptr64}));
 
                 /* Here we generate the internal temporary values.
                  * This series of shift/add operations will probably
@@ -734,20 +621,20 @@ int generate_llvmir(const node_list &flo, FILE *f)
                      * the copy constructor can't be used.  The
                      * default constructor can't be used because we
                      * need to tag each fix with a width. */
-                    extended.push_back(fix_t(node->width()));
+                    extended.push_back(fix_t(op->width()));
                     lo->operate(zext_trunc_op(extended[i], loads[i]));
                 }
 
                 auto shifted = std::vector<fix_t>();
                 for (size_t i = 0; i < i64cnt; i++) {
-                    shifted.push_back(fix_t(node->width()));
+                    shifted.push_back(fix_t(op->width()));
                     auto offset = constant<uint32_t>(i * 64);
                     lo->operate(lsh_op(shifted[i], extended[i], offset));
                 }
 
                 auto ored = std::vector<fix_t>();
                 for (size_t i = 0; i < i64cnt; ++i) {
-                    ored.push_back(fix_t(node->width()));
+                    ored.push_back(fix_t(op->width()));
                     if (i == 0) {
                         lo->operate(mov_op(ored[i], shifted[i]));
                     } else {
@@ -755,29 +642,29 @@ int generate_llvmir(const node_list &flo, FILE *f)
                     }
                 }
 
-                lo->operate(mov_op(node->dv(), ored[i64cnt-1]));
+                lo->operate(mov_op(op->dv(), ored[i64cnt-1]));
 
                 break;
             }
 
             case libflo::opcode::RSH:
             {
-                auto shifted = fix_t(node->width());
-                lo->operate(lrsh_op(shifted, node->sv(0), node->sv(1)));
-                lo->operate(zext_trunc_op(node->dv(), shifted));
+                auto shifted = fix_t(op->s()->width());
+                lo->operate(lrsh_op(shifted, op->sv(), op->tv()));
+                lo->operate(zext_trunc_op(op->dv(), shifted));
                 break;
             }
 
             case libflo::opcode::RST:
-                lo->operate(unsafemov_op(node->dv(), rst));
+                lo->operate(unsafemov_op(op->dv(), rst));
                 break;
 
             case libflo::opcode::SUB:
-                lo->operate(sub_op(node->dv(), node->sv(0), node->sv(1)));
+                lo->operate(sub_op(op->dv(), op->sv(), op->tv()));
                 break;
 
             case libflo::opcode::XOR:
-                lo->operate(xor_op(node->dv(), node->sv(0), node->sv(1)));
+                lo->operate(xor_op(op->dv(), op->sv(0), op->tv()));
                 break;
 
             case libflo::opcode::RND:
@@ -796,21 +683,15 @@ int generate_llvmir(const node_list &flo, FILE *f)
             case libflo::opcode::RD:
             case libflo::opcode::WR:
                 fprintf(stderr, "Unable to compute node '%s'\n",
-                        libflo::opcode_to_string(node->opcode()).c_str());
+                        libflo::opcode_to_string(op->op()).c_str());
                 abort();
                 break;
             }
 
-            /* Some nodes need to be exported even when their name
-             * doesn't suggest that they do. */
-            bool needs_export = node->exported();
-            if (extra_exports.find(node->d()) != extra_exports.end())
-                needs_export = true;
-
             /* Every node that's in the Chisel header gets stored after
              * its cooresponding computation, but only when the node
              * appears in the Chisel header. */
-            if (needs_export == true && nop == false) {
+            if (op->writeback() == true && nop == false) {
                 lo->comment("  Writeback");
 
                 /* This generates a pointer that can be passed to C++,
@@ -823,9 +704,9 @@ int generate_llvmir(const node_list &flo, FILE *f)
                  * be compiled into NOPs by the LLVM optimizer. */
                 auto shifted = std::vector<fix_t>();
                 for (size_t i = 0; i < i64cnt; ++i) {
-                    shifted.push_back(fix_t(node->outwid()));
+                    shifted.push_back(fix_t(op->d()->width()));
                     auto offset = constant<uint32_t>(i * 64);
-                    lo->operate(lrsh_op(shifted[i], node->dv(), offset));
+                    lo->operate(lrsh_op(shifted[i], op->dv(), offset));
                 }
 
                 auto trunced = std::vector<builtin<uint64_t>>(i64cnt);
@@ -846,8 +727,8 @@ int generate_llvmir(const node_list &flo, FILE *f)
                 /* Here we fetch the actual C++ pointer that can be
                  * used to move this signal's data out. */
                 auto ptrC = pointer<builtin<void>>();
-                lo->operate(call_op(ptrC, node->ptr_func(), dut_vec));
-                lo->operate(call_op(node->set_func(), {&ptrC, &ptr64}));
+                lo->operate(call_op(ptrC, op->d()->ptr_func(), dut_vec));
+                lo->operate(call_op(op->d()->set_func(), {&ptrC, &ptr64}));
             }
         }
 
@@ -857,66 +738,10 @@ int generate_llvmir(const node_list &flo, FILE *f)
     return 0;
 }
 
-const std::string class_name(const node_list &flo)
-{
-    for (auto it = flo.nodes(); !it.done(); ++it) {
-        auto node = *it;
-
-        if (strstr(node->d().c_str(), ":") == NULL)
-            continue;
-
-        char buffer[BUFFER_SIZE];
-        strncpy(buffer, node->d().c_str(), BUFFER_SIZE);
-        strstr(buffer, ":")[0] = '\0';
-        return buffer;
-    }
-
-    fprintf(stderr, "Unable to obtain class name\n");
-    abort();
-    return "";
-}
-
-std::vector<std::string> sort_by_d(const node_list &flo)
-{
-    std::vector<std::string> out;
-
-    for (auto it = flo.nodes(); !it.done(); ++it)
-        out.push_back((*it)->d());
-
-    std::sort(out.begin(), out.end());
-
-    return out;
-}
-
-std::map<std::string, unsigned> make_width_map(const node_list &flo)
-{
-    std::map<std::string, unsigned> out;
-
-    for (auto it = flo.nodes(); !it.done(); ++it)
-        out[(*it)->d()] = (*it)->outwid();
-
-    return out;
-}
-
 bool strsta(const std::string haystack, const std::string needle)
 {
     const char *h = haystack.c_str();
     const char *n = needle.c_str();
 
     return (strncmp(h, n, strlen(n)) == 0);
-}
-
-const std::string get_dot_name(const std::string chisel_name)
-{
-    char buffer[BUFFER_SIZE];
-    snprintf(buffer, BUFFER_SIZE, "%s", chisel_name.c_str());
-
-    for (size_t i = 0; i < strlen(buffer); ++i) {
-        while (buffer[i] == ':' && buffer[i+1] == ':')
-            strcpy(buffer + i, buffer + i + 1);
-        if (buffer[i] == ':')
-            buffer[i] = '.';
-    }
-
-    return buffer;
 }

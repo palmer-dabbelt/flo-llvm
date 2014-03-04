@@ -29,51 +29,53 @@
 #include <libcodegen/pointer.h++>
 #include <libcodegen/vargs.h++>
 #include <libflo/node.h++>
-#include <memory>
-#include <vector>
 
-class node;
-typedef std::shared_ptr<node> node_ptr;
-
-/* This defines our extension of a node.  The idea here is to provide
- * some semblance of type safety when generating code by looking up
- * values within this header file as opposed to attempting to generate
- * coherent values in many places. */
 class node: public libflo::node {
+    friend class libflo::node;
+
 private:
-    /* This returns the mangled name that Chisel uses to refer to this
-     * symbol inside the C++ header file. */
-    const std::string _mangled_d;
+    bool _exported;
 
-    /* FIXME: This should be removed. */
-    const std::vector<std::string> _mangled_s;
-    const std::vector<std::string> _unmangled_s;
+    const std::string _vcd_name;
 
-    /* This is set to TRUE whenever this symbol should be exported
-     * into the Chisel header file, and FALSE otherwise. */
-    const bool _exported;
+private:
+        node(const std::string name,
+             const libflo::unknown<size_t>& width,
+             const libflo::unknown<size_t>& depth,
+             bool is_mem,
+             bool is_const,
+             libflo::unknown<size_t> cycle);
 
 public:
-    /* Fills out this node with the extra information that's needed in
-     * order to make code generation work. */
-    node(const libflo::node_ptr n);
-
-    /* Accessor functions. */
-    const std::string mangled_d(void) const { return _mangled_d; }
-    const std::string mangled_s(size_t i) const { return _mangled_s[i]; }
+    /* Returns TRUE if this node should be exported into the C++
+     * header file. */
     bool exported(void) const { return _exported; }
 
-    /* Returns TRUE if the indexed source is exported, and FALSE
-     * otherwise.  This is used for registers: if the indexed source
-     * is not exported then a special shadow temporary must be
-     * created, otherwise we're OK. */
-    bool source_exported(size_t i) const;
+    /* Returns TRUE if this node should be exported into the VCD
+     * file. */
+    bool vcd_exported(void) const { return mangled_name() != name(); }
 
-    /* Accesses the source and destination operands as libcodegen
-     * types.  Essentially this makes sure you can't mess up the name
-     * mangling by not even giving you the option to. */
-    libcodegen::fix_t dv(void) const;
-    libcodegen::fix_t sv(size_t i) const;
+    /* Returns the mangled name of this node, which refers to the name
+     * this node is expected to have when inside the C++ header
+     * file. */
+    const std::string mangled_name(void) const;
+
+    /* Returns the Chisel name of this node, which refers to the name
+     * this node is expected to have when inside the Chisel test
+     * harness. */
+    const std::string chisel_name(void) const;
+
+    /* Returns the VCD name of this node, which refers to the name
+     * this node is expected to have when inside the VCD file. */
+    const std::string vcd_name(void) const { return _vcd_name; }
+
+    /* Returns the LLVM name of this node, which refers to the name
+     * this node is expected to have when inside an LLVM IR file. */
+    const std::string llvm_name(void) const;
+
+    /* Returns the libcodegen "name" of this node, which is really a
+     * type-safe object that represents this node. */
+    const libcodegen::fix_t cg_name(void) const;
 
     /* Returns a function that allows for access into this node's
      * permanent storage.  This handles C++ name demangling (when
@@ -83,8 +85,8 @@ public:
         libcodegen::arglist1<libcodegen::pointer<libcodegen::builtin<char>>>
         > ptr_func(void) const;
 
-    /* Returns get and set functions for dat_t<>s that match this
-     * node's size. */
+    /* Functions that allow access to this node's internal data
+     * structures. */
     libcodegen::function<
         libcodegen::builtin<void>,
         libcodegen::arglist2<libcodegen::pointer<libcodegen::builtin<void>>,
@@ -99,12 +101,10 @@ public:
                              >
         > set_func(void) const;
 
-    /* A special helper function that determines if this node's source
-     * needs to be exported into the header file.  This is really just
-     * a hack to deal with registers... :( */
-    bool need_export_source(void) const
-        { return opcode() == libflo::opcode::REG && !source_exported(1); }
-    const std::string source_to_export(void) const { return _mangled_s[1]; }
+public:
+    /* Forces that this node is always exported into the header
+     * file. */
+    void force_export(void) { _exported = true; }
 };
 
 #endif

@@ -30,7 +30,7 @@ TESTSRC     += counter-64.bash
 TESTSRC     += counter-128.bash
 TESTSRC     += fib.bash
 TESTSRC     += gcd.bash
-TESTSRC     += iomux.bash
+#TESTSRC     += iomux.bash
 #TESTSRC     += iocnt.bash
 
 # These tests all come from the Chisel tutorial

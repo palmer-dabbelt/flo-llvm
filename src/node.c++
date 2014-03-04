@@ -20,32 +20,29 @@
  */
 
 #include "node.h++"
-#include <string.h>
 
-#ifndef BUFFER_SIZE
-#define BUFFER_SIZE 1024
+#ifndef LINE_MAX
+#define LINE_MAX 1024
 #endif
 
-/* Performs name mangling on a Chisel name. */
-static const std::string mangle_name(const std::string flo_name);
+static const std::string gen_vcd_name(void);
 
-static const std::vector<std::string>
-mangle_s(const std::vector<std::string> &s);
-
-node::node(const libflo::node_ptr n)
-    : libflo::node(n->d(), n->op(), n->alt_width(), n->s()),
-      _mangled_d(mangle_name(n->d())),
-      _mangled_s(mangle_s(n->s())),
-      _unmangled_s(n->s()),
-      _exported(strcmp(n->d().c_str(), _mangled_d.c_str()) != 0)
-      
+node::node(const std::string name,
+           const libflo::unknown<size_t>& width,
+           const libflo::unknown<size_t>& depth,
+           bool is_mem,
+           bool is_const,
+           libflo::unknown<size_t> cycle)
+    : libflo::node(name, width, depth, is_mem, is_const, cycle),
+      _exported(false),
+      _vcd_name(gen_vcd_name())
 {
 }
 
-const std::string mangle_name(const std::string flo_name)
+const std::string node::mangled_name(void) const
 {
-    char buffer[BUFFER_SIZE];
-    strncpy(buffer, flo_name.c_str(), BUFFER_SIZE);
+    char buffer[LINE_MAX];
+    strncpy(buffer, name().c_str(), LINE_MAX);
 
     for (size_t i = 0; i < strlen(buffer); ++i)
         if (buffer[i] == ':')
@@ -54,42 +51,41 @@ const std::string mangle_name(const std::string flo_name)
     return buffer;
 }
 
-const std::vector<std::string> mangle_s(const std::vector<std::string> &s)
+const std::string node::chisel_name(void) const
 {
-    std::vector<std::string> out;
+    char buffer[LINE_MAX];
+    strncpy(buffer, name().c_str(), LINE_MAX);
 
-    for (auto it = s.begin(); it != s.end(); ++it)
-        out.push_back(mangle_name(*it));
+    for (size_t i = 0; i < strlen(buffer); ++i) {
+        while (buffer[i] == ':' && buffer[i+1] == ':')
+            strcpy(buffer + i, buffer + i + 1);
+        if (buffer[i] == ':')
+            buffer[i] = '.';
+    }
 
-    return out;
+    return buffer;
 }
 
-bool node::source_exported(size_t i) const
+const std::string node::llvm_name(void) const
 {
-    if (_mangled_s.size() == 0)
-        return true;
+    if (is_const())
+        return name();
 
-    return (strcmp(_unmangled_s[i].c_str(), _mangled_s[i].c_str()) != 0);
+    char buffer[LINE_MAX];
+    snprintf(buffer, LINE_MAX, "%%%s", mangled_name().c_str());
+    return buffer;
 }
 
-libcodegen::fix_t node::dv(void) const
+const libcodegen::fix_t node::cg_name(void) const
 {
-    if (isdigit(mangled_d().c_str()[0]))
-        return libcodegen::fix_t(outwid(), mangled_d());
+    size_t w = 1;
 
-    char buffer[BUFFER_SIZE];
-    snprintf(buffer, BUFFER_SIZE, "C__%s", mangled_d().c_str());
-    return libcodegen::fix_t(outwid(), buffer);
-}
+    if (!is_const())
+        w = width();
+    if (known_width())
+        w = width();
 
-libcodegen::fix_t node::sv(size_t i) const
-{
-    if (isdigit(mangled_s(i).c_str()[0]))
-        return libcodegen::fix_t(width(), mangled_s(i));
-
-    char buffer[BUFFER_SIZE];
-    snprintf(buffer, BUFFER_SIZE, "C__%s", mangled_s(i).c_str());
-    return libcodegen::fix_t(width(), buffer);
+    return libcodegen::fix_t(w, mangled_name());
 }
 
 libcodegen::function<
@@ -101,7 +97,7 @@ libcodegen::function<
         libcodegen::pointer<libcodegen::builtin<char>>,
         libcodegen::arglist1<libcodegen::pointer<libcodegen::builtin<char>>>
         >
-        out("_llvmflo_%s_ptr", mangled_d().c_str());
+        out("_llvmflo_%s_ptr", mangled_name().c_str());
 
     return out;
 }
@@ -118,7 +114,7 @@ libcodegen::function<
         libcodegen::arglist2<libcodegen::pointer<libcodegen::builtin<void>>,
                              libcodegen::pointer<libcodegen::builtin<uint64_t>>
                              >
-        > out("_llvmdat_%u_get", outwid());
+        > out("_llvmdat_%u_get", width());
 
     return out;
 }
@@ -135,7 +131,13 @@ libcodegen::function<
         libcodegen::arglist2<libcodegen::pointer<libcodegen::builtin<void>>,
                              libcodegen::pointer<libcodegen::builtin<uint64_t>>
                              >
-        > out("_llvmdat_%u_set", outwid());
+        > out("_llvmdat_%u_set", width());
 
     return out;
+}
+
+const std::string gen_vcd_name(void)
+{
+    static size_t i = 0;
+    return "N" + std::to_string(i++);
 }
