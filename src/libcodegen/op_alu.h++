@@ -167,6 +167,7 @@ namespace libcodegen {
     /* Arithmatic operations. */
     LIBCODEGEN__DEF_ALU_OP_1_3(add, "add")
     LIBCODEGEN__DEF_ALU_OP_1_3(sub, "sub")
+    LIBCODEGEN__DEF_ALU_OP_2_3s(mul, "mul")
 
     /* Bitwise logical operations. */
     LIBCODEGEN__DEF_ALU_OP_1_3(and, "and")

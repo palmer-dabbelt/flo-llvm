@@ -671,6 +671,17 @@ int generate_llvmir(const node_list &flo, FILE *f)
                 lo->operate(mov_op(node->dv(), node->sv(0)));
                 break;
 
+            case libflo::opcode::MUL:
+            {
+                auto ext0 = fix_t(node->outwid());
+                auto ext1 = fix_t(node->outwid());
+
+                lo->operate(zero_ext_op(ext0, node->sv(0)));
+                lo->operate(zero_ext_op(ext1, node->sv(1)));
+                lo->operate(mul_op(node->dv(), ext0, ext1));
+            }
+                break;
+
             case libflo::opcode::MUX:
                 lo->operate(mux_op(node->dv(),
                                    node->sv(0),
@@ -780,7 +791,6 @@ int generate_llvmir(const node_list &flo, FILE *f)
             case libflo::opcode::ST:
             case libflo::opcode::MEM:
             case libflo::opcode::NOP:
-            case libflo::opcode::MUL:
             case libflo::opcode::LOG2:
             case libflo::opcode::NEG:
             case libflo::opcode::RD:

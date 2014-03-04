@@ -69,6 +69,7 @@ node_list dataflow_order(const node_list &in)
         case libflo::opcode::GTE:
         case libflo::opcode::LT:
         case libflo::opcode::MOV:
+        case libflo::opcode::MUL:
         case libflo::opcode::MUX:
         case libflo::opcode::NOT:
         case libflo::opcode::OR:
@@ -117,7 +118,6 @@ node_list dataflow_order(const node_list &in)
         case libflo::opcode::ST:
         case libflo::opcode::MEM:
         case libflo::opcode::NOP:
-        case libflo::opcode::MUL:
         case libflo::opcode::LOG2:
         case libflo::opcode::NEG:
         case libflo::opcode::RD:
