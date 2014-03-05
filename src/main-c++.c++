@@ -554,6 +554,19 @@ int generate_llvmir(const flo_ptr flo __attribute__((unused)), FILE *f __attribu
                 lo->operate(cmp_lt_op(op->dv(), op->sv(), op->tv()));
                 break;
 
+            case libflo::opcode::LSH:
+            {
+                auto es = fix_t(op->d()->width());
+                auto et = fix_t(op->d()->width());
+
+                lo->operate(zero_ext_op(es, op->sv()));
+                lo->operate(zero_ext_op(et, op->tv()));
+                
+                lo->operate(lsh_op(op->dv(), es, et));
+
+                break;
+            }
+
             case libflo::opcode::MOV:
                 lo->operate(mov_op(op->dv(), op->sv()));
                 break;
@@ -674,7 +687,6 @@ int generate_llvmir(const flo_ptr flo __attribute__((unused)), FILE *f __attribu
             case libflo::opcode::LD:
             case libflo::opcode::NEQ:
             case libflo::opcode::ARSH:
-            case libflo::opcode::LSH:
             case libflo::opcode::ST:
             case libflo::opcode::MEM:
             case libflo::opcode::NOP:
