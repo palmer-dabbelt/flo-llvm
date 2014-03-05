@@ -14,7 +14,7 @@ class test extends Module {
   io.o := r
 }
 
-class tests(t: test) extends Testy(t) {
+class tests(t: test) extends Tester(t) {
   var cycle = 0
   do {
     step(1)
