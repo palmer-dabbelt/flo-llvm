@@ -10,7 +10,7 @@ then
     scalac test.scala -classpath chisel.jar:.
 
     scala -classpath chisel.jar:. test \
-        --debug --genHarness --compile --test --backend flo --vcd \
+        --debug --backend flo \
         || true
 
     scala -classpath chisel.jar:. test \
