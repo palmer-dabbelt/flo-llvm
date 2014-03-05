@@ -57,6 +57,7 @@ c++ -g opt.S -o opt
 if test -f test.stdin
 then
     cp test.stdin test.stdin.copy
+    cat test.stdin.copy
     time cat test.stdin.copy | ./opt
 else
     time ./opt --vcd test.vcd --cycles 100
