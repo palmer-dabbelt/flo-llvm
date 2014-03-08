@@ -13,8 +13,13 @@ then
         --debug --backend flo \
         || true
 
-    scala -classpath chisel.jar:. test \
-        --debug --genHarness --compile --test --backend c --vcd
+    touch test.stdin
+    while [[ "$(tail -n1 test.stdin)" != "quit" ]]
+    do
+        scala -classpath chisel.jar:. test \
+            --debug --genHarness --compile --test --backend c \
+            --vcd --dumpTestInput
+    done
 
     mv test.vcd gold.vcd
     mv test-emulator.cpp harness.c++
