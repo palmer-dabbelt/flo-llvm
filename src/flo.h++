@@ -43,8 +43,8 @@ public:
     const node_viter nodes_alpha(void) const;
 
 public:
-    flo(const std::map<std::string, std::shared_ptr<node>>& nodes,
-        const std::vector<std::shared_ptr<operation>>& ops);
+    flo(std::map<std::string, std::shared_ptr<node>>& nodes,
+        std::vector<std::shared_ptr<operation>>& ops);
 
 public:    
     /* Parses a Flo file. */

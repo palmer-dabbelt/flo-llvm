@@ -30,8 +30,8 @@
 
 static bool node_alpha_cmp(std::shared_ptr<node> a, std::shared_ptr<node> b);
 
-flo::flo(const std::map<std::string, std::shared_ptr<node>>& nodes,
-         const std::vector<std::shared_ptr<operation>>& ops)
+flo::flo(std::map<std::string, std::shared_ptr<node>>& nodes,
+         std::vector<std::shared_ptr<operation>>& ops)
     : libflo::flo<node, operation>(nodes, ops)
 {
 }
