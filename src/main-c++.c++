@@ -528,6 +528,7 @@ int generate_llvmir(const flo_ptr flo __attribute__((unused)), FILE *f __attribu
                 break;
 
             case libflo::opcode::CAT:
+            case libflo::opcode::CATD:
             {
                 auto se = fix_t(op->d()->width());
                 auto te = fix_t(op->d()->width());

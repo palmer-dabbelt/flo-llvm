@@ -38,6 +38,7 @@ operation::operation(std::shared_ptr<node>& dest,
     case libflo::opcode::AND:
     case libflo::opcode::ARSH:
     case libflo::opcode::CAT:
+    case libflo::opcode::CATD:
     case libflo::opcode::EAT:
     case libflo::opcode::EQ:
     case libflo::opcode::GTE:
