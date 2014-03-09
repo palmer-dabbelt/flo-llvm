@@ -28,7 +28,7 @@ operation::operation(std::shared_ptr<node>& dest,
                      const std::vector<std::shared_ptr<node>>& s)
     : libflo::operation<node>(dest, width, op, s)
 {
-    if (d()->mangled_name() != d()->name())
+    if (strstr(d()->name().c_str(), ":") != NULL)
         d()->force_export();
 
     /* Most operations don't require anything else to be exported, but

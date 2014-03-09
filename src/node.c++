@@ -44,9 +44,12 @@ const std::string node::mangled_name(void) const
     char buffer[LINE_MAX];
     strncpy(buffer, name().c_str(), LINE_MAX);
 
-    for (size_t i = 0; i < strlen(buffer); ++i)
+    for (size_t i = 0; i < strlen(buffer); ++i) {
         if (buffer[i] == ':')
             buffer[i] = '_';
+        if (buffer[i] == '.')
+            buffer[i] = '_';
+    }
 
     return buffer;
 }
