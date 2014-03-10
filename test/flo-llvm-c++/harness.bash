@@ -28,8 +28,8 @@ fi
 
 # Builds the rest of the C++ emulator, which contains a main() that
 # actually runs the code.
-time $PTEST_BINARY test.flo --header > test.h++
-cat test.h++
+time $PTEST_BINARY test.flo --header > test.h
+cat test.h
 
 time $PTEST_BINARY test.flo --compat > compat.c++
 cat compat.c++
@@ -37,7 +37,7 @@ cat compat.c++
 time clang -g -c -std=c++11 harness.c++ -o harness.llvm -S -emit-llvm
 #cat harness.llvm
 
-time clang -g -c -include test.h++ -std=c++11 compat.c++ \
+time clang -g -c -include test.h -std=c++11 compat.c++ \
     -o compat.llvm -S -emit-llvm
 #cat compat.llvm
 

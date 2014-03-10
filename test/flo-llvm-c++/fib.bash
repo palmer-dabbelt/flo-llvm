@@ -38,7 +38,7 @@ Fib::io_ot = out/32 Fib::sum0
 EOF
 
 cat >harness.c++ <<EOF
- #include "test.h++"
+ #include "test.h"
 
 int main(int argc, const char **argv)
 {

@@ -10,7 +10,7 @@ Counter128::io_count = out/128 Counter128::reg
 EOF
 
 cat > harness.c++ <<EOF
- #include "test.h++"
+ #include "test.h"
  #include <stdio.h>
  #include <stdlib.h>
  #include <string.h>

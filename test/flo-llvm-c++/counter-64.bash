@@ -10,7 +10,7 @@ Counter64::io_count = out/64 Counter64::reg
 EOF
 
 cat > harness.c++ <<EOF
- #include "test.h++"
+ #include "test.h"
  #include <stdio.h>
  #include <stdlib.h>
  #include <string.h>

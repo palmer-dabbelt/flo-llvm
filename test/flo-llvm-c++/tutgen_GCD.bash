@@ -1,6 +1,6 @@
 #include "tempdir.bash"
 cat >harness.c++ <<EOF
- #include "test.h++"
+ #include "test.h"
 
 int main (int argc, char* argv[]) {
   GCD_t* c = new GCD_t();

@@ -38,7 +38,7 @@ test::r__update.7 = mux/26 reset 0 T0.7
 EOF
 
 cat > harness.c++ <<EOF
- #include "test.h++"
+ #include "test.h"
  #include <stdio.h>
  #include <stdlib.h>
  #include <string.h>

@@ -10,7 +10,7 @@ Counter32::io_count = out/32 Counter32::reg
 EOF
 
 cat > harness.c++ <<EOF
- #include "test.h++"
+ #include "test.h"
  #include <stdio.h>
  #include <stdlib.h>
  #include <string.h>

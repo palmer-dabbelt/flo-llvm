@@ -50,7 +50,7 @@ GCDWrapper::io_data = out/32 GCDWrapper::gcd::io_out
 EOF
 
 cat >harness.c++ <<EOF
- #include "test.h++"
+ #include "test.h"
 
 int main(int argc, const char **argv)
 {
