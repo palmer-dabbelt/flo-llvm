@@ -259,7 +259,7 @@ int generate_compat(const flo_ptr flo, FILE *f)
 
         fprintf(f, "  this->%s = 0;\n", node->mangled_name().c_str());
 
-        fprintf(f, "  nodes[\"%s\"] = &%s;\n",
+        fprintf(f, "  nodes[\"%s\"] = &this->%s;\n",
                 node->chisel_name().c_str(),
                 node->mangled_name().c_str()
             );
