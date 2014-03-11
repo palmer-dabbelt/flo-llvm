@@ -8,6 +8,8 @@ int main (int argc, char* argv[]) {
   FILE *f = fopen("ShiftRegister.vcd", "w");
   FILE *tee = fopen("ShiftRegister.stdin", "w");
   c->read_eval_print(f, tee);
+  fclose(f);
+  fclose(tee);
 }
 EOF
 cat >emulator.h <<EOF
@@ -2117,8 +2119,10 @@ class mod_t {
           fprintf(teefile, "%s\n", str_in.c_str());
           fflush(teefile);
       }
-      if (strcmp("", str_in.c_str()) == 0)
+      if (strcmp("", str_in.c_str()) == 0) {
+          fprintf(stderr, "Read empty string in tester stdin\n");
           abort();
+      }
       std::vector< std::string > tokens = tokenize(str_in);
       std::string cmd = tokens[0];
       if (cmd == "peek") {
@@ -2200,262 +2204,276 @@ b0 N5
 b1 N0
 b1 N1
 #6
-b0 N0
-b0 N1
 b1 N2
 #7
+b0 N0
+b0 N1
+b1 N3
+#8
 b1 N0
 b1 N1
 b0 N2
-b1 N3
-#8
-b0 N0
-b0 N1
-b1 N2
-b0 N3
 b1 N4
 #9
-b0 N2
-b1 N3
-b0 N4
+b1 N2
+b0 N3
 b1 N5
 #10
-b0 N3
-b1 N4
-b0 N5
+b0 N0
+b0 N1
+b1 N3
+b0 N4
 #11
 b1 N0
 b1 N1
-b0 N4
-b1 N5
-#12
-b1 N2
-b0 N5
-#13
-b1 N3
-#14
+b0 N2
 b1 N4
+b0 N5
+#12
+b0 N0
+b0 N1
+b1 N2
+b0 N3
+b1 N5
+#13
+b1 N0
+b1 N1
+b0 N2
+b1 N3
+b0 N4
+#14
+b1 N2
+b0 N3
+b1 N4
+b0 N5
 #15
 b0 N0
 b0 N1
+b1 N3
+b0 N4
 b1 N5
 #16
 b0 N2
+b1 N4
+b0 N5
 #17
 b0 N3
+b1 N5
 #18
-b0 N4
-#19
 b1 N0
 b1 N1
+b0 N4
+#19
+b1 N2
 b0 N5
 #20
-b1 N2
-#21
 b1 N3
+#21
+b1 N4
 #22
 b0 N0
 b0 N1
-b1 N4
-#23
-b0 N2
 b1 N5
-#24
+#23
 b1 N0
 b1 N1
-b0 N3
-#25
-b1 N2
-b0 N4
-#26
-b1 N3
-b0 N5
-#27
-b1 N4
-#28
+b0 N2
+#24
 b0 N0
 b0 N1
-b1 N5
-#29
+b1 N2
+b0 N3
+#25
 b0 N2
+b1 N3
+b0 N4
+#26
+b0 N3
+b1 N4
+b0 N5
+#27
+b0 N4
+b1 N5
+#28
+b0 N5
+#29
 #30
 b1 N0
 b1 N1
-b0 N3
 #31
 b0 N0
 b0 N1
 b1 N2
-b0 N4
 #32
-b1 N0
-b1 N1
 b0 N2
 b1 N3
-b0 N5
 #33
-b0 N0
-b0 N1
-b1 N2
+b1 N0
+b1 N1
 b0 N3
 b1 N4
 #34
-b0 N2
-b1 N3
+b0 N0
+b0 N1
+b1 N2
 b0 N4
 b1 N5
 #35
 b1 N0
 b1 N1
-b0 N3
-b1 N4
-b0 N5
-#36
-b0 N0
-b0 N1
-b1 N2
-b0 N4
-b1 N5
-#37
-b1 N0
-b1 N1
 b0 N2
 b1 N3
 b0 N5
-#38
-b0 N0
-b0 N1
+#36
 b1 N2
 b0 N3
 b1 N4
+#37
+b0 N0
+b0 N1
+b1 N3
+b0 N4
+b1 N5
+#38
+b0 N2
+b1 N4
+b0 N5
 #39
 b1 N0
 b1 N1
-b0 N2
-b1 N3
-b0 N4
+b0 N3
 b1 N5
 #40
+b0 N0
+b0 N1
 b1 N2
+b0 N4
+#41
+b0 N2
+b1 N3
+b0 N5
+#42
 b0 N3
 b1 N4
-b0 N5
-#41
-b1 N3
-b0 N4
-b1 N5
-#42
-b1 N4
-b0 N5
 #43
+b1 N0
+b1 N1
+b0 N4
 b1 N5
 #44
+b1 N2
+b0 N5
 #45
-b0 N0
-b0 N1
+b1 N3
 #46
-b0 N2
+b1 N4
 #47
-b0 N3
+b0 N0
+b0 N1
+b1 N5
 #48
-b0 N4
+b1 N0
+b1 N1
+b0 N2
 #49
-b1 N0
-b1 N1
-b0 N5
+b1 N2
+b0 N3
 #50
-b1 N2
+b1 N3
+b0 N4
 #51
-b1 N3
+b1 N4
+b0 N5
 #52
-b0 N0
-b0 N1
-b1 N4
+b1 N5
 #53
-b0 N2
-b1 N5
 #54
-b0 N3
+b0 N0
+b0 N1
 #55
-b0 N4
-#56
 b1 N0
 b1 N1
-b0 N5
-#57
+b0 N2
+#56
 b0 N0
 b0 N1
 b1 N2
-#58
-b0 N2
-b1 N3
-#59
 b0 N3
-b1 N4
-#60
+#57
 b1 N0
 b1 N1
+b0 N2
+b1 N3
+b0 N4
+#58
+b1 N2
+b0 N3
+b1 N4
+b0 N5
+#59
+b1 N3
 b0 N4
 b1 N5
-#61
-b1 N2
+#60
+b1 N4
 b0 N5
+#61
+b0 N0
+b0 N1
+b1 N5
 #62
-b1 N3
+b1 N0
+b1 N1
+b0 N2
 #63
 b0 N0
 b0 N1
-b1 N4
+b1 N2
+b0 N3
 #64
 b0 N2
-b1 N5
+b1 N3
+b0 N4
 #65
-b0 N3
-#66
 b1 N0
 b1 N1
-b0 N4
-#67
+b0 N3
+b1 N4
+b0 N5
+#66
+b0 N0
+b0 N1
 b1 N2
+b0 N4
+b1 N5
+#67
+b1 N0
+b1 N1
+b0 N2
+b1 N3
 b0 N5
 #68
-b1 N3
+b1 N2
+b0 N3
+b1 N4
 EOF
 cat >test.stdin <<EOF
 reset 5
 poke ShiftRegister.io_in 0x1
 step 1
-poke ShiftRegister.io_in 0x0
-step 1
 poke ShiftRegister.io_in 0x1
 step 1
 poke ShiftRegister.io_in 0x0
 step 1
-poke ShiftRegister.io_in 0x0
-step 1
-peek ShiftRegister.io_out
-poke ShiftRegister.io_in 0x0
-step 1
-peek ShiftRegister.io_out
 poke ShiftRegister.io_in 0x1
 step 1
-peek ShiftRegister.io_out
-poke ShiftRegister.io_in 0x1
-step 1
-peek ShiftRegister.io_out
-poke ShiftRegister.io_in 0x1
-step 1
-peek ShiftRegister.io_out
 poke ShiftRegister.io_in 0x1
 step 1
 peek ShiftRegister.io_out
 poke ShiftRegister.io_in 0x0
 step 1
 peek ShiftRegister.io_out
-poke ShiftRegister.io_in 0x0
-step 1
-peek ShiftRegister.io_out
-poke ShiftRegister.io_in 0x0
+poke ShiftRegister.io_in 0x1
 step 1
 peek ShiftRegister.io_out
 poke ShiftRegister.io_in 0x0
@@ -2467,7 +2485,7 @@ peek ShiftRegister.io_out
 poke ShiftRegister.io_in 0x1
 step 1
 peek ShiftRegister.io_out
-poke ShiftRegister.io_in 0x1
+poke ShiftRegister.io_in 0x0
 step 1
 peek ShiftRegister.io_out
 poke ShiftRegister.io_in 0x0
@@ -2491,15 +2509,6 @@ peek ShiftRegister.io_out
 poke ShiftRegister.io_in 0x0
 step 1
 peek ShiftRegister.io_out
-poke ShiftRegister.io_in 0x0
-step 1
-peek ShiftRegister.io_out
-poke ShiftRegister.io_in 0x1
-step 1
-peek ShiftRegister.io_out
-poke ShiftRegister.io_in 0x0
-step 1
-peek ShiftRegister.io_out
 poke ShiftRegister.io_in 0x1
 step 1
 peek ShiftRegister.io_out
@@ -2507,36 +2516,6 @@ poke ShiftRegister.io_in 0x0
 step 1
 peek ShiftRegister.io_out
 poke ShiftRegister.io_in 0x0
-step 1
-peek ShiftRegister.io_out
-poke ShiftRegister.io_in 0x1
-step 1
-peek ShiftRegister.io_out
-poke ShiftRegister.io_in 0x0
-step 1
-peek ShiftRegister.io_out
-poke ShiftRegister.io_in 0x1
-step 1
-peek ShiftRegister.io_out
-poke ShiftRegister.io_in 0x0
-step 1
-peek ShiftRegister.io_out
-poke ShiftRegister.io_in 0x1
-step 1
-peek ShiftRegister.io_out
-poke ShiftRegister.io_in 0x1
-step 1
-peek ShiftRegister.io_out
-poke ShiftRegister.io_in 0x1
-step 1
-peek ShiftRegister.io_out
-poke ShiftRegister.io_in 0x1
-step 1
-peek ShiftRegister.io_out
-poke ShiftRegister.io_in 0x1
-step 1
-peek ShiftRegister.io_out
-poke ShiftRegister.io_in 0x1
 step 1
 peek ShiftRegister.io_out
 poke ShiftRegister.io_in 0x0
@@ -2554,7 +2533,10 @@ peek ShiftRegister.io_out
 poke ShiftRegister.io_in 0x1
 step 1
 peek ShiftRegister.io_out
-poke ShiftRegister.io_in 0x1
+poke ShiftRegister.io_in 0x0
+step 1
+peek ShiftRegister.io_out
+poke ShiftRegister.io_in 0x0
 step 1
 peek ShiftRegister.io_out
 poke ShiftRegister.io_in 0x1
@@ -2563,7 +2545,10 @@ peek ShiftRegister.io_out
 poke ShiftRegister.io_in 0x0
 step 1
 peek ShiftRegister.io_out
-poke ShiftRegister.io_in 0x0
+poke ShiftRegister.io_in 0x1
+step 1
+peek ShiftRegister.io_out
+poke ShiftRegister.io_in 0x1
 step 1
 peek ShiftRegister.io_out
 poke ShiftRegister.io_in 0x0
@@ -2593,7 +2578,55 @@ peek ShiftRegister.io_out
 poke ShiftRegister.io_in 0x1
 step 1
 peek ShiftRegister.io_out
+poke ShiftRegister.io_in 0x1
+step 1
+peek ShiftRegister.io_out
 poke ShiftRegister.io_in 0x0
+step 1
+peek ShiftRegister.io_out
+poke ShiftRegister.io_in 0x1
+step 1
+peek ShiftRegister.io_out
+poke ShiftRegister.io_in 0x1
+step 1
+peek ShiftRegister.io_out
+poke ShiftRegister.io_in 0x1
+step 1
+peek ShiftRegister.io_out
+poke ShiftRegister.io_in 0x1
+step 1
+peek ShiftRegister.io_out
+poke ShiftRegister.io_in 0x1
+step 1
+peek ShiftRegister.io_out
+poke ShiftRegister.io_in 0x1
+step 1
+peek ShiftRegister.io_out
+poke ShiftRegister.io_in 0x0
+step 1
+peek ShiftRegister.io_out
+poke ShiftRegister.io_in 0x1
+step 1
+peek ShiftRegister.io_out
+poke ShiftRegister.io_in 0x0
+step 1
+peek ShiftRegister.io_out
+poke ShiftRegister.io_in 0x1
+step 1
+peek ShiftRegister.io_out
+poke ShiftRegister.io_in 0x1
+step 1
+peek ShiftRegister.io_out
+poke ShiftRegister.io_in 0x1
+step 1
+peek ShiftRegister.io_out
+poke ShiftRegister.io_in 0x1
+step 1
+peek ShiftRegister.io_out
+poke ShiftRegister.io_in 0x0
+step 1
+peek ShiftRegister.io_out
+poke ShiftRegister.io_in 0x1
 step 1
 peek ShiftRegister.io_out
 poke ShiftRegister.io_in 0x0
@@ -2603,6 +2636,9 @@ poke ShiftRegister.io_in 0x0
 step 1
 peek ShiftRegister.io_out
 poke ShiftRegister.io_in 0x1
+step 1
+peek ShiftRegister.io_out
+poke ShiftRegister.io_in 0x0
 step 1
 peek ShiftRegister.io_out
 poke ShiftRegister.io_in 0x1

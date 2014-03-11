@@ -8,6 +8,8 @@ int main (int argc, char* argv[]) {
   FILE *f = fopen("Risc.vcd", "w");
   FILE *tee = fopen("Risc.stdin", "w");
   c->read_eval_print(f, tee);
+  fclose(f);
+  fclose(tee);
 }
 EOF
 cat >emulator.h <<EOF
@@ -2117,8 +2119,10 @@ class mod_t {
           fprintf(teefile, "%s\n", str_in.c_str());
           fflush(teefile);
       }
-      if (strcmp("", str_in.c_str()) == 0)
+      if (strcmp("", str_in.c_str()) == 0) {
+          fprintf(stderr, "Read empty string in tester stdin\n");
           abort();
+      }
       std::vector< std::string > tokens = tokenize(str_in);
       std::string cmd = tokens[0];
       if (cmd == "peek") {

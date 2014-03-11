@@ -8,6 +8,8 @@ int main (int argc, char* argv[]) {
   FILE *f = fopen("Adder4.vcd", "w");
   FILE *tee = fopen("Adder4.stdin", "w");
   c->read_eval_print(f, tee);
+  fclose(f);
+  fclose(tee);
 }
 EOF
 cat >emulator.h <<EOF
@@ -2117,8 +2119,10 @@ class mod_t {
           fprintf(teefile, "%s\n", str_in.c_str());
           fflush(teefile);
       }
-      if (strcmp("", str_in.c_str()) == 0)
+      if (strcmp("", str_in.c_str()) == 0) {
+          fprintf(stderr, "Read empty string in tester stdin\n");
           abort();
+      }
       std::vector< std::string > tokens = tokenize(str_in);
       std::string cmd = tokens[0];
       if (cmd == "peek") {
@@ -2279,120 +2283,130 @@ b0 N42
 #3
 #4
 #5
+b1 N0
+b1 N1
 b0011 N2
 b1 N3
-b0101 N4
+b1101 N4
 b1 N5
+b1 N7
+b1 N8
+b1 N9
 b1 N10
 b1 N11
 b1 N12
 b1 N13
 b1 N15
+b01 N17
 b1 N19
 b1 N21
 b1 N22
 b1 N24
 b1 N25
+b001 N27
 b1 N28
 b1 N31
 b1 N32
-b1 N36
-b1000 N37
+b1 N34
+b1 N35
+b0001 N37
+b1 N38
+b1 N41
+b1 N42
 #6
 b0100 N2
 b0 N3
-b0001 N4
-b1 N6
-b1 N7
+b1010 N4
+b0 N5
+b0 N8
+b0 N9
 b0 N10
 b0 N11
 b0 N12
 b0 N13
-b0 N15
-b01 N17
+b1 N14
+b1 N16
+b11 N17
 b0 N19
 b0 N21
 b0 N22
 b1 N23
 b0 N24
 b1 N26
-b101 N27
-b0 N28
-b0 N31
-b0 N32
-b0 N36
-b0101 N37
-#7
-b0001 N2
-b1 N3
-b0111 N4
-b0 N6
-b0 N7
-b1 N10
-b1 N11
-b1 N12
-b1 N14
-b1 N15
-b00 N17
-b1 N18
-b1 N21
-b1 N22
-b0 N23
-b1 N24
-b0 N26
-b000 N27
-b1 N28
-b1 N31
-b1 N32
-b1 N36
-b1000 N37
-#8
-b0010 N2
-b0 N3
-b1101 N4
-b1 N6
-b1 N7
-b0 N10
-b0 N11
-b0 N12
-b1 N13
-b0 N14
-b1 N16
-b11 N17
-b0 N18
-b0 N21
-b0 N22
-b1 N26
 b111 N27
 b0 N28
 b0 N31
 b0 N32
-b1 N34
-b1 N35
+b1 N36
 b1111 N37
+b0 N38
+b0 N41
+b0 N42
+#7
+b1001 N2
+b1 N3
+b0001 N4
+b1 N5
+b1 N8
+b1 N9
+b1 N10
+b1 N11
+b1 N12
+b0 N14
+b0 N15
+b0 N23
+b0 N25
+b0 N26
+b011 N27
+b1 N33
+b0 N34
+b1011 N37
+#8
+b0 N0
+b0 N1
+b0100 N2
+b0 N3
+b0101 N4
+b1 N6
+b0 N8
+b0 N9
+b0 N10
+b0 N11
+b0 N12
+b0 N16
+b01 N17
+b1 N23
+b1 N24
+b001 N27
+b1 N30
+b1 N31
+b1 N32
+b0 N33
+b0 N35
+b1001 N37
 EOF
 cat >test.stdin <<EOF
 reset 5
-poke Adder4.io_A 0x5
+poke Adder4.io_A 0xd
 poke Adder4.io_B 0x3
-poke Adder4.io_Cin 0x0
+poke Adder4.io_Cin 0x1
+step 1
+peek Adder4.io_Sum
+peek Adder4.io_Cout
+poke Adder4.io_A 0xa
+poke Adder4.io_B 0x4
+poke Adder4.io_Cin 0x1
 step 1
 peek Adder4.io_Sum
 peek Adder4.io_Cout
 poke Adder4.io_A 0x1
+poke Adder4.io_B 0x9
+poke Adder4.io_Cin 0x1
+step 1
+peek Adder4.io_Sum
+peek Adder4.io_Cout
+poke Adder4.io_A 0x5
 poke Adder4.io_B 0x4
-poke Adder4.io_Cin 0x0
-step 1
-peek Adder4.io_Sum
-peek Adder4.io_Cout
-poke Adder4.io_A 0x7
-poke Adder4.io_B 0x1
-poke Adder4.io_Cin 0x0
-step 1
-peek Adder4.io_Sum
-peek Adder4.io_Cout
-poke Adder4.io_A 0xd
-poke Adder4.io_B 0x2
 poke Adder4.io_Cin 0x0
 step 1
 peek Adder4.io_Sum

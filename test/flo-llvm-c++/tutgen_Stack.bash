@@ -8,6 +8,8 @@ int main (int argc, char* argv[]) {
   FILE *f = fopen("Stack.vcd", "w");
   FILE *tee = fopen("Stack.stdin", "w");
   c->read_eval_print(f, tee);
+  fclose(f);
+  fclose(tee);
 }
 EOF
 cat >emulator.h <<EOF
@@ -2117,8 +2119,10 @@ class mod_t {
           fprintf(teefile, "%s\n", str_in.c_str());
           fflush(teefile);
       }
-      if (strcmp("", str_in.c_str()) == 0)
+      if (strcmp("", str_in.c_str()) == 0) {
+          fprintf(stderr, "Read empty string in tester stdin\n");
           abort();
+      }
       std::vector< std::string > tokens = tokenize(str_in);
       std::string cmd = tokens[0];
       if (cmd == "peek") {
@@ -2201,159 +2205,181 @@ b00000000000000000000000000000000 N7
 #4
 #5
 b1 N1
-b00000000000000000000000010000011 N5
+b1 N2
+b0001 N4
+b00000000000000000000000010011011 N5
 #6
 b0 N1
-b00000000000000000000000010010000 N5
-#7
-b1 N2
-b00000000000000000000000000001110 N5
-#8
-b1 N1
-b0001 N4
-b00000000000000000000000011001010 N5
-#9
-b0 N1
-b0 N2
-b1 N3
-b00000000000000000000000011100101 N5
-#10
-b0 N3
-b00000000000000000000000001101110 N5
-#11
-b1 N2
 b1 N3
 b0000 N4
-b00000000000000000000000010110010 N5
-b00000000000000000000000011001010 N6
-#12
-b0 N3
-b00000000000000000000000001011100 N5
-b00000000000000000000000011001010 N7
-#13
-b0 N2
-b00000000000000000000000000000011 N5
-#14
-b1 N2
-b00000000000000000000000010000000 N5
-#15
-b1 N3
-b00000000000000000000000010001010 N5
-#16
+b00000000000000000000000000011101 N5
+b00000000000000000000000010011011 N6
+#7
 b1 N1
-b0 N2
 b0 N3
-b00000000000000000000000010110000 N5
-#17
-b00000000000000000000000011110110 N5
-#18
+b0001 N4
+b00000000000000000000000001000000 N5
+b00000000000000000000000010011011 N7
+#8
+b0 N2
+b1 N3
+b00000000000000000000000011111011 N5
+#9
 b0 N1
 b1 N2
-b00000000000000000000000000111101 N5
-#19
-b1 N3
-b00000000000000000000000001110011 N5
-#20
+b0000 N4
+b00000000000000000000000000101101 N5
+b00000000000000000000000001000000 N6
+#10
 b0 N2
 b0 N3
+b00000000000000000000000001011110 N5
+b00000000000000000000000001000000 N7
+#11
+b1 N1
+b00000000000000000000000000000000 N5
+#12
+b0 N1
+b1 N2
+b1 N3
+b00000000000000000000000010010000 N5
+#13
+b0 N2
+b00000000000000000000000001001001 N5
+#14
+b00000000000000000000000011111010 N5
+#15
+b1 N1
+b1 N2
+b0 N3
+b0001 N4
 b00000000000000000000000011011110 N5
+#16
+b1 N3
+b0010 N4
+b00000000000000000000000010010001 N5
+b00000000000000000000000011011110 N6
+#17
+b0 N1
+b0001 N4
+b00000000000000000000000001101001 N5
+b00000000000000000000000010010001 N6
+b00000000000000000000000011011110 N7
+#18
+b1 N1
+b0010 N4
+b00000000000000000000000011111100 N5
+b00000000000000000000000011011110 N6
+b00000000000000000000000010010001 N7
+#19
+b0 N2
+b0 N3
+b00000000000000000000000000101111 N5
+b00000000000000000000000011011110 N7
+#20
+b0 N1
+b1 N2
+b1 N3
+b0001 N4
+b00000000000000000000000010101011 N5
+b00000000000000000000000011111100 N6
 EOF
 cat >test.stdin <<EOF
 reset 5
 poke Stack.io_pop 0x0
 poke Stack.io_push 0x1
+poke Stack.io_en 0x1
+poke Stack.io_dataIn 0x9b
+step 1
+peek Stack.io_dataOut
+poke Stack.io_pop 0x1
+poke Stack.io_push 0x0
+poke Stack.io_en 0x1
+poke Stack.io_dataIn 0x1d
+step 1
+peek Stack.io_dataOut
+poke Stack.io_pop 0x0
+poke Stack.io_push 0x1
+poke Stack.io_en 0x1
+poke Stack.io_dataIn 0x40
+step 1
+peek Stack.io_dataOut
+poke Stack.io_pop 0x1
+poke Stack.io_push 0x1
 poke Stack.io_en 0x0
-poke Stack.io_dataIn 0x83
+poke Stack.io_dataIn 0xfb
+step 1
+peek Stack.io_dataOut
+poke Stack.io_pop 0x1
+poke Stack.io_push 0x0
+poke Stack.io_en 0x1
+poke Stack.io_dataIn 0x2d
 step 1
 peek Stack.io_dataOut
 poke Stack.io_pop 0x0
 poke Stack.io_push 0x0
 poke Stack.io_en 0x0
+poke Stack.io_dataIn 0x5e
+step 1
+peek Stack.io_dataOut
+poke Stack.io_pop 0x0
+poke Stack.io_push 0x1
+poke Stack.io_en 0x0
+poke Stack.io_dataIn 0x0
+step 1
+peek Stack.io_dataOut
+poke Stack.io_pop 0x1
+poke Stack.io_push 0x0
+poke Stack.io_en 0x1
 poke Stack.io_dataIn 0x90
 step 1
 peek Stack.io_dataOut
-poke Stack.io_pop 0x0
+poke Stack.io_pop 0x1
 poke Stack.io_push 0x0
-poke Stack.io_en 0x1
-poke Stack.io_dataIn 0xe
+poke Stack.io_en 0x0
+poke Stack.io_dataIn 0x49
+step 1
+peek Stack.io_dataOut
+poke Stack.io_pop 0x1
+poke Stack.io_push 0x0
+poke Stack.io_en 0x0
+poke Stack.io_dataIn 0xfa
 step 1
 peek Stack.io_dataOut
 poke Stack.io_pop 0x0
 poke Stack.io_push 0x1
 poke Stack.io_en 0x1
-poke Stack.io_dataIn 0xca
-step 1
-peek Stack.io_dataOut
-poke Stack.io_pop 0x1
-poke Stack.io_push 0x0
-poke Stack.io_en 0x0
-poke Stack.io_dataIn 0xe5
-step 1
-peek Stack.io_dataOut
-poke Stack.io_pop 0x0
-poke Stack.io_push 0x0
-poke Stack.io_en 0x0
-poke Stack.io_dataIn 0x6e
-step 1
-peek Stack.io_dataOut
-poke Stack.io_pop 0x1
-poke Stack.io_push 0x0
-poke Stack.io_en 0x1
-poke Stack.io_dataIn 0xb2
-step 1
-peek Stack.io_dataOut
-poke Stack.io_pop 0x0
-poke Stack.io_push 0x0
-poke Stack.io_en 0x1
-poke Stack.io_dataIn 0x5c
-step 1
-peek Stack.io_dataOut
-poke Stack.io_pop 0x0
-poke Stack.io_push 0x0
-poke Stack.io_en 0x0
-poke Stack.io_dataIn 0x3
-step 1
-peek Stack.io_dataOut
-poke Stack.io_pop 0x0
-poke Stack.io_push 0x0
-poke Stack.io_en 0x1
-poke Stack.io_dataIn 0x80
-step 1
-peek Stack.io_dataOut
-poke Stack.io_pop 0x1
-poke Stack.io_push 0x0
-poke Stack.io_en 0x1
-poke Stack.io_dataIn 0x8a
-step 1
-peek Stack.io_dataOut
-poke Stack.io_pop 0x0
-poke Stack.io_push 0x1
-poke Stack.io_en 0x0
-poke Stack.io_dataIn 0xb0
-step 1
-peek Stack.io_dataOut
-poke Stack.io_pop 0x0
-poke Stack.io_push 0x1
-poke Stack.io_en 0x0
-poke Stack.io_dataIn 0xf6
-step 1
-peek Stack.io_dataOut
-poke Stack.io_pop 0x0
-poke Stack.io_push 0x0
-poke Stack.io_en 0x1
-poke Stack.io_dataIn 0x3d
-step 1
-peek Stack.io_dataOut
-poke Stack.io_pop 0x1
-poke Stack.io_push 0x0
-poke Stack.io_en 0x1
-poke Stack.io_dataIn 0x73
-step 1
-peek Stack.io_dataOut
-poke Stack.io_pop 0x0
-poke Stack.io_push 0x0
-poke Stack.io_en 0x0
 poke Stack.io_dataIn 0xde
+step 1
+peek Stack.io_dataOut
+poke Stack.io_pop 0x1
+poke Stack.io_push 0x1
+poke Stack.io_en 0x1
+poke Stack.io_dataIn 0x91
+step 1
+peek Stack.io_dataOut
+poke Stack.io_pop 0x1
+poke Stack.io_push 0x0
+poke Stack.io_en 0x1
+poke Stack.io_dataIn 0x69
+step 1
+peek Stack.io_dataOut
+poke Stack.io_pop 0x1
+poke Stack.io_push 0x1
+poke Stack.io_en 0x1
+poke Stack.io_dataIn 0xfc
+step 1
+peek Stack.io_dataOut
+poke Stack.io_pop 0x0
+poke Stack.io_push 0x1
+poke Stack.io_en 0x0
+poke Stack.io_dataIn 0x2f
+step 1
+peek Stack.io_dataOut
+poke Stack.io_pop 0x1
+poke Stack.io_push 0x0
+poke Stack.io_en 0x1
+poke Stack.io_dataIn 0xab
 step 1
 peek Stack.io_dataOut
 quit

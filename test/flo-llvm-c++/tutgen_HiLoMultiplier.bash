@@ -8,6 +8,8 @@ int main (int argc, char* argv[]) {
   FILE *f = fopen("HiLoMultiplier.vcd", "w");
   FILE *tee = fopen("HiLoMultiplier.stdin", "w");
   c->read_eval_print(f, tee);
+  fclose(f);
+  fclose(tee);
 }
 EOF
 cat >emulator.h <<EOF
@@ -2117,8 +2119,10 @@ class mod_t {
           fprintf(teefile, "%s\n", str_in.c_str());
           fflush(teefile);
       }
-      if (strcmp("", str_in.c_str()) == 0)
+      if (strcmp("", str_in.c_str()) == 0) {
+          fprintf(stderr, "Read empty string in tester stdin\n");
           abort();
+      }
       std::vector< std::string > tokens = tokenize(str_in);
       std::string cmd = tokens[0];
       if (cmd == "peek") {
@@ -2195,49 +2199,49 @@ b0000000000000000 N4
 #3
 #4
 #5
-b1110111011110110 N0
-b1010100000011000 N1
-b10011100111001111101011100010000 N2
-b1001110011100111 N3
-b1101011100010000 N4
+b0001001100001001 N0
+b1011011111000000 N1
+b00001101101010011011010111000000 N2
+b0000110110101001 N3
+b1011010111000000 N4
 #6
-b0000010010110001 N0
-b0010111001010001 N1
-b00000000110110010100101000000001 N2
-b0000000011011001 N3
-b0100101000000001 N4
+b0000010111111100 N0
+b0000010010000111 N1
+b00000000000110110001011111100100 N2
+b0000000000011011 N3
+b0001011111100100 N4
 #7
-b0111001010110001 N0
-b0000001001001110 N1
-b00000001000010000101001111101110 N2
-b0000000100001000 N3
-b0101001111101110 N4
+b0001111110101100 N0
+b0011011010010010 N1
+b00000110110000000101100000011000 N2
+b0000011011000000 N3
+b0101100000011000 N4
 #8
-b0011001001011000 N0
-b0111011101011110 N1
-b00010111011110010110010001010000 N2
-b0001011101111001 N3
-b0110010001010000 N4
+b0010000101111011 N0
+b1111111011001111 N1
+b00100001010100110001110001110101 N2
+b0010000101010011 N3
+b0001110001110101 N4
 EOF
 cat >test.stdin <<EOF
 reset 5
-poke HiLoMultiplier.io_A 0xa818
-poke HiLoMultiplier.io_B 0xeef6
+poke HiLoMultiplier.io_A 0xb7c0
+poke HiLoMultiplier.io_B 0x1309
 step 1
 peek HiLoMultiplier.io_Lo
 peek HiLoMultiplier.io_Hi
-poke HiLoMultiplier.io_A 0x2e51
-poke HiLoMultiplier.io_B 0x4b1
+poke HiLoMultiplier.io_A 0x487
+poke HiLoMultiplier.io_B 0x5fc
 step 1
 peek HiLoMultiplier.io_Lo
 peek HiLoMultiplier.io_Hi
-poke HiLoMultiplier.io_A 0x24e
-poke HiLoMultiplier.io_B 0x72b1
+poke HiLoMultiplier.io_A 0x3692
+poke HiLoMultiplier.io_B 0x1fac
 step 1
 peek HiLoMultiplier.io_Lo
 peek HiLoMultiplier.io_Hi
-poke HiLoMultiplier.io_A 0x775e
-poke HiLoMultiplier.io_B 0x3258
+poke HiLoMultiplier.io_A 0xfecf
+poke HiLoMultiplier.io_B 0x217b
 step 1
 peek HiLoMultiplier.io_Lo
 peek HiLoMultiplier.io_Hi

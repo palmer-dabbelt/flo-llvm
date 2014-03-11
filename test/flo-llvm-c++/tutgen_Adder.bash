@@ -8,6 +8,8 @@ int main (int argc, char* argv[]) {
   FILE *f = fopen("Adder.vcd", "w");
   FILE *tee = fopen("Adder.stdin", "w");
   c->read_eval_print(f, tee);
+  fclose(f);
+  fclose(tee);
 }
 EOF
 cat >emulator.h <<EOF
@@ -2117,8 +2119,10 @@ class mod_t {
           fprintf(teefile, "%s\n", str_in.c_str());
           fflush(teefile);
       }
-      if (strcmp("", str_in.c_str()) == 0)
+      if (strcmp("", str_in.c_str()) == 0) {
+          fprintf(stderr, "Read empty string in tester stdin\n");
           abort();
+      }
       std::vector< std::string > tokens = tokenize(str_in);
       std::string cmd = tokens[0];
       if (cmd == "peek") {
@@ -2389,102 +2393,93 @@ b0 N93
 #3
 #4
 #5
-b00000110 N5
-b1 N17
-b1 N18
-b1 N19
-b1 N20
-b1 N28
-b1 N29
-b1 N30
-b1 N31
-b00000110 N87
-#6
 b00000110 N3
-b00000111 N5
+b00000101 N5
 b1 N6
 b1 N7
 b1 N8
 b1 N9
 b1 N16
-b0 N18
-b0 N19
-b0 N20
-b1 N23
-b1 N24
-b1 N25
-b1 N26
+b1 N18
+b1 N19
+b1 N20
 b1 N27
-b0 N29
-b1 N32
-b1 N33
+b1 N28
 b1 N34
 b1 N35
 b1 N36
 b1 N37
 b1 N41
 b1 N42
-b00001101 N87
+b00001011 N87
+#6
+b00000101 N3
+b1 N4
+b00000100 N5
+b0 N6
+b0 N16
+b0 N18
+b0 N19
+b0 N20
+b00001001 N87
 #7
 b00000000 N3
-b0 N16
-b1 N18
-b1 N19
-b1 N20
-b0 N23
-b0 N24
-b0 N25
-b0 N26
+b0 N4
+b0 N7
+b0 N8
+b0 N9
 b0 N27
 b1 N29
-b0 N32
-b0 N33
+b1 N30
+b1 N31
 b0 N34
 b0 N35
 b0 N36
 b0 N37
 b0 N41
 b0 N42
-b00000111 N87
+b00000100 N87
 #8
-b00000101 N3
-b1 N4
-b00000001 N5
-b0 N7
-b0 N8
-b0 N9
-b1 N12
-b1 N13
-b1 N14
-b1 N15
-b0 N17
-b0 N18
-b1 N27
-b0 N28
-b00000110 N87
+b00000010 N3
+b00000110 N5
+b1 N16
+b1 N17
+b1 N23
+b1 N24
+b1 N25
+b1 N26
+b0 N30
+b0 N31
+b1 N32
+b1 N35
+b1 N36
+b1 N37
+b1 N41
+b1 N42
+b00001000 N87
 EOF
 cat >test.stdin <<EOF
 reset 5
-poke Adder.io_A 0x6
-poke Adder.io_B 0x0
-poke Adder.io_Cin 0x0
-step 1
-peek Adder.io_Sum
-peek Adder.io_Cout
-poke Adder.io_A 0x7
+poke Adder.io_A 0x5
 poke Adder.io_B 0x6
 poke Adder.io_Cin 0x0
 step 1
 peek Adder.io_Sum
 peek Adder.io_Cout
-poke Adder.io_A 0x7
+poke Adder.io_A 0x4
+poke Adder.io_B 0x5
+poke Adder.io_Cin 0x0
+step 1
+peek Adder.io_Sum
+peek Adder.io_Cout
+poke Adder.io_A 0x4
 poke Adder.io_B 0x0
 poke Adder.io_Cin 0x0
 step 1
 peek Adder.io_Sum
 peek Adder.io_Cout
-poke Adder.io_A 0x1
-poke Adder.io_B 0x5
+poke Adder.io_A 0x6
+poke Adder.io_B 0x2
 poke Adder.io_Cin 0x0
 step 1
 peek Adder.io_Sum

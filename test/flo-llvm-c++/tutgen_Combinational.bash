@@ -8,6 +8,8 @@ int main (int argc, char* argv[]) {
   FILE *f = fopen("Combinational.vcd", "w");
   FILE *tee = fopen("Combinational.stdin", "w");
   c->read_eval_print(f, tee);
+  fclose(f);
+  fclose(tee);
 }
 EOF
 cat >emulator.h <<EOF
@@ -2117,8 +2119,10 @@ class mod_t {
           fprintf(teefile, "%s\n", str_in.c_str());
           fflush(teefile);
       }
-      if (strcmp("", str_in.c_str()) == 0)
+      if (strcmp("", str_in.c_str()) == 0) {
+          fprintf(stderr, "Read empty string in tester stdin\n");
           abort();
+      }
       std::vector< std::string > tokens = tokenize(str_in);
       std::string cmd = tokens[0];
       if (cmd == "peek") {
@@ -2191,86 +2195,86 @@ b0000000000000000 N2
 #3
 #4
 #5
-b0011110101100100 N0
-b0100001001110110 N1
-b0111111111011010 N2
+b1101010011011001 N0
+b1011101100100000 N1
+b1000111111111001 N2
 #6
-b1111011011010001 N0
-b0000001110100100 N1
-b1111101001110101 N2
+b1001101100111001 N0
+b0011110110010011 N1
+b1101100011001100 N2
 #7
-b0111111011011001 N0
-b1100001001111110 N1
-b0100000101010111 N2
+b0100111100011101 N0
+b1010001100101101 N1
+b1111001001001010 N2
 #8
-b0000111101111110 N0
-b0110000001011011 N1
-b0110111111011001 N2
+b0001110111110100 N0
+b1000110011101001 N1
+b1010101011011101 N2
 #9
-b1001001010101000 N0
-b0111011111011101 N1
-b0000101010000101 N2
+b1100100000010010 N0
+b1001100011111000 N1
+b0110000100001010 N2
 #10
-b0010111000101110 N0
-b1111000111111011 N1
-b0010000000101001 N2
+b0100000010110101 N0
+b0101010101001101 N1
+b1001011000000010 N2
 #11
-b1101000100110100 N0
-b1100101111100111 N1
-b1001110100011011 N2
+b1001110011101111 N0
+b0110001010011011 N1
+b1111111110001010 N2
 #12
-b1110111100111010 N0
-b0101001110001100 N1
-b0100001011000110 N2
+b1111101110011010 N0
+b1111110000011110 N1
+b1111011110111000 N2
 #13
-b0001100011001110 N0
-b1111111111001000 N1
-b0001100010010110 N2
+b0000010111101000 N0
+b1110000100010010 N1
+b1110011011111010 N2
 #14
-b1000110111110001 N0
-b1011011110001100 N1
-b0100010101111101 N2
+b0010110100001100 N0
+b1111000011110101 N1
+b0001111000000001 N2
 EOF
 cat >test.stdin <<EOF
 reset 5
-poke Combinational.io_x 0x4276
-poke Combinational.io_y 0x3d64
+poke Combinational.io_x 0xbb20
+poke Combinational.io_y 0xd4d9
 step 1
 peek Combinational.io_z
-poke Combinational.io_x 0x3a4
-poke Combinational.io_y 0xf6d1
+poke Combinational.io_x 0x3d93
+poke Combinational.io_y 0x9b39
 step 1
 peek Combinational.io_z
-poke Combinational.io_x 0xc27e
-poke Combinational.io_y 0x7ed9
+poke Combinational.io_x 0xa32d
+poke Combinational.io_y 0x4f1d
 step 1
 peek Combinational.io_z
-poke Combinational.io_x 0x605b
-poke Combinational.io_y 0xf7e
+poke Combinational.io_x 0x8ce9
+poke Combinational.io_y 0x1df4
 step 1
 peek Combinational.io_z
-poke Combinational.io_x 0x77dd
-poke Combinational.io_y 0x92a8
+poke Combinational.io_x 0x98f8
+poke Combinational.io_y 0xc812
 step 1
 peek Combinational.io_z
-poke Combinational.io_x 0xf1fb
-poke Combinational.io_y 0x2e2e
+poke Combinational.io_x 0x554d
+poke Combinational.io_y 0x40b5
 step 1
 peek Combinational.io_z
-poke Combinational.io_x 0xcbe7
-poke Combinational.io_y 0xd134
+poke Combinational.io_x 0x629b
+poke Combinational.io_y 0x9cef
 step 1
 peek Combinational.io_z
-poke Combinational.io_x 0x538c
-poke Combinational.io_y 0xef3a
+poke Combinational.io_x 0xfc1e
+poke Combinational.io_y 0xfb9a
 step 1
 peek Combinational.io_z
-poke Combinational.io_x 0xffc8
-poke Combinational.io_y 0x18ce
+poke Combinational.io_x 0xe112
+poke Combinational.io_y 0x5e8
 step 1
 peek Combinational.io_z
-poke Combinational.io_x 0xb78c
-poke Combinational.io_y 0x8df1
+poke Combinational.io_x 0xf0f5
+poke Combinational.io_y 0x2d0c
 step 1
 peek Combinational.io_z
 quit

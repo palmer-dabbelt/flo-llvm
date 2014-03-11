@@ -8,6 +8,8 @@ int main (int argc, char* argv[]) {
   FILE *f = fopen("Functional.vcd", "w");
   FILE *tee = fopen("Functional.stdin", "w");
   c->read_eval_print(f, tee);
+  fclose(f);
+  fclose(tee);
 }
 EOF
 cat >emulator.h <<EOF
@@ -2117,8 +2119,10 @@ class mod_t {
           fprintf(teefile, "%s\n", str_in.c_str());
           fflush(teefile);
       }
-      if (strcmp("", str_in.c_str()) == 0)
+      if (strcmp("", str_in.c_str()) == 0) {
+          fprintf(stderr, "Read empty string in tester stdin\n");
           abort();
+      }
       std::vector< std::string > tokens = tokenize(str_in);
       std::string cmd = tokens[0];
       if (cmd == "peek") {
@@ -2191,86 +2195,86 @@ b0000000000000000 N2
 #3
 #4
 #5
-b0010101011101111 N0
-b1110111101101111 N1
-b0010101011101111 N2
+b1101010011011001 N0
+b1011101100100000 N1
+b1101010011011001 N2
 #6
-b1001000111010110 N0
-b1010000111010010 N1
-b1001000111010110 N2
+b1001101100111001 N0
+b0011110110010011 N1
+b1001101100111001 N2
 #7
-b0011010110011100 N0
-b0001100000100000 N1
-b0011010110011100 N2
+b0100111100011101 N0
+b1010001100101101 N1
+b0100111100011101 N2
 #8
-b1001110101100110 N0
-b1011010101011111 N1
-b1001110101100110 N2
+b0001110111110100 N0
+b1000110011101001 N1
+b0001110111110100 N2
 #9
-b0000101001100000 N0
-b0001010101101111 N1
-b0000101001100000 N2
+b1100100000010010 N0
+b1001100011111000 N1
+b1100100000010010 N2
 #10
-b0111101111000110 N0
-b1010111111001101 N1
-b0111101111000110 N2
+b0100000010110101 N0
+b0101010101001101 N1
+b0100000010110101 N2
 #11
-b1001111001101011 N0
-b0100101100110110 N1
-b1001111001101011 N2
+b1001110011101111 N0
+b0110001010011011 N1
+b1001110011101111 N2
 #12
-b0011001001111000 N0
-b1110110110111100 N1
-b0011001001111000 N2
+b1111101110011010 N0
+b1111110000011110 N1
+b1111101110011010 N2
 #13
-b1111111111111110 N0
-b0111111011000111 N1
-b1111111111111110 N2
+b0000010111101000 N0
+b1110000100010010 N1
+b0000010111101000 N2
 #14
-b0011110111010011 N0
-b0011101000111110 N1
-b0011110111010011 N2
+b0010110100001100 N0
+b1111000011110101 N1
+b0010110100001100 N2
 EOF
 cat >test.stdin <<EOF
 reset 5
-poke Functional.io_x 0xef6f
-poke Functional.io_y 0x2aef
+poke Functional.io_x 0xbb20
+poke Functional.io_y 0xd4d9
 step 1
 peek Functional.io_z
-poke Functional.io_x 0xa1d2
-poke Functional.io_y 0x91d6
+poke Functional.io_x 0x3d93
+poke Functional.io_y 0x9b39
 step 1
 peek Functional.io_z
-poke Functional.io_x 0x1820
-poke Functional.io_y 0x359c
+poke Functional.io_x 0xa32d
+poke Functional.io_y 0x4f1d
 step 1
 peek Functional.io_z
-poke Functional.io_x 0xb55f
-poke Functional.io_y 0x9d66
+poke Functional.io_x 0x8ce9
+poke Functional.io_y 0x1df4
 step 1
 peek Functional.io_z
-poke Functional.io_x 0x156f
-poke Functional.io_y 0xa60
+poke Functional.io_x 0x98f8
+poke Functional.io_y 0xc812
 step 1
 peek Functional.io_z
-poke Functional.io_x 0xafcd
-poke Functional.io_y 0x7bc6
+poke Functional.io_x 0x554d
+poke Functional.io_y 0x40b5
 step 1
 peek Functional.io_z
-poke Functional.io_x 0x4b36
-poke Functional.io_y 0x9e6b
+poke Functional.io_x 0x629b
+poke Functional.io_y 0x9cef
 step 1
 peek Functional.io_z
-poke Functional.io_x 0xedbc
-poke Functional.io_y 0x3278
+poke Functional.io_x 0xfc1e
+poke Functional.io_y 0xfb9a
 step 1
 peek Functional.io_z
-poke Functional.io_x 0x7ec7
-poke Functional.io_y 0xfffe
+poke Functional.io_x 0xe112
+poke Functional.io_y 0x5e8
 step 1
 peek Functional.io_z
-poke Functional.io_x 0x3a3e
-poke Functional.io_y 0x3dd3
+poke Functional.io_x 0xf0f5
+poke Functional.io_y 0x2d0c
 step 1
 peek Functional.io_z
 quit

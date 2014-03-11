@@ -14,7 +14,7 @@ do
     # failed then don't include it in the list of tests that should be
     # run.  Note that this doesn't indicate a failure of the whole
     # script because some of these are just bogus.
-    sbt "run $f --debug --genHarness --compile --test --backend c --vcd" \
+    sbt "run $f --debug --genHarness --compile --test --backend c --vcd --testerSeed 0 --dumpTestInput" \
         >& $f-c++.log || continue
 
     # Now we can start generating a test file that will actually run
@@ -25,7 +25,7 @@ do
     # Dump the C++ support code as well
     echo "cat >harness.c++ <<EOF" >> $test
     cat $f-emulator.cpp \
-        | sed "s/#include \"$f.h\"/ #include \"test.h++\"/g" \
+        | sed "s/#include \"$f.h\"/ #include \"test.h\"/g" \
         >> $test
     echo "EOF" >> $test
 

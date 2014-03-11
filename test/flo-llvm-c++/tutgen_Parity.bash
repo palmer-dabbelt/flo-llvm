@@ -8,6 +8,8 @@ int main (int argc, char* argv[]) {
   FILE *f = fopen("Parity.vcd", "w");
   FILE *tee = fopen("Parity.stdin", "w");
   c->read_eval_print(f, tee);
+  fclose(f);
+  fclose(tee);
 }
 EOF
 cat >emulator.h <<EOF
@@ -2117,8 +2119,10 @@ class mod_t {
           fprintf(teefile, "%s\n", str_in.c_str());
           fflush(teefile);
       }
-      if (strcmp("", str_in.c_str()) == 0)
+      if (strcmp("", str_in.c_str()) == 0) {
+          fprintf(stderr, "Read empty string in tester stdin\n");
           abort();
+      }
       std::vector< std::string > tokens = tokenize(str_in);
       std::string cmd = tokens[0];
       if (cmd == "peek") {
@@ -2195,41 +2199,39 @@ b0 N3
 b1 N1
 b1 N2
 #6
-b0 N1
+b0 N2
 b1 N3
 #7
-b1 N1
-b0 N2
-#8
 b0 N1
 b0 N3
-#9
-#10
+#8
 b1 N1
 b1 N2
-#11
+#9
 b0 N2
 b1 N3
-#12
+#10
 b0 N1
 b0 N3
-#13
-#14
+#11
 b1 N1
 b1 N2
+#12
+b0 N1
+b1 N3
+#13
+b1 N1
+b0 N2
+#14
+b1 N2
+b0 N3
 EOF
 cat >test.stdin <<EOF
 reset 5
 poke Parity.io_in 0x1
 step 1
 peek Parity.io_out
-poke Parity.io_in 0x0
-step 1
-peek Parity.io_out
 poke Parity.io_in 0x1
-step 1
-peek Parity.io_out
-poke Parity.io_in 0x0
 step 1
 peek Parity.io_out
 poke Parity.io_in 0x0
@@ -2244,7 +2246,13 @@ peek Parity.io_out
 poke Parity.io_in 0x0
 step 1
 peek Parity.io_out
+poke Parity.io_in 0x1
+step 1
+peek Parity.io_out
 poke Parity.io_in 0x0
+step 1
+peek Parity.io_out
+poke Parity.io_in 0x1
 step 1
 peek Parity.io_out
 poke Parity.io_in 0x1

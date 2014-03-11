@@ -8,6 +8,8 @@ int main (int argc, char* argv[]) {
   FILE *f = fopen("Tbl.vcd", "w");
   FILE *tee = fopen("Tbl.stdin", "w");
   c->read_eval_print(f, tee);
+  fclose(f);
+  fclose(tee);
 }
 EOF
 cat >emulator.h <<EOF
@@ -2117,8 +2119,10 @@ class mod_t {
           fprintf(teefile, "%s\n", str_in.c_str());
           fflush(teefile);
       }
-      if (strcmp("", str_in.c_str()) == 0)
+      if (strcmp("", str_in.c_str()) == 0) {
+          fprintf(stderr, "Read empty string in tester stdin\n");
           abort();
+      }
       std::vector< std::string > tokens = tokenize(str_in);
       std::string cmd = tokens[0];
       if (cmd == "peek") {
@@ -2701,102 +2705,102 @@ b00000000 N257
 #3
 #4
 #5
-b01101100 N256
-b01101100 N257
+b10111011 N256
+b10111011 N257
 #6
-b01101010 N256
-b01101010 N257
+b11010100 N256
+b11010100 N257
 #7
-b10100110 N256
-b10100110 N257
+b00111101 N256
+b00111101 N257
 #8
-b00101010 N256
-b00101010 N257
+b10011011 N256
+b10011011 N257
 #9
-b00100001 N256
-b00100001 N257
+b10100011 N256
+b10100011 N257
 #10
-b10101101 N256
-b10101101 N257
+b01001111 N256
+b01001111 N257
 #11
-b01111111 N256
-b01111111 N257
+b10001100 N256
+b10001100 N257
 #12
-b01101010 N256
-b01101010 N257
+b00011101 N256
+b00011101 N257
 #13
-b00100000 N256
-b00100000 N257
+b10011000 N256
+b10011000 N257
 #14
-b10111110 N256
-b10111110 N257
+b11001000 N256
+b11001000 N257
 #15
-b11001001 N256
-b11001001 N257
+b01010101 N256
+b01010101 N257
 #16
-b11001100 N256
-b11001100 N257
+b01000000 N256
+b01000000 N257
 #17
-b00010001 N256
-b00010001 N257
-#18
 b01100010 N256
 b01100010 N257
+#18
+b10011100 N256
+b10011100 N257
 #19
-b10101010 N256
-b10101010 N257
+b11111100 N256
+b11111100 N257
 #20
-b10010010 N256
-b10010010 N257
+b11111011 N256
+b11111011 N257
 EOF
 cat >test.stdin <<EOF
 reset 5
-poke Tbl.io_addr 0x6c
+poke Tbl.io_addr 0xbb
 step 1
 peek Tbl.io_out
-poke Tbl.io_addr 0x6a
+poke Tbl.io_addr 0xd4
 step 1
 peek Tbl.io_out
-poke Tbl.io_addr 0xa6
+poke Tbl.io_addr 0x3d
 step 1
 peek Tbl.io_out
-poke Tbl.io_addr 0x2a
+poke Tbl.io_addr 0x9b
 step 1
 peek Tbl.io_out
-poke Tbl.io_addr 0x21
+poke Tbl.io_addr 0xa3
 step 1
 peek Tbl.io_out
-poke Tbl.io_addr 0xad
+poke Tbl.io_addr 0x4f
 step 1
 peek Tbl.io_out
-poke Tbl.io_addr 0x7f
+poke Tbl.io_addr 0x8c
 step 1
 peek Tbl.io_out
-poke Tbl.io_addr 0x6a
+poke Tbl.io_addr 0x1d
 step 1
 peek Tbl.io_out
-poke Tbl.io_addr 0x20
+poke Tbl.io_addr 0x98
 step 1
 peek Tbl.io_out
-poke Tbl.io_addr 0xbe
+poke Tbl.io_addr 0xc8
 step 1
 peek Tbl.io_out
-poke Tbl.io_addr 0xc9
+poke Tbl.io_addr 0x55
 step 1
 peek Tbl.io_out
-poke Tbl.io_addr 0xcc
-step 1
-peek Tbl.io_out
-poke Tbl.io_addr 0x11
+poke Tbl.io_addr 0x40
 step 1
 peek Tbl.io_out
 poke Tbl.io_addr 0x62
 step 1
 peek Tbl.io_out
-poke Tbl.io_addr 0xaa
+poke Tbl.io_addr 0x9c
 step 1
 peek Tbl.io_out
-poke Tbl.io_addr 0x92
+poke Tbl.io_addr 0xfc
+step 1
+peek Tbl.io_out
+poke Tbl.io_addr 0xfb
 step 1
 peek Tbl.io_out
 quit
