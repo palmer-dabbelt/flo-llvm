@@ -663,8 +663,11 @@ int generate_llvmir(const flo_ptr flo __attribute__((unused)), FILE *f __attribu
 
             case libflo::opcode::RSH:
             {
+                auto cast = fix_t(op->s()->width());
+                lo->operate(zext_trunc_op(cast, op->tv()));
+
                 auto shifted = fix_t(op->s()->width());
-                lo->operate(lrsh_op(shifted, op->sv(), op->tv()));
+                lo->operate(lrsh_op(shifted, op->sv(), cast));
                 lo->operate(zext_trunc_op(op->dv(), shifted));
                 break;
             }
