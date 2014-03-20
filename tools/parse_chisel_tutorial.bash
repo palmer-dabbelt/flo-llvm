@@ -34,6 +34,14 @@ do
     cat emulator.h | sed "s/^#include/ #include/g" >> $test
     echo "EOF" >> $test
 
+    echo "cat >emulator_mod.h <<EOF" >> $test
+    cat emulator_mod.h | sed "s/^#include/ #include/g" >> $test
+    echo "EOF" >> $test
+
+    echo "cat >emulator_api.h <<EOF" >> $test
+    cat emulator_api.h | sed "s/^#include/ #include/g" >> $test
+    echo "EOF" >> $test
+
     # Also copy over the VCD file
     echo 'cat >gold.vcd <<"EOF"' >> $test
     cat $f.vcd >> $test

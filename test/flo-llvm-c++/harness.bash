@@ -26,6 +26,8 @@ then
     cat test.flo
 fi
 
+cat test.flo
+
 # Builds the rest of the C++ emulator, which contains a main() that
 # actually runs the code.
 time $PTEST_BINARY test.flo --header > test.h

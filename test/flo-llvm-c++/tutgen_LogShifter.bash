@@ -3,18 +3,30 @@ cat >harness.c++ <<EOF
  #include "test.h"
 
 int main (int argc, char* argv[]) {
-  LogShifter_t* c = new LogShifter_t();
-  c->init();
+  LogShifter_t* module = new LogShifter_t();
+  module->init();
+  LogShifter_api_t* api = new LogShifter_api_t();
+  api->init(module);
   FILE *f = fopen("LogShifter.vcd", "w");
   FILE *tee = fopen("LogShifter.stdin", "w");
-  c->read_eval_print(f, tee);
+  module->set_dumpfile(f);
+  api->set_teefile(tee);
+  api->read_eval_print_loop();
   fclose(f);
   fclose(tee);
 }
 EOF
 cat >emulator.h <<EOF
-#ifndef __IS_EMULATOR__
-#define __IS_EMULATOR__
+// metaheader for the Chisel emulator and API
+ #include "emulator_mod.h"
+ #include "emulator_api.h"
+EOF
+cat >emulator_mod.h <<EOF
+// Header for Chisel emulator module
+// defines the mod_t class as well as bit operation functions
+
+#ifndef __IS_EMULATOR_MOD__
+#define __IS_EMULATOR_MOD__
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
@@ -45,7 +57,7 @@ cat >emulator.h <<EOF
 using namespace std;
 
 typedef uint64_t val_t;
-typedef int64_t sval_t; 
+typedef int64_t sval_t;
 typedef uint32_t half_val_t;
 //typedef __uint128_t dub_val_t;
 // typedef uint32_t val_t;
@@ -112,7 +124,7 @@ inline val_t val_n_bits( void ) { return sizeof(val_t)*8; }
 inline val_t val_all_ones( void ) { return ~((val_t)0); }
 // const val_t val_ones_or_zeroes[2] = { 0L, val_all_ones() };
 // inline val_t val_all_ones_or_zeroes( val_t bit ) { return val_ones_or_zeroes[bit]; }
-inline val_t val_all_ones_or_zeroes( val_t bit ) { 
+inline val_t val_all_ones_or_zeroes( val_t bit ) {
   return (val_t) ((sval_t) ((sval_t) bit << (val_n_bits() - 1)) >> (val_n_bits() -1));
   }
 inline val_t val_top_bit( val_t v ) { return (v >> (val_n_bits()-1)); }
@@ -137,7 +149,7 @@ inline void  val_to_half_vals ( val_t *fvals, half_val_t *hvals, int nf ) {
   }
 }
 inline void  half_val_to_vals ( half_val_t *hvals, val_t *vals, int nf ) {
-  for (int i = 0; i < nf; i++) 
+  for (int i = 0; i < nf; i++)
     vals[i] = ((val_t)hvals[i*2+1] << val_n_half_bits()) | hvals[i*2];
 }
 
@@ -146,15 +158,15 @@ template <int w> class datz_t;
 
 template <int w> int datz_eq(dat_t<w> d1, datz_t<w> d2);
 
-template <int w> inline dat_t<w> DAT(val_t value) { 
-  dat_t<w> res(value); 
+template <int w> inline dat_t<w> DAT(val_t value) {
+  dat_t<w> res(value);
   return res; }
 
-template <int w> inline dat_t<w> DAT(val_t val1, val_t val0) { 
-  dat_t<w> res; res.values[0] = val0; res.values[1] = val1; return res; 
+template <int w> inline dat_t<w> DAT(val_t val1, val_t val0) {
+  dat_t<w> res; res.values[0] = val0; res.values[1] = val1; return res;
 }
 
-const static char hex_digs[] = 
+const static char hex_digs[] =
   {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
 
 static void add_n (val_t d[], val_t s0[], val_t s1[], int nw, int nb) {
@@ -229,7 +241,7 @@ static void rsha_n (val_t d[], val_t s0[], int amount, int nw, int w) {
   if (msb == 0) {
     return;
   }
-  
+
   int boundary = (w - amount);
 
   for (int i = nw-1; i >= 0; i--) {
@@ -250,7 +262,7 @@ static void rsh_n (val_t d[], val_t s0[], int amount, int nw) {
   int n_shift_words    = amount / val_n_bits();
   int n_rev_shift_bits = val_n_bits() - n_shift_bits;
   int is_zero_carry    = n_shift_bits == 0;
-  for (int i = 0; i < n_shift_words; i++)  
+  for (int i = 0; i < n_shift_words; i++)
     d[nw-i-1] = 0;
   for (int i = nw-1; i >= n_shift_words; i--) {
     val_t val = s0[i];
@@ -265,14 +277,14 @@ static void lsh_n (val_t d[], val_t s0[], int amount, int nwd, int nws) {
   int n_shift_words    = amount / val_n_bits();
   int n_rev_shift_bits = val_n_bits() - n_shift_bits;
   int is_zero_carry    = n_shift_bits == 0;
-  for (int i = 0; i < n_shift_words; i++) 
+  for (int i = 0; i < n_shift_words; i++)
     d[i] = 0;
   for (int i = 0; i < (nws-n_shift_words); i++) {
     val_t val = s0[i];
     d[i+n_shift_words] = val << n_shift_bits | carry;
     carry              = is_zero_carry ? 0 : val >> n_rev_shift_bits;
   }
-  for (int i = nws-n_shift_words; i < nwd; i++) 
+  for (int i = nws-n_shift_words; i < nwd; i++)
     d[i] = 0;
 }
 
@@ -293,12 +305,12 @@ static inline void mask_n (val_t d[], int nw, int nb) {
     d[i] = val_all_ones();
   for (int i = n_full_words; i < nw; i++)
     d[i] = 0;
-  if (n_word_bits > 0) 
+  if (n_word_bits > 0)
     d[n_full_words] = mask_val(n_word_bits);
 }
 
 static inline val_t log2_1 (val_t v) {
-  val_t r; 
+  val_t r;
   val_t shift;
 
   r     = (v > 0xFFFFFFFF) << 5; v >>= r;
@@ -376,15 +388,15 @@ static inline val_t log2_n (val_t s0[], int nw) {
   return 0;
 }
 
-template <int nw> 
+template <int nw>
 struct bit_word_funs {
   static void fill (val_t d[], val_t s0) {
-    for (int i = 0; i < nw; i++) 
+    for (int i = 0; i < nw; i++)
       d[i] = s0;
   }
   static void fill_nb (val_t d[], val_t s0, int nb) {
     mask_n(d, nw, nb);
-    for (int i = 0; i < nw; i++) 
+    for (int i = 0; i < nw; i++)
       d[i] = d[i] & s0;
     // printf("FILL-NB N\n");
   }
@@ -421,21 +433,21 @@ struct bit_word_funs {
     mul_n(d, s0, s1, nbd, nb0, nb1);
   }
   static void bit_xor (val_t d[], val_t s0[], val_t s1[]) {
-    for (int i = 0; i < nw; i++) 
+    for (int i = 0; i < nw; i++)
       d[i] = s0[i] ^ s1[i];
   }
   static void bit_and (val_t d[], val_t s0[], val_t s1[]) {
-    for (int i = 0; i < nw; i++) 
+    for (int i = 0; i < nw; i++)
       d[i] = s0[i] & s1[i];
   }
   static void bit_or (val_t d[], val_t s0[], val_t s1[]) {
-    for (int i = 0; i < nw; i++) 
+    for (int i = 0; i < nw; i++)
       d[i] = s0[i] | s1[i];
   }
   static void bit_neg (val_t d[], val_t s0[], int nb) {
     val_t msk[nw];
     mask_n(msk, nw, nb);
-    for (int i = 0; i < nw; i++) 
+    for (int i = 0; i < nw; i++)
       d[i] = ~s0[i] & msk[i];
   }
   static void ltu (val_t d[], val_t s0[], val_t s1[]) {
@@ -490,7 +502,7 @@ struct bit_word_funs {
     val_t diff[nw];
     sub(diff, s0, s1, nw*val_n_bits());
     d[0] = !val_top_bit(diff[nw-1]);
-  }              
+  }
   static void gte (val_t d[], val_t s0[], val_t s1[], int w) {
     int msb_0 = (s0[1] >> (w - (nw-1)*val_n_bits() - 1)) & 0x1;
     int msb_1 = (s1[1] >> (w - (nw-1)*val_n_bits() - 1)) & 0x1;
@@ -512,13 +524,8 @@ struct bit_word_funs {
     d[0] = 1;
   }
   static void neq (val_t d[], val_t s0[], val_t s1[]) {
-    for (int i = 0; i < nw; i++) {
-      if (s0[i] == s1[i]) {
-        d[0] = 1;
-        return;
-      }
-    }
-    d[0] = 0;
+    eq(d, s0, s1);
+    d[0] = !d[0];
   }
   static void rsha (val_t d[], val_t s0[], int amount, int w) {
     rsha_n(d, s0, amount, nw, w);
@@ -531,7 +538,7 @@ struct bit_word_funs {
   }
   static void extract (val_t d[], val_t s0[], int e, int s, int nb) {
     // TODO: FINISH THIS
-    const int bw = e-s+1; 
+    const int bw = e-s+1;
     val_t msk[nw];
     mask_n(msk, nw, nb);
     if (s == 0) {
@@ -567,7 +574,7 @@ struct bit_word_funs {
   }
 
   static void set (val_t d[], val_t s0[]) {
-    for (int i = 0; i < nw; i++) 
+    for (int i = 0; i < nw; i++)
       d[i] = s0[i];
   }
   static void log2 (val_t d[], val_t s0[]) {
@@ -575,7 +582,7 @@ struct bit_word_funs {
   }
 };
 
-template <> 
+template <>
 struct bit_word_funs<1> {
   static void fill (val_t d[], val_t s0) {
     d[0] = s0;
@@ -684,7 +691,7 @@ struct bit_word_funs<1> {
   }
 };
 
-template <> 
+template <>
 struct bit_word_funs<2> {
   static void fill (val_t d[], val_t s0) {
     d[0] = s0;
@@ -725,12 +732,12 @@ struct bit_word_funs<2> {
   }
   static void ltu (val_t d[], val_t s0[], val_t s1[]) {
     d[0] = ((s0[1] < s1[1]) | (s0[1] == s1[1] & s0[0] < s1[0]));
-  }  
+  }
   static void lt (val_t d[], val_t s0[], val_t s1[], int w) {
     int msb_0 = (s0[1] >> (w - val_n_bits() - 1)) & 0x1;
     int msb_1 = (s1[1] >> (w - val_n_bits() - 1)) & 0x1;
     int cond  = msb_0 ^ msb_1;
-    d[0] = (cond && msb_0) 
+    d[0] = (cond && msb_0)
         || (!cond && ((s0[1] < s1[1]) | (s0[1] == s1[1] & s0[0] < s1[0])));
   }
   static void gtu (val_t d[], val_t s0[], val_t s1[]) {
@@ -740,7 +747,7 @@ struct bit_word_funs<2> {
     int msb_0 = (s0[1] >> (w - val_n_bits() - 1)) & 0x1;
     int msb_1 = (s1[1] >> (w - val_n_bits() - 1)) & 0x1;
     int cond = msb_0 ^ msb_1;
-    d[0] = (cond && msb_1) 
+    d[0] = (cond && msb_1)
         || (!cond && ((s0[1] > s1[1]) | (s0[1] == s1[1] & s0[0] > s1[0])));
   }
   static void lteu (val_t d[], val_t s0[], val_t s1[]) {
@@ -750,7 +757,7 @@ struct bit_word_funs<2> {
     int msb_0 = (s0[1] >> (w - val_n_bits() - 1)) & 0x1;
     int msb_1 = (s1[1] >> (w - val_n_bits() - 1)) & 0x1;
     int cond = msb_0 ^ msb_1;
-    d[0] = (cond && msb_0) 
+    d[0] = (cond && msb_0)
         || (!cond && ((s0[1] < s1[1]) | (s0[1] == s1[1] & s0[0] <= s1[0])));
   }
   static void gteu (val_t d[], val_t s0[], val_t s1[]) {
@@ -760,7 +767,7 @@ struct bit_word_funs<2> {
     int msb_0 = (s0[1] >> (w - val_n_bits() - 1)) & 0x1;
     int msb_1 = (s1[1] >> (w - val_n_bits() - 1)) & 0x1;
     int cond = msb_0 ^ msb_1;
-    d[0] = (cond && msb_1) 
+    d[0] = (cond && msb_1)
         || (!cond && ((s0[1] > s1[1]) | (s0[1] == s1[1] & s0[0] >= s1[0])));
   }
   static void bit_xor (val_t d[], val_t s0[], val_t s1[]) {
@@ -860,14 +867,14 @@ struct bit_word_funs<2> {
   }
   static void log2 (val_t d[], val_t s0[]) {
     val_t s01 = s0[1];
-    if (s01 > 0) 
+    if (s01 > 0)
       d[0] = log2_1(s01) + val_n_bits();
     else
       d[0] = log2_1(s0[0]);
     // d[0] = log2_n(s0, 2);
   }
 };
-template <> 
+template <>
 struct bit_word_funs<3> {
   static void fill (val_t d[], val_t s0) {
     d[0] = s0;
@@ -1023,23 +1030,8 @@ static val_t rand_val()
   return x;
 }
 
-// Abstract dat_t with a basic width-independent interface.
-class dat_base_t {
- public:
-  // Returns the bitwidth of this data.
-  virtual int width() = 0;
-  virtual string to_str() = 0;  // TODO(ducky): define standardized interface and expected output.
-                                // Also allow different bases and representations (with defaults).
-  virtual bool set_from_str(string val) = 0;    // TODO(ducky): define standardized interface and input format
-                                                // allowing multiple representations (0x, 0h, 0b, ...).
-  virtual dat_base_t* copy() = 0;   // this is an AWFUL hack to get around the awful templating
-                                    // to be able to create an object of the same width
-                                    // for fast compare operations
-  virtual bool equals(dat_base_t& other) = 0;
-};
-
 template <int w>
-class dat_t : public dat_base_t {
+class dat_t {
  public:
   const static int n_words = ((w - 1) / 64) + 1;
   // const static int n_words = (w >> CeilLog<sizeof(val_t)*8>::v) + 1;
@@ -1049,17 +1041,7 @@ class dat_t : public dat_base_t {
   inline bool to_bool ( void ) { return lo_word() != 0; }
   inline val_t lo_word ( void ) { return values[0]; }
   inline unsigned long to_ulong ( void ) { return (unsigned long)lo_word(); }
-  dat_base_t* copy() {
-    return new dat_t<w>(*this);
-  }
-  bool equals(dat_base_t& other) {
-    dat_t<w> *other_ptr = dynamic_cast<dat_t<w>*>(&other);
-    if (other_ptr == NULL) {
-        return false;
-    }
-    dat_t<1> equals = *other_ptr == *this;
-    return equals.values[0];
-  }
+
   std::string to_str () {
     std::string rres, res;
     int nn = (int)ceilf(w / 4.0);
@@ -1076,9 +1058,6 @@ class dat_t : public dat_base_t {
     for (int i = 0; i < rres.size(); i++)
       res.push_back(rres[rres.size()-i-1]);
     return res;
-  }
-  virtual bool set_from_str(string val) {
-    return dat_from_str(val, *this);
   }
   void randomize() {
     for (int i = 0; i < n_words; i++)
@@ -1099,11 +1078,11 @@ class dat_t : public dat_base_t {
     if (sw != w && val_n_word_bits(w))
       values[n_words-1] &= mask_val(val_n_word_bits(w));
   }
-  inline dat_t<w> (const dat_t<w>& src) { 
+  inline dat_t<w> (const dat_t<w>& src) {
     bit_word_funs<n_words>::set(values, (val_t*)src.values);
   }
-  inline dat_t<w> (val_t val) { 
-    values[0] = val; 
+  inline dat_t<w> (val_t val) {
+    values[0] = val;
     int sww = n_words;
     for (int i = 1; i < sww; i++)
       values[i] = 0;
@@ -1254,13 +1233,13 @@ class dat_t : public dat_base_t {
     return res;
   }
   inline dat_t<1> operator ! ( void ) {
-    return DAT<1>(!lo_word()); 
+    return DAT<1>(!lo_word());
   }
   dat_t<1> operator && ( dat_t<1> o ) {
-    return DAT<1>(lo_word() & o.lo_word()); 
+    return DAT<1>(lo_word() & o.lo_word());
   }
   dat_t<1> operator || ( dat_t<1> o ) {
-    return DAT<1>(lo_word() | o.lo_word()); 
+    return DAT<1>(lo_word() | o.lo_word());
   }
   dat_t<1> operator == ( dat_t<w> o ) {
     dat_t<1> res;
@@ -1276,7 +1255,7 @@ class dat_t : public dat_base_t {
     return res;
   }
   dat_t<w> operator << ( int amount ) {
-    dat_t<w> res;  
+    dat_t<w> res;
     bit_word_funs<n_words>::lsh(res.values, values, amount);
     return res;
   }
@@ -1284,39 +1263,39 @@ class dat_t : public dat_base_t {
     return *this << o.lo_word();
   }
   dat_t<w> operator >> ( int amount ) {
-    dat_t<w> res;  
+    dat_t<w> res;
     bit_word_funs<n_words>::rsh(res.values, values, amount);
-    return res; 
+    return res;
   }
   inline dat_t<w> operator >> ( dat_t<w> o ) {
     return *this >> o.lo_word();
   }
   dat_t<w> rsha ( dat_t<w> o) {
-    dat_t<w> res;  
+    dat_t<w> res;
     int amount = o.lo_word();
     bit_word_funs<n_words>::rsha(res.values, values, amount, w);
-    return res; 
+    return res;
   }
   dat_t<w>& operator = ( dat_t<w> o ) {
     bit_word_funs<n_words>::set(values, o.values);
     return *this;
   }
-  dat_t<w> fill_bit( val_t bit ) { 
+  dat_t<w> fill_bit( val_t bit ) {
     dat_t<w> res;
     val_t word = 0L - bit;
     bit_word_funs<n_words>::fill_nb(res.values, word, w);
     return res;
   }
   // TODO: SPEED THIS UP
-  dat_t<w> fill_byte( val_t byte, int nb, int n ) { 
+  dat_t<w> fill_byte( val_t byte, int nb, int n ) {
     dat_t<w> res;
     bit_word_funs<n_words>::fill(res.values, 0L);
-    for (size_t i = 0; i < n; i++) 
+    for (size_t i = 0; i < n; i++)
       res = (res << nb) | byte;
     return res;
   }
   template <int dw, int n>
-  dat_t<dw> fill( void ) { 
+  dat_t<dw> fill( void ) {
     // TODO: GET RID OF IF'S
     dat_t<dw> res;
     if (w == 1) {
@@ -1326,7 +1305,7 @@ class dat_t : public dat_base_t {
     }
   }
   template <int dw, int nw>
-  dat_t<dw> fill( dat_t<nw> n ) { 
+  dat_t<dw> fill( dat_t<nw> n ) {
     // TODO: GET RID OF IF'S
     dat_t<dw> res;
     if (w == 1) {
@@ -1351,7 +1330,7 @@ class dat_t : public dat_base_t {
     return x.extract<dw>();
   }
   template <int dw, int iwe, int iws>
-  inline dat_t<dw> extract(dat_t<iwe> e, dat_t<iws> s) { 
+  inline dat_t<dw> extract(dat_t<iwe> e, dat_t<iws> s) {
     return extract<dw>(e.lo_word(), s.lo_word());
   }
 
@@ -1364,26 +1343,26 @@ class dat_t : public dat_base_t {
   }
 
   template <int sw, int iwe, int iws>
-  inline dat_t<w> inject(dat_t<sw> src, dat_t<iwe> e, dat_t<iws> s) { 
+  inline dat_t<w> inject(dat_t<sw> src, dat_t<iwe> e, dat_t<iws> s) {
     return inject<w>(src, e.lo_word(), s.lo_word());
   }
 
 
   template <int dw>
-  inline dat_t<dw> log2() { 
+  inline dat_t<dw> log2() {
     dat_t<dw> res;
     bit_word_funs<n_words>::log2(res.values, values);
     return res;
   }
-  inline dat_t<1> bit(val_t b) { 
+  inline dat_t<1> bit(val_t b) {
     int n_full_words = val_n_full_words(b);
     int n_word_bits  = val_n_word_bits(b);
-    return DAT<1>((values[n_full_words] >> n_word_bits)&1); 
+    return DAT<1>((values[n_full_words] >> n_word_bits)&1);
   }
   inline val_t msb() {
     int n_full_words = val_n_full_words(w-1);
     int n_word_bits  = val_n_word_bits(w-1);
-    return (values[n_full_words] >> n_word_bits)&1; 
+    return (values[n_full_words] >> n_word_bits)&1;
   }
   template <int iw>
   inline dat_t<1> bit(dat_t<iw> b) {
@@ -1533,18 +1512,18 @@ static ssize_t dat_fprintf(FILE* f, const char* fmt, Args... args)
   return fwrite(str, 1, w/8, f);
 }
 #endif /* C++11 */
-                                            
-template <int w, int sw> inline dat_t<w> DAT(dat_t<sw> dat) { 
-  dat_t<w> res(dat);
-  return res; 
-}                                           
 
-template <int w> inline dat_t<w> LIT(val_t value) { 
+template <int w, int sw> inline dat_t<w> DAT(dat_t<sw> dat) {
+  dat_t<w> res(dat);
+  return res;
+}
+
+template <int w> inline dat_t<w> LIT(val_t value) {
   return DAT<w>(value);
 }
 
 template <int w>
-inline dat_t<w> mux ( dat_t<1> t, dat_t<w> c, dat_t<w> a ) { 
+inline dat_t<w> mux ( dat_t<1> t, dat_t<w> c, dat_t<w> a ) {
   dat_t<w> mask;
   bit_word_funs<val_n_words(w)>::fill(mask.values, -t.lo_word());
   return a ^ ((a ^ c) & mask);
@@ -1560,12 +1539,12 @@ class datz_t : public dat_t<w> {
   }
 };
 
-template <int w> datz_t<w> inline LITZ(val_t value, val_t mask) { 
-  datz_t<w> res; res.mask.values[0] = mask; res.values[0] = value; return res; 
+template <int w> datz_t<w> inline LITZ(val_t value, val_t mask) {
+  datz_t<w> res; res.mask.values[0] = mask; res.values[0] = value; return res;
 }
 
 template < int w, int w1, int w2 >
-inline dat_t<w> cat(dat_t<w1> d1, dat_t<w2> d2) { 
+inline dat_t<w> cat(dat_t<w1> d1, dat_t<w2> d2) {
   if (w <= val_n_bits() && w1 + w2 == w)
     return DAT<w>(d1.values[0] << (w2 & (val_n_bits()-1)) | d2.values[0]);
   return DAT<w>((DAT<w>(d1) << w2) | DAT<w>(d2));
@@ -1597,29 +1576,18 @@ inline dat_t<1> reduction_xor(dat_t<w1> d) {
   return res;
 }
 
-// Abstract mem_t with a basic width- and size-independent interface.
-class mem_base_t {
- public:
-  // Returns the bitwidth of each memory element
-  virtual int width() = 0;
-  // Returns the number of elements in this memory
-  virtual int length() = 0;
-  virtual string get_to_str(string index) = 0;  // TODO(ducky): standardize (see dat_base_t).
-  virtual bool put_from_str(string index, string val) = 0;   // TODO(ducky): standardize (see dat_base_t).
-};
-
 template <int w, int d>
-class mem_t : public mem_base_t {
+class mem_t {
  public:
   dat_t<w> contents[d];
-  
+
   int width() {
-    return w; 
+    return w;
   }
   int length() {
     return d;
   }
-  
+
   template <int iw>
   dat_t<w> get (dat_t<iw> idx) {
     return get(idx.lo_word() & (nextpow2_1(d)-1));
@@ -1634,11 +1602,7 @@ class mem_t : public mem_base_t {
       return rand_val() & (word == val_n_words(w) && val_n_word_bits(w) ? mask_val(w) : -1L);
     return contents[idx].values[word];
   }
-  string get_to_str(string index) {
-    dat_t<w> val = get(atoi(index.c_str()));
-    return val.to_str();
-  }
-  
+
   template <int iw>
   void put (dat_t<iw> idx, dat_t<w> val) {
     put(idx.lo_word(), val);
@@ -1651,18 +1615,7 @@ class mem_t : public mem_base_t {
     if (ispow2(d) || idx < d)
       contents[idx].values[word] = val;
   }
-  bool put_from_str(string index, string val) {
-    int i = atoi(index.c_str());
-    if (i > length()) {
-        cout << "mem_t::put_from_str: Index " << index << " out of range (max: " << length() << ")" << endl;
-        return false;
-    }
-    dat_t<w> dat_val;
-    dat_val.set_from_str(val);
-    put(i, dat_val);
-    return true;
-  }
-  
+
   void print ( void ) {
     for (int j = 0; j < d/4; j++) {
       for (int i = 0; i < 4; i++) {
@@ -1672,7 +1625,7 @@ class mem_t : public mem_base_t {
       printf("\n");
     }
   }
-  mem_t<w,d> () { 
+  mem_t<w,d> () {
     for (int i = 0; i < d; i++)
       contents[i] = DAT<w>(0);
   }
@@ -1699,22 +1652,22 @@ class mem_t : public mem_base_t {
   }
 };
 
-static int  char_to_hex[] = { 
-  -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1, 
-  -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1, 
-  -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1, 
-   0, 1, 2, 3, 4, 5, 6, 7, 8, 9,-1,-1,-1,-1,-1,-1, 
+static int  char_to_hex[] = {
+  -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
+  -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
+  -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
+   0, 1, 2, 3, 4, 5, 6, 7, 8, 9,-1,-1,-1,-1,-1,-1,
   -1,10,11,12,13,14,15,-1,-1,-1,-1,-1,-1,-1,-1,-1,
-  -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1, 
+  -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
   -1,10,11,12,13,14,15,-1,-1,-1,-1,-1,-1,-1,-1,-1,
-  -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1, 
-  -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1, 
-  -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1, 
-  -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1, 
-  -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1, 
-  -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1, 
-  -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1, 
-  -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1, 
+  -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
+  -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
+  -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
+  -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
+  -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
+  -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
+  -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
+  -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
   -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1 };
 
 #define TO_CSTR(d) (d.to_str().c_str())
@@ -1795,102 +1748,6 @@ size_t dat_from_hex(std::string hex_line, dat_t<w>& res, size_t offset = 0) {
   return last_digit + 1;
 }
 
-/**
- * Copy one val_t array to another.
- * nb must be the exact number of bits the val_t represents.
- */
-static void val_cpy(val_t* dst, val_t* src, int nb) {
-    for (int i=0; i<val_n_words(nb); i++) {
-        dst[i] = src[i];
-    }
-}
-
-/**
- * Empty a val_t array (sets to zero).
- * nb must be the exact number of bits the val_t represents.
- */
-static void val_empty(val_t* dst, int nb) {
-    for (int i=0; i<val_n_words(nb); i++) {
-        dst[i] = 0;
-    }
-}
-
-/**
- * Set a val_t array to a integer number. Obviously, the maximum integer
- * is capped by the width of a single val_t element.
- * nb must be the exact number of bits the val_t represents.
- */
-static void val_set(val_t* dst, val_t nb, val_t num) {
-    val_empty(dst, nb);
-    dst[0] = num;
-}
-
-/**
- * Creates a dat_t from a std::string, where the string radix is automatically determined
- * from the string, or defaults to 10.
- * Returns true on success and false on failure.
- */
-template <int w>
-bool dat_from_str(std::string in, dat_t<w>& res, int pos = 0) {
-    int radix = 10;
-    
-    if (!in.substr(pos, 1).compare("d")) {
-        radix = 10;
-        pos++;
-    } else if (!in.substr(pos, 1).compare("h")
-               || !in.substr(pos, 1).compare("x")) {
-        radix = 16;
-        pos++;
-    } else if (!in.substr(pos, 2).compare("0h")
-               || !in.substr(pos, 2).compare("0x")) {
-        radix = 16;
-        pos += 2;
-    } else if (!in.substr(pos, 1).compare("b")) {
-        radix = 2;
-        pos++;
-    } else if (!in.substr(pos, 2).compare("0b")) {
-        radix = 2;
-        pos += 2;
-    }
-    
-    val_t radix_val = radix;
-    val_t temp_prod[val_n_words(w)];
-    val_t curr_base[val_n_words(w)];
-    val_t temp_alias[val_n_words(w)];
-    val_t *dest_val = res.values;
-    val_set(curr_base, w, 1);
-    val_empty(dest_val, w);
-    
-    for (int rpos=in.length()-1; rpos>=pos; rpos--) {
-        char c = in[rpos];
-        val_t c_val = 0;
-        if (c == '_') {
-            continue;
-        }
-        if (c >= '0' && c <= '9') {
-            c_val = c - '0';
-        } else if (c >= 'a' && c <= 'z') {
-            c_val = c - 'a' + 10;
-        } else if (c >= 'A' && c <= 'Z') {
-            c_val = c - 'A' + 10;
-        } else {
-            cout << "dat_from_str: Invalid character '" << c << "'" << endl;
-            return false;
-        }
-        if (c_val > radix /* || c_val < 0 */) {
-            cout << "dat_from_str: Invalid character '" << c << "'" << endl;
-            return false;
-        }
-        
-        mul_n(temp_prod, curr_base, &c_val, w, w, val_n_bits());
-        val_cpy(temp_alias, dest_val, w);   // copy to prevent aliasing on add
-        add_n(dest_val, temp_alias, temp_prod, val_n_words(w), w);
-        val_cpy(temp_alias, curr_base, w);
-        mul_n(curr_base, temp_alias, &radix_val, w, w, val_n_bits());
-    }
-    return true;
-}
-
 template <int w>
 void dat_dump (FILE* file, dat_t<w> val, const char* name) {
   int namelen = strlen(name), pos = 0;
@@ -1925,7 +1782,7 @@ inline std::string read_tok(FILE* f) {
       if (char_to_hex[c] == -1) {
         ungetc(c, f);
         return res;
-      } 
+      }
       res.push_back(c);
     }
   }
@@ -1939,233 +1796,37 @@ template <int w, int d> mem_t<w,d> MEM( void );
 
 class mod_t {
  public:
+	mod_t():
+	  dumpfile(NULL)
+    {}
   std::vector< mod_t* > children;
   virtual void init ( bool rand_init=false ) { };
   virtual void clock_lo ( dat_t<1> reset ) { };
   virtual void clock_hi ( dat_t<1> reset ) { };
   virtual int  clock ( dat_t<1> reset ) { };
   virtual void setClocks ( std::vector< int >& periods ) { };
-  
+
   virtual void print ( FILE* f ) { };
   virtual void dump ( FILE* f, int t ) { };
-  
-  virtual void init_debug_interface ( ) { };
-  
-  // Lists containing node/mem names to pointers, to be populated by init().
-  map<string, dat_base_t*> nodes;
-  map<string, mem_base_t*> mems;
-  
-  // Returns a list of all nodes accessible by the debugging interface.
-  virtual vector<string> get_nodes() {
-    vector<string> res;
-    typedef std::map<std::string, dat_base_t*>::iterator it_type;
-    for(it_type iterator = nodes.begin(); iterator != nodes.end(); iterator++) 
-      res.push_back(iterator->first);
-    return res;
-  }
-  // Returns a list of all memory objects accessible by the debugging interface.
-  virtual vector<string> get_mems() {
-    vector<string> res;
-    typedef std::map<std::string, mem_base_t*>::iterator it_type;
-    for(it_type iterator = mems.begin(); iterator != mems.end(); iterator++) 
-      res.push_back(iterator->first);
-    return res;
-  }
-  // Reads the value on a node. Returns empty on error.
-  virtual string node_read(string name) {
-    dat_base_t* dat = nodes[name];
-    if (dat != NULL) {
-      return dat->to_str();
-    } else {
-      cerr << "mod_t::node_read: Unable to find node '" << name << "'" << endl;
-      return "0";
-    }
-  }
-  // Writes a value to a node. Returns true on success and false on error.
-  // Recommended to only be used on state elements.
-  virtual bool node_write(string name, string val) {
-    dat_base_t* dat = nodes[name];
-    if (dat != NULL) {
-      bool success = dat->set_from_str(val);
-      return success;
-    } else {
-      cerr << "mod_t::node_write: Unable to find node '" << name << "'" << endl;
-      return false;
-    }
-  }
-  // Reads the an element from a memory.
-  virtual string mem_read(string name, string index) {
-    mem_base_t* mem = mems[name];
-    if (mem != NULL) {
-      return mem->get_to_str(index);
-    } else {
-      cerr << "mod_t::mem_read: Unable to find mem '" << name << "'" << endl;
-      return "0";
-    }
-  }
-  // Writes an element to a memory.
-  virtual bool mem_write(string name, string index, string val) {
-    mem_base_t* mem = mems[name];
-    if (mem != NULL) {
-      bool success = mem->put_from_str(index, val);
-      return success;
-    } else {
-      cerr << "mod_t::mem_write: Unable to find mem '" << name << "'" << endl;
-      return false;
-    }
-  }
-  
-  // Clocks in a reset
-  virtual void reset() {
-    clock_lo(dat_t<1>(1));
-    clock_hi(dat_t<1>(1));
-    clock_lo(dat_t<1>(1));
-  }
-  
-  // Clocks one cycle
-  virtual void cycle() {
-    clock_lo(dat_t<1>(0));
-    clock_hi(dat_t<1>(0));
-    clock_lo(dat_t<1>(0));
-  }
-  
-  // Clocks until a node is equal to the value.
-  // Returns the number of cycles executed or -1 if the maximum was exceeded
-  // or -2 if some error was encountered.
-  virtual int clock_until_node_equal(string name, string val, int max=1000000) {
-    int cycles = 0;
-    dat_base_t* target_dat = nodes[name];
-    dat_base_t* target_val = target_dat->copy();
-    target_val->set_from_str(val);
-    
-    while (true) {
-        if (target_dat->equals(*target_val)) {
-            return cycles;
-        } else {
-            cycles++;
-            cycle();
-            if (cycles >= max) {
-                return -1;
-            }
-        }
-    }
-  }
-  
-  // Clocks until a node is equal to the value.
-  // Returns the number of cycles executed or -1 if the maximum was exceeded
-  // or -2 if some error was encountered.
-  virtual int clock_until_node_not_equal(string name, string val, int max=1000000) {
-    int cycles = 0;
-    dat_base_t* target_dat = nodes[name];
-    int w = target_dat->width();
-    dat_base_t* target_val = target_dat->copy();
-    target_val->set_from_str(val);
-    
-    while (true) {
-        if (!target_dat->equals(*target_val)) {
-            return cycles;
-        } else {
-            cycles++;
-            cycle();
-            if (cycles >= max) {
-                return -1;
-            }
-        }
-    }
+
+  void set_dumpfile(FILE* f) {
+	dumpfile = f;
   }
 
   int timestep;
 
-  int step (bool is_reset, int n, FILE* f, bool is_print = false) {
+  int step (bool is_reset, int n) {
     int delta = 0;
-    // fprintf(stderr, "STEP %d R %d P %d\n", n, is_reset, is_print);
     for (int i = 0; i < n; i++) {
-      dat_t<1> reset = LIT<1>(is_reset); 
+      dat_t<1> reset = LIT<1>(is_reset);
       delta += clock(reset);
-      if (f != NULL) dump(f, timestep);
-      if (is_print) print(stderr);
+      if (dumpfile != NULL) dump(dumpfile, timestep);
       timestep += 1;
     }
     return delta;
   }
-
-  std::vector< std::string > tokenize(std::string str) {
-    std::vector< std::string > res;
-    int i = 0;
-    int c = ' ';
-    while ( i < str.size() ) {
-      while (isspace(c)) {
-        if (i >= str.size()) return res;
-        c = str[i++];
-      }
-      std::string s;
-      while (!isspace(c) && i < str.size()) { 
-        s.push_back(c);
-        c = str[i++];
-      }
-      if (i >= str.size()) s.push_back(c);
-      if (s.size() > 0)
-        res.push_back(s);
-    }
-    return res;
-  }
-
-  void read_eval_print (FILE *f, FILE *teefile = NULL) {
-    timestep = 0;
-    for (;;) {
-      std::string str_in;
-      getline(cin,str_in);
-      if (teefile != NULL) {
-          fprintf(teefile, "%s\n", str_in.c_str());
-          fflush(teefile);
-      }
-      if (strcmp("", str_in.c_str()) == 0) {
-          fprintf(stderr, "Read empty string in tester stdin\n");
-          abort();
-      }
-      std::vector< std::string > tokens = tokenize(str_in);
-      std::string cmd = tokens[0];
-      if (cmd == "peek") {
-        std::string res;
-        if (tokens.size() == 2) {
-          res = node_read(tokens[1]);
-        } else if (tokens.size() == 3) {
-          res = mem_read(tokens[1], tokens[2]);
-        }
-        // fprintf(stderr, "-PEEK %s -> %s\n", tokens[1].c_str(), res.c_str());
-        cout << res << endl;
-      } else if (cmd == "poke") {
-        bool res;
-        // fprintf(stderr, "-POKE %s <- %s\n", tokens[1].c_str(), tokens[2].c_str());
-        if (tokens.size() == 3)
-          res = node_write(tokens[1], tokens[2]);
-        else if (tokens.size() == 4)
-          res = mem_write(tokens[1], tokens[2], tokens[3]);
-      } else if (cmd == "step") {
-        int n = atoi(tokens[1].c_str());
-        // fprintf(stderr, "-STEP %d\n", n);
-        int new_delta = step(0, n, f, true);
-        cout << new_delta << endl;
-      } else if (cmd == "reset") {
-        int n = atoi(tokens[1].c_str());
-        // fprintf(stderr, "-RESET %d\n", n);
-        step(1, n, f, false);
-      } else if (cmd == "set-clocks") {
-        std::vector< int > periods;
-        for (int i = 1; i < tokens.size(); i++) {
-          int period = atoi(tokens[i].c_str());
-          periods.push_back(period);
-        }
-        setClocks(periods);
-      } else if (cmd == "quit") {
-          return;
-      } else {
-        fprintf(stderr, "Unknown command: |%s|\n", cmd.c_str());
-      }
-    }
-  }
-
-
+ protected:
+  FILE* dumpfile;
 };
 
 #define ASSERT(cond, msg) { \
@@ -2176,31 +1837,552 @@ class mod_t {
 #pragma GCC diagnostic pop
 #endif
 EOF
+cat >emulator_api.h <<EOF
+// Header for Chisel emulator API
+#ifndef __IS_EMULATOR_API__
+#define __IS_EMULATOR_API__
+
+ #include "emulator_mod.h"
+
+ #include <string>
+ #include <sstream>
+ #include <map>
+
+/**
+ * Converts an integer to a std::string without needing additional libraries
+ * or C++11.
+ */
+static std::string itos(int in) {
+	std::stringstream out;
+	out << in;
+	return out.str();
+}
+
+/**
+ * Copy one val_t array to another.
+ * nb must be the exact number of bits the val_t represents.
+ */
+static void val_cpy(val_t* dst, val_t* src, int nb) {
+    for (int i=0; i<val_n_words(nb); i++) {
+        dst[i] = src[i];
+    }
+}
+
+/**
+ * Empty a val_t array (sets to zero).
+ * nb must be the exact number of bits the val_t represents.
+ */
+static void val_empty(val_t* dst, int nb) {
+    for (int i=0; i<val_n_words(nb); i++) {
+        dst[i] = 0;
+    }
+}
+
+/**
+ * Set a val_t array to a integer number. Obviously, the maximum integer
+ * is capped by the width of a single val_t element.
+ * nb must be the exact number of bits the val_t represents.
+ */
+static void val_set(val_t* dst, val_t nb, val_t num) {
+    val_empty(dst, nb);
+    dst[0] = num;
+}
+
+/**
+ * Sets a dat_t from a string, where the input radix is automatically determined
+ * from the string (or defaults to 10).
+ * Returns true on success.
+ */
+template <int w>
+bool dat_from_str(std::string in, dat_t<w>& res, int pos = 0) {
+    int radix = 10;
+
+    if (!in.substr(pos, 1).compare("d")) {
+        radix = 10;
+        pos++;
+    } else if (!in.substr(pos, 1).compare("h")
+               || !in.substr(pos, 1).compare("x")) {
+        radix = 16;
+        pos++;
+    } else if (!in.substr(pos, 2).compare("0h")
+               || !in.substr(pos, 2).compare("0x")) {
+        radix = 16;
+        pos += 2;
+    } else if (!in.substr(pos, 1).compare("b")) {
+        radix = 2;
+        pos++;
+    } else if (!in.substr(pos, 2).compare("0b")) {
+        radix = 2;
+        pos += 2;
+    }
+
+    val_t radix_val = radix;
+    val_t temp_prod[val_n_words(w)];
+    val_t curr_base[val_n_words(w)];
+    val_t temp_alias[val_n_words(w)];
+    val_t *dest_val = res.values;
+    val_set(curr_base, w, 1);
+    val_empty(dest_val, w);
+
+    for (int rpos=in.length()-1; rpos>=pos; rpos--) {
+        char c = in[rpos];
+        val_t c_val = 0;
+        if (c == '_') {
+            continue;
+        }
+        if (c >= '0' && c <= '9') {
+            c_val = c - '0';
+        } else if (c >= 'a' && c <= 'z') {
+            c_val = c - 'a' + 10;
+        } else if (c >= 'A' && c <= 'Z') {
+            c_val = c - 'A' + 10;
+        } else {
+            std::cerr << "dat_from_str: Invalid character '" << c << "'" <<
+            		std::endl;
+            return false;
+        }
+        if (c_val > radix /* || c_val < 0 */) {
+            std::cerr << "dat_from_str: Invalid character '" << c << "'" <<
+            		std::endl;
+            return false;
+        }
+
+        mul_n(temp_prod, curr_base, &c_val, w, w, val_n_bits());
+        val_cpy(temp_alias, dest_val, w);   // copy to prevent aliasing on add
+        add_n(dest_val, temp_alias, temp_prod, val_n_words(w), w);
+        val_cpy(temp_alias, curr_base, w);
+        mul_n(curr_base, temp_alias, &radix_val, w, w, val_n_bits());
+    }
+    return true;
+}
+
+// API base class, providing common functions
+class api_base {
+public:
+	api_base(std::string new_name, std::string new_path) :
+		name(new_name),
+		path(new_path)
+	{}
+	// returns the fully qualified name of this object (path + dot + name)
+	std::string get_pathname() {
+		if (path.empty()) {
+			return name;
+		} else {
+			return path + "." + name;
+		}
+	}
+	// returns the short name of this object
+	std::string get_name() {
+		return name;
+	}
+	// returns the path of this object (without a trailing dot)
+	std::string get_path() {
+		return path;
+	}
+protected:
+	std::string name;
+	std::string path;
+};
+
+// API base (non width templated) class for API accessors to dat_t
+class dat_api_base : public api_base {
+public:
+	dat_api_base(std::string new_name, std::string new_path) :
+		api_base(new_name, new_path)
+	{}
+	// returns the value of this wire as a string, or empty string on failure
+	virtual std::string get_value() = 0;
+	// sets the value of this wire from a string, returning true on success
+	virtual bool set_value(std::string value) = 0;
+	// returns the bitwidth of this wire
+	virtual std::string get_width() = 0;
+};
+
+// dat_api dummy class, does nothing except for return errors
+// to be used when a real dat_api object can't be found
+class dat_dummy : public dat_api_base {
+public:
+	dat_dummy() :
+		dat_api_base("error", "")
+	{}
+	std::string get_value() {
+		return "error";
+	}
+
+	bool set_value(std::string value) {
+		return false;
+	}
+
+	std::string get_width() {
+		return "error";
+	}
+};
+
+template<int w> class dat_api : public dat_api_base {
+public:
+	dat_api(dat_t<w>* new_dat, std::string new_name, std::string new_path) :
+		dat_api_base(new_name, new_path),
+		dat_ptr(new_dat)
+	{}
+
+	std::string get_value() {
+		return dat_ptr->to_str();
+	}
+
+	bool set_value(std::string value) {
+		return dat_from_str<w>(value, *dat_ptr);
+	}
+
+	std::string get_width() {
+		return itos(w);
+	}
+
+protected:
+	dat_t<w>* dat_ptr;
+};
+
+// API base (non width/depth templated) class for API accessors to mem_t
+class mem_api_base : public api_base {
+public:
+	mem_api_base(std::string new_name, std::string new_path) :
+		api_base(new_name, new_path)
+	{}
+	// return the value of an element as a string, or empty string on failure
+	virtual std::string get_element(std::string index) = 0;
+	// sets the value of an element from a string, returning true on success
+	virtual bool set_element(std::string index, std::string value) = 0;
+	// returns the bitwidth of a memory element
+	virtual std::string get_width() = 0;
+	// returns the number of memory elements
+	virtual std::string get_depth() = 0;
+};
+
+// mem_api dummy class, does nothing except for return errors
+// to be used when a real mem_api object can't be found
+class mem_dummy : public mem_api_base {
+public:
+	mem_dummy() :
+		mem_api_base("error", "")
+	{}
+	string get_element(std::string index) {
+		return "error";
+	}
+
+	bool set_element(std::string index, std::string value) {
+		return false;
+	}
+
+	std::string get_width() {
+		return "error";
+	}
+
+	std::string get_depth() {
+		return "error";
+	}
+};
+
+template<int w, int d> class mem_api : public mem_api_base {
+public:
+	mem_api(mem_t<w, d>* new_mem, std::string new_name, std::string new_path) :
+		mem_api_base(new_name, new_path),
+		mem_ptr(new_mem)
+	{}
+
+	string get_element(std::string index) {
+		int index_int = atoi(index.c_str());
+		return mem_ptr->contents[index_int].to_str();
+	}
+
+	bool set_element(std::string index, std::string value) {
+		int index_int = atoi(index.c_str());
+		return dat_from_str<w>(value, mem_ptr->contents[index_int]);
+	}
+
+	std::string get_width() {
+		return itos(w);
+	}
+
+	std::string get_depth() {
+		return itos(d);
+	}
+
+protected:
+	mem_t<w, d>* mem_ptr;
+};
+
+class mod_api_t {
+public:
+	mod_api_t():
+		teefile(NULL)
+	{}
+
+	void init(mod_t* new_module) {
+		module = new_module;
+		init_mapping_table();
+	}
+
+	void set_teefile(FILE* new_teefile) {
+		teefile = new_teefile;
+	}
+
+	mod_t* get_module() {
+		return module;
+	}
+
+	// API basic functions
+	std::string get_host_name() {return "C++ Emulator API";}
+	std::string get_api_version() {return "0";}
+	std::string get_api_support() {return "PeekPoke Introspection";}
+
+	// External access functions & helpers
+	std::vector< std::string > tokenize(std::string str) {
+	    std::vector< std::string > res;
+	    int i = 0;
+	    int c = ' ';
+	    while ( i < str.size() ) {
+	      while (isspace(c)) {
+	        if (i >= str.size()) return res;
+	        c = str[i++];
+	      }
+	      std::string s;
+	      while (!isspace(c) && i < str.size()) {
+	        s.push_back(c);
+	        c = str[i++];
+	      }
+	      if (i >= str.size()) s.push_back(c);
+	      if (s.size() > 0)
+	        res.push_back(s);
+	    }
+	    return res;
+	}
+
+	// helper to verify command length, returning false and printing an error
+	// to stderr if the length isn't in the specified range
+	bool check_command_length(std::vector<std::string>& tokenized_command,
+			int min_args, int max_args=-1) {
+		if (tokenized_command.size() - 1 < min_args) {
+			std::cerr << tokenized_command[0] << " expects at least " << min_args
+					<< " args, got " << tokenized_command.size() - 1
+					<< std::endl;
+			return false;
+		} else if (max_args >= 0 && tokenized_command.size() - 1 > max_args) {
+			std::cerr << tokenized_command[0] << " expects at most " << max_args
+					<< " args, got " << tokenized_command.size() - 1
+					<< std::endl;
+			return false;
+		}
+		return true;
+	}
+
+	std::string eval_command(string command) {
+		std::vector<std::string> tokens = tokenize(command);
+		if (tokens[0] == "get_host_name") {
+			// IN:  get_host_name
+			// OUT: API host's name
+			if (!check_command_length(tokens, 0, 0)) { return "error"; }
+			return get_host_name();
+		} else if (tokens[0] == "get_api_version") {
+			// IN:  get_api_version
+			// OUT: API version supported by this host
+			if (!check_command_length(tokens, 0, 0)) { return "error"; }
+			return get_api_version();
+		} else if (tokens[0] == "get_api_support") {
+			// IN:  get_api_support
+			// OUT: list of supported API features
+			if (!check_command_length(tokens, 0, 0)) { return "error"; }
+			return get_api_support();
+
+		} else if (tokens[0] == "clock") {
+			// IN:  clock <num_cycles>
+			// OUT: actual number of cycles stepped
+			if (!check_command_length(tokens, 1, 1)) { return "error"; }
+			int cycles = atoi(tokens[1].c_str());
+		    for (int i=0; i<cycles; i++) {
+		    	module->clock_lo(dat_t<1>(0));
+		    	module->clock_hi(dat_t<1>(0));
+		    }
+		    module->clock_lo(dat_t<1>(0));
+		    return itos(cycles);
+		} else if (tokens[0] == "step") {
+			// IN:  step <num_cycles>
+			// OUT: actual number of cycles stepped
+			if (!check_command_length(tokens, 1, 1)) { return "error"; }
+			int n = atoi(tokens[1].c_str());
+		    int ret = module->step(false, n);
+		    return itos(ret);
+		} else if (tokens[0] == "set-clocks") {
+			// IN:  set-clocks
+			// OUT: ???
+			// I'm not really sure what this is supposed to do, but it was
+			// in the old command API, so it's here now
+	        std::vector< int > periods;
+	        for (int i = 1; i < tokens.size(); i++) {
+	          int period = atoi(tokens[i].c_str());
+	          periods.push_back(period);
+	        }
+	        module->setClocks(periods);
+	        return "ok";
+
+		} else if (tokens[0] == "reset") {
+			// IN:  reset <num_cycles>
+			// OUT: actual number of cycles in reset
+			if (!check_command_length(tokens, 0, 1)) { return "error"; }
+			int cycles = 1;
+			if (tokens.size() >= 2) {
+				cycles = atoi(tokens[1].c_str());
+			}
+			for (int i=0; i<cycles; i++) {
+			   	module->clock_lo(dat_t<1>(1));
+			   	module->clock_hi(dat_t<1>(1));
+		    }
+		    module->clock_lo(dat_t<1>(0));
+		    return itos(cycles);
+
+		} else if (tokens[0] == "peek") {
+			// IN:  peek <node_name> | peek <mem_name> <mem_index>
+			// OUT: value
+			if (!check_command_length(tokens, 1, 2)) { return "error"; }
+			cerr << "peek is deprecated, use wire_peek or mem_peek" << std::endl;
+			if (tokens.size() == 2) {
+				return get_dat_by_name(tokens[1])->get_value();
+			} else if (tokens.size() == 3) {
+				return get_mem_by_name(tokens[1])->get_element(tokens[2]);
+			}
+		} else if (tokens[0] == "poke") {
+			// IN:  poke <node_name> <value> | poke <mem_name> <mem_index> <value>
+			// OUT: true (on success), false (on failure)
+			if (!check_command_length(tokens, 2, 3)) { return ""; }
+			cerr << "poke is deprecated, use wire_poke or mem_poke" << std::endl;
+			bool success;
+			if (tokens.size() == 3) {
+				success = get_dat_by_name(tokens[1])->set_value(tokens[2]);
+			} else if (tokens.size() == 4) {
+				success = get_mem_by_name(tokens[1])->set_element(tokens[2], tokens[3]);
+			}
+			return success ? "true" : "false";
+
+		} else if (tokens[0] == "wire_peek") {
+			// IN:  wire_peek <node_name>
+			// OUT: value
+			if (!check_command_length(tokens, 1, 1)) { return "error"; }
+			return get_dat_by_name(tokens[1])->get_value();
+		} else if (tokens[0] == "wire_poke") {
+			// IN:  wire_poke <node_name> <value>
+			// OUT: true (on success), false (on failure)
+			if (!check_command_length(tokens, 2, 2)) { return "error"; }
+			bool success = get_dat_by_name(tokens[1])->set_value(tokens[2]);
+			return success ? "true" : "false";
+		} else if (tokens[0] == "mem_peek") {
+			// IN:  mem_peek <mem_name> <mem_index>
+			// OUT: value
+			if (!check_command_length(tokens, 2, 2)) { return "error"; }
+			return get_mem_by_name(tokens[1])->get_element(tokens[2]);
+		} else if (tokens[0] == "mem_poke") {
+			// IN:  mem_poke <mem_name> <mem_index> <value>
+			// OUT: true (on success), false (on failure)
+			if (!check_command_length(tokens, 3, 3)) { return "error"; }
+			bool success = get_mem_by_name(tokens[1])->set_element(tokens[2], tokens[3]);
+			return success ? "true" : "false";
+
+		} else if (tokens[0] == "list_wires") {
+			// IN:  list_wires
+			// OUT: list of wires
+			if (!check_command_length(tokens, 0, 0)) { return "error"; }
+			std::string out = "";
+			for (std::map<string, dat_api_base*>::iterator it = dat_table.begin(); it != dat_table.end(); it++) {
+				out = out + it->second->get_pathname() + " ";
+			}
+			if (out.size() >= 1) {
+				return out.substr(0, out.size() - 1);
+			} else {
+				return "";
+			}
+
+		} else if (tokens[0] == "list_mems") {
+			// IN:  list_mems
+			// OUT: list of memories
+			if (!check_command_length(tokens, 0, 0)) { return "error"; }
+			std::string out = "";
+			for (std::map<string, mem_api_base*>::iterator it = mem_table.begin(); it != mem_table.end(); it++) {
+				out = out + it->second->get_pathname() + " ";
+			}
+			if (out.size() >= 1) {
+				return out.substr(0, out.size() - 1);
+			} else {
+				return "";
+			}
+
+		} else if (tokens[0] == "wire_width") {
+			// IN:  wire_width <node>
+			// OUT: bitwidth of wire
+			if (!check_command_length(tokens, 1, 1)) { return "error"; }
+			return get_dat_by_name(tokens[1])->get_width();
+		} else if (tokens[0] == "mem_width") {
+			// IN:  mem_width <node>
+			// OUT: bitwidth of memory element
+			if (!check_command_length(tokens, 1, 1)) { return "error"; }
+			return get_mem_by_name(tokens[1])->get_width();
+		} else if (tokens[0] == "mem_depth") {
+			// IN:  mem_depth <node>
+			// OUT: elements in memory
+			if (!check_command_length(tokens, 1, 1)) { return "error"; }
+			return get_mem_by_name(tokens[1])->get_depth();
+
+		} else {
+			std::cerr << "Unknown command: '" << tokens[0] << "'" << std::endl;
+		}
+		return "error";
+	}
+
+	void read_eval_print_loop() {
+		while (true) {
+		    std::string str_in;
+		    getline(cin, str_in);
+		    if (teefile != NULL) {
+		        fprintf(teefile, "%s\n", str_in.c_str());
+		        fflush(teefile);
+		    }
+		    if (str_in == "quit") {
+		    	break;
+		    } else {
+		    	cout << eval_command(str_in) << std::endl;
+		    }
+		}
+	}
+
+protected:
+	FILE* teefile;
+	mod_t* module;
+
+	// Mapping table functions
+	virtual void init_mapping_table() = 0;
+
+	dat_api_base* get_dat_by_name(std::string name) {
+		if (dat_table.find(name) != dat_table.end()) {
+			return dat_table[name];
+		} else {
+			std::cerr << "Unable to find dat '" << name << "'" << std::endl;
+			return &this_dat_dummy;
+		}
+	}
+	mem_api_base* get_mem_by_name(std::string name) {
+		if (mem_table.find(name) != mem_table.end()) {
+			return mem_table[name];
+		} else {
+			std::cerr << "Unable to find mem '" << name << "'" << std::endl;
+			return &this_mem_dummy;
+		}
+	}
+
+	std::map<string, dat_api_base*> dat_table;
+	std::map<string, mem_api_base*> mem_table;
+	dat_dummy this_dat_dummy;
+	mem_dummy this_mem_dummy;
+};
+
+#endif
+EOF
 cat >gold.vcd <<"EOF"
-$timescale 1ps $end
-$scope module LogShifter $end
-$var wire 1 N0 reset $end
-$var wire 16 N1 io_in $end
-$var wire 4 N2 io_shamt $end
-$var wire 16 N3 s0 $end
-$var wire 16 N4 s1 $end
-$var wire 16 N5 s2 $end
-$var wire 16 N6 io_out $end
-$upscope $end
-$enddefinitions $end
-$dumpvars
-$end
-#0
-b0000000000000000 N1
-b0000 N2
-b0000000000000000 N3
-b0000000000000000 N4
-b0000000000000000 N5
-b0000000000000000 N6
-#1
-#2
-#3
-#4
 EOF
 cat >test.stdin <<EOF
 reset 5

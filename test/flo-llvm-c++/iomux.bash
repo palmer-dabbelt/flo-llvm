@@ -1,7 +1,4 @@
 #include "tempdir.bash"
-#rm -rf tmp
-#mkdir -p tmp
-#cd tmp
 
 cat >test.scala <<EOF
 import Chisel._

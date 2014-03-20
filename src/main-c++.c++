@@ -164,6 +164,13 @@ int generate_header(const flo_ptr flo, FILE *f)
     /* Close the class */
     fprintf(f, "};\n");
 
+    /* The new Chisel emulator appears to require a second class
+     * that's used for debug info. */
+    fprintf(f, "class %s_api_t : public mod_api_t {\n",
+            flo->class_name().c_str());
+    fprintf(f, "  void init_mapping_table(void);\n");
+    fprintf(f, "};\n");
+
     return 0;
 }
 
@@ -249,8 +256,6 @@ int generate_compat(const flo_ptr flo, FILE *f)
     /* init just sets everything to zero, which is easy to do in C++
      * (it'll be fairly short). */
     fprintf(f, "void %s_t::init(bool r)\n{\n", flo->class_name().c_str());
-    fprintf(f, "  nodes.clear();\n");
-    fprintf(f, "  mems.clear();\n");
     for (auto it = flo->nodes(); !it.done(); ++it) {
         auto node = *it;
 
@@ -258,11 +263,6 @@ int generate_compat(const flo_ptr flo, FILE *f)
             continue;
 
         fprintf(f, "  this->%s = 0;\n", node->mangled_name().c_str());
-
-        fprintf(f, "  nodes[\"%s\"] = &this->%s;\n",
-                node->chisel_name().c_str(),
-                node->mangled_name().c_str()
-            );
     }
     fprintf(f, "}\n");
 
@@ -412,6 +412,36 @@ int generate_compat(const flo_ptr flo, FILE *f)
             );
 
         fprintf(f, "  }\n");
+    }
+
+    fprintf(f, "}\n");
+
+    /* This function is part of the debug API wrapper, which now
+     * contains all the string-lookup stuff. */
+    fprintf(f, "void %s_api_t::init_mapping_table(void) {\n",
+            flo->class_name().c_str());
+
+    fprintf(f, "  dat_table.clear();\n");
+    fprintf(f, "  mem_table.clear();\n");
+    fprintf(f, "  %s_t *dut = dynamic_cast<%s_t*>(module);\n",
+            flo->class_name().c_str(),
+            flo->class_name().c_str()
+        );
+    fprintf(f, "  if (dut == NULL) {assert(dut != NULL); abort();}\n");
+
+    for (auto it = flo->nodes(); !it.done(); ++it) {
+        auto node = *it;
+
+        if (node->exported() == false)
+            continue;
+
+        fprintf(f, "  dat_table[\"%s\"] = new dat_api<%lu>(&dut->%s, \"%s\", \"\");\n",
+                node->chisel_name().c_str(),
+                node->width(),
+                node->mangled_name().c_str(),
+                node->chisel_name().c_str()
+            );
+        
     }
 
     fprintf(f, "}\n");

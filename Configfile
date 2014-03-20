@@ -25,15 +25,9 @@ BINARIES    += flo-llvm-c++
 COMPILEOPTS += `ppkg-config flo --cflags`
 LINKOPTS    += `ppkg-config flo --libs`
 SOURCES     += main-c++.c++
-TESTSRC     += counter-32.bash
-TESTSRC     += counter-64.bash
-TESTSRC     += counter-128.bash
-TESTSRC     += fib.bash
-TESTSRC     += gcd.bash
 TESTSRC     += iomux.bash
 TESTSRC     += iocnt.bash
 TESTSRC     += counter-128-chisel.bash
-TESTSRC     += xor-250-narrow.bash
 TESTSRC     += bigcat-chisel.bash
 
 # These tests all come from the Chisel tutorial
