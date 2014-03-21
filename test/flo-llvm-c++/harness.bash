@@ -24,6 +24,7 @@ then
     mv test.vcd gold.vcd
     mv test-emulator.cpp harness.c++
     cat test.flo
+    cp test.h test-chisel.h
 fi
 
 cat test.flo
