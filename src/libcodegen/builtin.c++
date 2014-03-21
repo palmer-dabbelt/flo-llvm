@@ -44,7 +44,6 @@ namespace libcodegen {
     gen_as_llvm(void, "void")
     gen_as_llvm(bool, "i1")
     gen_as_llvm(char, "i8")
-    gen_as_llvm(unsigned long, "i64")
     gen_as_llvm(uint32_t, "i32")
     gen_as_llvm(uint64_t, "i64")
 
@@ -52,7 +51,6 @@ namespace libcodegen {
     gen_width(void, 0)
     gen_width(bool, 1)
     gen_width(char, 8)
-    gen_width(unsigned long, 64)
     gen_width(uint32_t, 32)
     gen_width(uint64_t, 64)
 }
