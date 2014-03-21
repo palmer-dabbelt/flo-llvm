@@ -621,6 +621,10 @@ int generate_llvmir(const flo_ptr flo __attribute__((unused)), FILE *f __attribu
                                 ));
                 break;
 
+            case libflo::opcode::NEQ:
+                lo->operate(cmp_neq_op(op->dv(), op->sv(), op->tv()));
+                break;
+
             case libflo::opcode::NOT:
                 lo->operate(not_op(op->dv(), op->sv()));
                 break;
@@ -719,7 +723,6 @@ int generate_llvmir(const flo_ptr flo __attribute__((unused)), FILE *f __attribu
             case libflo::opcode::LIT:
             case libflo::opcode::MSK:
             case libflo::opcode::LD:
-            case libflo::opcode::NEQ:
             case libflo::opcode::ARSH:
             case libflo::opcode::ST:
             case libflo::opcode::MEM:

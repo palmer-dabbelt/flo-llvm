@@ -180,6 +180,7 @@ namespace libcodegen {
 
     /* Comparison operations. */
     LIBCODEGEN__DEF_ALU_OP_2_3s(cmp_eq, "icmp eq")
+    LIBCODEGEN__DEF_ALU_OP_2_3s(cmp_neq, "icmp ne")
     LIBCODEGEN__DEF_ALU_OP_2_3s(cmp_gte, "icmp uge")
     LIBCODEGEN__DEF_ALU_OP_2_3s(cmp_lt, "icmp ult")
 
