@@ -141,13 +141,20 @@ int generate_header(const flo_ptr flo, FILE *f)
         if (node->exported() == false)
             continue;
 
-        fprintf(f, "    dat_t<%lu> %s;\n",
-                node->width(),
-                node->mangled_name().c_str());
+        if (node->is_mem() == true) {
+            fprintf(f, "    mem_t<%lu, %lu> %s;\n",
+                    node->width(),
+                    node->depth(),
+                    node->mangled_name().c_str());
+        } else {
+            fprintf(f, "    dat_t<%lu> %s;\n",
+                    node->width(),
+                    node->mangled_name().c_str());
 
-        fprintf(f, "    dat_t<%lu> %s__prev;\n",
-                node->width(),
-                node->mangled_name().c_str());
+            fprintf(f, "    dat_t<%lu> %s__prev;\n",
+                    node->width(),
+                    node->mangled_name().c_str());
+        }
     }
 
     /* Here we write the class methods that exist in Chisel and will
@@ -190,14 +197,18 @@ int generate_compat(const flo_ptr flo, FILE *f)
         if (node->exported() == false)
             continue;
 
-        fprintf(f, "  dat_t<%lu> *_llvmflo_%s_ptr(%s_t *d)\n",
-                node->width(),
-                node->mangled_name().c_str(),
-                flo->class_name().c_str()
-            );
+        if (node->is_mem() == true) {
+            /* FIXME: How do I emit these? */
+        } else {
+            fprintf(f, "  dat_t<%lu> *_llvmflo_%s_ptr(%s_t *d)\n",
+                    node->width(),
+                    node->mangled_name().c_str(),
+                    flo->class_name().c_str()
+                );
 
-        fprintf(f, "    { return &(d->%s); }\n",
-                node->mangled_name().c_str());
+            fprintf(f, "    { return &(d->%s); }\n",
+                    node->mangled_name().c_str());
+        }
     }
 
     /* Goes ahead and emits a dat_t accessor function for each and
@@ -262,7 +273,11 @@ int generate_compat(const flo_ptr flo, FILE *f)
         if (node->exported() == false)
             continue;
 
-        fprintf(f, "  this->%s = 0;\n", node->mangled_name().c_str());
+        if (node->is_mem() == true) {
+            /* FIXME: Do we initailize memories? */
+        } else {
+            fprintf(f, "  this->%s = 0;\n", node->mangled_name().c_str());
+        }
     }
     fprintf(f, "}\n");
 
@@ -435,12 +450,22 @@ int generate_compat(const flo_ptr flo, FILE *f)
         if (node->exported() == false)
             continue;
 
-        fprintf(f, "  dat_table[\"%s\"] = new dat_api<%lu>(&dut->%s, \"%s\", \"\");\n",
-                node->chisel_name().c_str(),
-                node->width(),
-                node->mangled_name().c_str(),
-                node->chisel_name().c_str()
-            );
+        if (node->is_mem() == true) {
+            fprintf(f, "  mem_table[\"%s\"] = new mem_api<%lu, %lu>(&dut->%s, \"%s\", \"\");\n",
+                    node->chisel_name().c_str(),
+                    node->width(),
+                    node->depth(),
+                    node->mangled_name().c_str(),
+                    node->chisel_name().c_str()
+                );
+        } else {
+            fprintf(f, "  dat_table[\"%s\"] = new dat_api<%lu>(&dut->%s, \"%s\", \"\");\n",
+                    node->chisel_name().c_str(),
+                    node->width(),
+                    node->mangled_name().c_str(),
+                    node->chisel_name().c_str()
+                );
+        }
         
     }
 
@@ -485,12 +510,16 @@ int generate_llvmir(const flo_ptr flo, FILE *f)
         if (node->exported() == false)
             continue;
 
-        out.declare(node->ptr_func());
+        if (node->is_mem() == true) {
+            /* FIXME: Should I bother emiting these? */
+        } else {
+            out.declare(node->ptr_func());
+        }
     }
 
     /* Emits a header for the getter/setter functions that are used by
      * this implementation. */
-    /* FIXME: These should be usinc libcodegen */
+    /* FIXME: These should be using libcodegen */
     {
         auto widths = flo->used_widths();
         for (auto it = widths.begin(); it != widths.end(); ++it) {
