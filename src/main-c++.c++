@@ -449,7 +449,7 @@ int generate_compat(const flo_ptr flo, FILE *f)
     return 0;
 }
 
-int generate_llvmir(const flo_ptr flo __attribute__((unused)), FILE *f __attribute__((unused)))
+int generate_llvmir(const flo_ptr flo, FILE *f)
 {
     /* This writer outputs LLVM IR to the given file. */
     llvm out(f);
