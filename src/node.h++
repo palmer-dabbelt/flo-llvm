@@ -53,8 +53,7 @@ public:
 
     /* Returns TRUE if this node should be exported into the VCD
      * file. */
-    bool vcd_exported(void) const
-        { return strstr(name().c_str(), ":") != NULL; }
+    bool vcd_exported(void) const;
 
     /* Returns the mangled name of this node, which refers to the name
      * this node is expected to have when inside the C++ header

@@ -34,7 +34,7 @@ node::node(const std::string name,
            bool is_const,
            libflo::unknown<size_t> cycle)
     : libflo::node(name, width, depth, is_mem, is_const, cycle),
-      _exported(false),
+      _exported(is_mem),
       _vcd_name(gen_vcd_name())
 {
 }
@@ -52,6 +52,14 @@ const std::string node::mangled_name(void) const
     }
 
     return buffer;
+}
+
+bool node::vcd_exported(void) const
+{
+    if (this->is_mem())
+        return false;
+
+    return strstr(name().c_str(), ":") != NULL;
 }
 
 const std::string node::chisel_name(void) const
