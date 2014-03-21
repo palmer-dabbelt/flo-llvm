@@ -200,39 +200,39 @@ int generate_compat(const flo_ptr flo, FILE *f)
         if (node->is_mem() == true) {
             /* FIXME: How do I emit these? */
         } else {
-            fprintf(f, "  dat_t<%lu> *_llvmflo_%s_ptr(%s_t *d)\n",
-                    node->width(),
+            /* This function pulls the value from a node into an
+             * array.  Essentially this just does C++ name
+             * demangling. */
+            fprintf(f, "  void _llvmflo_%s_get(%s_t *d, uint64_t *a) {\n",
                     node->mangled_name().c_str(),
                     flo->class_name().c_str()
                 );
 
-            fprintf(f, "    { return &(d->%s); }\n",
-                    node->mangled_name().c_str());
-        }
-    }
+            for (size_t i = 0; i < (node->width() + 63) / 64; ++i) {
+                fprintf(f, "    a[%lu] = d->%s.values[%lu];\n",
+                        i,
+                        node->mangled_name().c_str(),
+                        i
+                    );
+            }
 
-    /* Goes ahead and emits a dat_t accessor function for each and
-     * every dat_t size that's used by this module. */
-    {
-        auto widths = flo->used_widths();
-        for (auto it = widths.begin(); it != widths.end(); ++it) {
-            auto width = *it;
+            fprintf(f, "  }\n");
 
-            fprintf(f, "  void _llvmdat_%lu_get("
-                    "const dat_t<%lu> *d, uint64_t *a)\n",
-                    width, width);
-        fprintf(f, "  {\n");
-        for (size_t i = 0; i < (width + 63) / 64; ++i)
-            fprintf(f, "    a[%lu] = d->values[%lu];\n", i, i);
-        fprintf(f, "  }\n");
+            /* The opposite of the above: sets a dat_t value. */
+            fprintf(f, "  void _llvmflo_%s_set(%s_t *d, uint64_t *a) {\n",
+                    node->mangled_name().c_str(),
+                    flo->class_name().c_str()
+                );
 
-        fprintf(f, "  void _llvmdat_%lu_set("
-                "dat_t<%lu> *d, const uint64_t *a)\n",
-                width, width);
-        fprintf(f, "  {\n");
-        for (size_t i = 0; i < (width + 63) / 64; ++i)
-            fprintf(f, "    d->values[%lu] = a[%lu];\n", i, i);
-        fprintf(f, "  }\n");
+            for (size_t i = 0; i < (node->width() + 63) / 64; ++i) {
+                fprintf(f, "    d->%s.values[%lu] = a[%lu];\n",
+                        node->mangled_name().c_str(),
+                        i,
+                        i
+                    );
+            }
+
+            fprintf(f, "  }\n");
         }
     }
 
@@ -513,25 +513,8 @@ int generate_llvmir(const flo_ptr flo, FILE *f)
         if (node->is_mem() == true) {
             /* FIXME: Should I bother emiting these? */
         } else {
-            out.declare(node->ptr_func());
-        }
-    }
-
-    /* Emits a header for the getter/setter functions that are used by
-     * this implementation. */
-    /* FIXME: These should be using libcodegen */
-    {
-        auto widths = flo->used_widths();
-        for (auto it = widths.begin(); it != widths.end(); ++it) {
-            auto width = *it;
-
-            /* Emits a getter and a setter for dat_ts of this width. */
-            fprintf(f,
-                    "declare void @_llvmdat_%lu_get(i8* %%dut, i64* %%a)\n",
-                    width);
-            fprintf(f,
-                    "declare void @_llvmdat_%lu_set(i8* %%dut, i64* %%a)\n",
-                    width);
+            out.declare(node->get_func());
+            out.declare(node->set_func());
         }
     }
 
@@ -674,8 +657,7 @@ int generate_llvmir(const flo_ptr flo, FILE *f)
                  * structure definiton so it can be converted into an
                  * LLVM operation. */
                 lo->operate(alloca_op(ptr64, i64cnt));
-                lo->operate(call_op(ptrC, op->d()->ptr_func(), dut_vec));
-                lo->operate(call_op(op->d()->get_func(), {&ptrC, &ptr64}));
+                lo->operate(call_op(op->d()->get_func(), {&dut, &ptr64}));
 
                 /* Here we generate the internal temporary values.
                  * This series of shift/add operations will probably
@@ -805,8 +787,7 @@ int generate_llvmir(const flo_ptr flo, FILE *f)
                 /* Here we fetch the actual C++ pointer that can be
                  * used to move this signal's data out. */
                 auto ptrC = pointer<builtin<void>>();
-                lo->operate(call_op(ptrC, op->d()->ptr_func(), dut_vec));
-                lo->operate(call_op(op->d()->set_func(), {&ptrC, &ptr64}));
+                lo->operate(call_op(op->d()->set_func(), {&dut, &ptr64}));
             }
         }
 

@@ -77,14 +77,6 @@ public:
      * type-safe object that represents this node. */
     const libcodegen::fix_t cg_name(void) const;
 
-    /* Returns a function that allows for access into this node's
-     * permanent storage.  This handles C++ name demangling (when
-     * generating code for the C++ compatibility layer). */
-    libcodegen::function<
-        libcodegen::pointer<libcodegen::builtin<char>>,
-        libcodegen::arglist1<libcodegen::pointer<libcodegen::builtin<char>>>
-        > ptr_func(void) const;
-
     /* Functions that allow access to this node's internal data
      * structures. */
     libcodegen::function<

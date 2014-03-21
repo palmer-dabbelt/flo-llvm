@@ -100,20 +100,6 @@ const libcodegen::fix_t node::cg_name(void) const
 }
 
 libcodegen::function<
-    libcodegen::pointer<libcodegen::builtin<char>>,
-    libcodegen::arglist1<libcodegen::pointer<libcodegen::builtin<char>>>
-    > node::ptr_func(void) const
-{
-    libcodegen::function<
-        libcodegen::pointer<libcodegen::builtin<char>>,
-        libcodegen::arglist1<libcodegen::pointer<libcodegen::builtin<char>>>
-        >
-        out("_llvmflo_%s_ptr", mangled_name().c_str());
-
-    return out;
-}
-
-libcodegen::function<
     libcodegen::builtin<void>,
     libcodegen::arglist2<libcodegen::pointer<libcodegen::builtin<void>>,
                          libcodegen::pointer<libcodegen::builtin<uint64_t>>
@@ -125,7 +111,7 @@ libcodegen::function<
         libcodegen::arglist2<libcodegen::pointer<libcodegen::builtin<void>>,
                              libcodegen::pointer<libcodegen::builtin<uint64_t>>
                              >
-        > out("_llvmdat_%u_get", width());
+        > out("_llvmflo_%s_get", mangled_name().c_str());
 
     return out;
 }
@@ -142,7 +128,7 @@ libcodegen::function<
         libcodegen::arglist2<libcodegen::pointer<libcodegen::builtin<void>>,
                              libcodegen::pointer<libcodegen::builtin<uint64_t>>
                              >
-        > out("_llvmdat_%u_set", width());
+        > out("_llvmflo_%s_set", mangled_name().c_str());
 
     return out;
 }
