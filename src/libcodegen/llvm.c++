@@ -20,6 +20,7 @@
  */
 
 #include "llvm.h++"
+#include <stdlib.h>
 using namespace libcodegen;
 
 llvm::llvm(FILE *f)
