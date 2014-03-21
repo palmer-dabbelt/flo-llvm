@@ -20,6 +20,7 @@
  */
 
 #include "value.h++"
+#include <stdlib.h>
 using namespace libcodegen;
 
 static const std::string generate_unique_name(void);
