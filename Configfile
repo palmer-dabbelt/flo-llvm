@@ -17,6 +17,11 @@ LANGUAGES   += bash
 # for all the other code.
 GENERATE    += version.h
 
+# Here's a simple little wrapper that calls the compiler a bunch of
+# times in order to produce a result.
+BINARIES    += flo-llvm
+SOURCES     += wrapper.bash
+
 # This binary generates code that's compatible with Chisel's old C++
 # API.  This maintains full source compatibility but has two problems:
 # it's going to be tough to map to DREAMER, and it may disable some
