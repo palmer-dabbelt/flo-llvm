@@ -44,6 +44,7 @@ public:
     const libcodegen::fix_t sv(void) const { return sv(0); }
     const libcodegen::fix_t tv(void) const { return sv(1); }
     const libcodegen::fix_t uv(void) const { return sv(2); }
+    const libcodegen::fix_t vv(void) const { return sv(3); }
 
     /* Returns TRUE if this node should be written back to persistant
      * state. */

@@ -35,6 +35,7 @@ TESTSRC     += iocnt.bash
 TESTSRC     += counter-128-chisel.bash
 TESTSRC     += counter-128-neq.bash
 TESTSRC     += bigcat-chisel.bash
+TESTSRC     += mem-chisel.bash
 
 # These tests all come from the Chisel tutorial
 TESTSRC += tutgen_Adder4.bash

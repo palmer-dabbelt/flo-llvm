@@ -209,7 +209,50 @@ int generate_compat(const flo_ptr flo, FILE *f)
             continue;
 
         if (node->is_mem() == true) {
-            /* FIXME: How do I emit these? */
+            /* This function pulls the value from a node into an
+             * array.  Essentially this just does C++ name
+             * demangling. */
+            fprintf(f, "  void _llvmflo_%s_getm(%s_t *d, uint64_t i, uint64_t *a) {\n",
+                    node->mangled_name().c_str(),
+                    flo->class_name().c_str()
+                );
+
+            fprintf(f, "    dat_t<%lu> v = d->%s.get(i);\n",
+                    node->width(),
+                    node->mangled_name().c_str()
+                );
+
+            for (size_t i = 0; i < (node->width() + 63) / 64; ++i) {
+                fprintf(f, "    a[%lu] = v.values[%lu];\n",
+                        i,
+                        i
+                    );
+            }
+
+            fprintf(f, "  }\n");
+
+            /* The opposite of the above: sets a mem_t value. */
+            fprintf(f, "  void _llvmflo_%s_setm(%s_t *d, uint64_t i, uint64_t *a) {\n",
+                    node->mangled_name().c_str(),
+                    flo->class_name().c_str()
+                );
+
+            fprintf(f, "    dat_t<%lu> v;",
+                    node->width()
+                );
+
+            for (size_t i = 0; i < (node->width() + 63) / 64; ++i) {
+                fprintf(f, "    v.values[%lu] = a[%lu];\n",
+                        i,
+                        i
+                    );
+            }
+
+            fprintf(f, "    d->%s.put(i, v);\n",
+                    node->mangled_name().c_str()
+                );
+
+            fprintf(f, "  }\n");
         } else {
             /* This function pulls the value from a node into an
              * array.  Essentially this just does C++ name
@@ -522,7 +565,8 @@ int generate_llvmir(const flo_ptr flo, FILE *f)
             continue;
 
         if (node->is_mem() == true) {
-            /* FIXME: Should I bother emiting these? */
+            out.declare(node->getm_func());
+            out.declare(node->setm_func());
         } else {
             out.declare(node->get_func());
             out.declare(node->set_func());
@@ -656,6 +700,21 @@ int generate_llvmir(const flo_ptr flo, FILE *f)
                 lo->operate(or_op(op->dv(), op->sv(0), op->sv(1)));
                 break;
 
+            case libflo::opcode::RD:
+            {
+                auto index = op->uv();
+                auto index64 = builtin<uint64_t>();
+                lo->operate(zero_ext_op(index64, index));
+
+                auto ptr64 = pointer<builtin<uint64_t>>();
+                lo->operate(alloca_op(ptr64, i64cnt));
+                lo->operate(call_op(op->t()->getm_func(),
+                                    {&dut, &index64, &ptr64}));
+                array2int(lo, op->dv(), ptr64, i64cnt);
+
+                break;
+            }
+
             case libflo::opcode::IN:
             case libflo::opcode::REG:
             {
@@ -688,6 +747,21 @@ int generate_llvmir(const flo_ptr flo, FILE *f)
                 lo->operate(sub_op(op->dv(), op->sv(), op->tv()));
                 break;
 
+            case libflo::opcode::WR:
+            {
+                auto index = op->uv();
+                auto index64 = builtin<uint64_t>();
+                lo->operate(zero_ext_op(index64, index));
+
+                auto ptr64 = pointer<builtin<uint64_t>>();
+                lo->operate(alloca_op(ptr64, i64cnt));
+                int2array(lo, op->vv(), ptr64, i64cnt);
+                lo->operate(call_op(op->t()->setm_func(),
+                                    {&dut, &index64, &ptr64}));
+
+                break;
+            }
+
             case libflo::opcode::XOR:
                 lo->operate(xor_op(op->dv(), op->sv(0), op->tv()));
                 break;
@@ -703,8 +777,6 @@ int generate_llvmir(const flo_ptr flo, FILE *f)
             case libflo::opcode::NOP:
             case libflo::opcode::LOG2:
             case libflo::opcode::NEG:
-            case libflo::opcode::RD:
-            case libflo::opcode::WR:
                 fprintf(stderr, "Unable to compute node '%s'\n",
                         libflo::opcode_to_string(op->op()).c_str());
                 abort();

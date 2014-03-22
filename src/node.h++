@@ -93,6 +93,24 @@ public:
                              >
         > set_func(void) const;
 
+    /* These functions are like get/set above, but they provide access
+     * to a memory's data structures. */
+    libcodegen::function<
+        libcodegen::builtin<void>,
+        libcodegen::arglist3<libcodegen::pointer<libcodegen::builtin<void>>,
+                             libcodegen::builtin<uint64_t>,
+                             libcodegen::pointer<libcodegen::builtin<uint64_t>>
+                             >
+        > getm_func(void) const;
+
+    libcodegen::function<
+        libcodegen::builtin<void>,
+        libcodegen::arglist3<libcodegen::pointer<libcodegen::builtin<void>>,
+                             libcodegen::builtin<uint64_t>,
+                             libcodegen::pointer<libcodegen::builtin<uint64_t>>
+                             >
+        > setm_func(void) const;
+
 public:
     /* Forces that this node is always exported into the header
      * file. */

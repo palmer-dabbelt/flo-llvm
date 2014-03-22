@@ -133,6 +133,44 @@ libcodegen::function<
     return out;
 }
 
+libcodegen::function<
+    libcodegen::builtin<void>,
+    libcodegen::arglist3<libcodegen::pointer<libcodegen::builtin<void>>,
+                         libcodegen::builtin<uint64_t>,
+                         libcodegen::pointer<libcodegen::builtin<uint64_t>>
+                         >
+    > node::getm_func(void) const
+{
+    libcodegen::function<
+        libcodegen::builtin<void>,
+        libcodegen::arglist3<libcodegen::pointer<libcodegen::builtin<void>>,
+                             libcodegen::builtin<uint64_t>,
+                             libcodegen::pointer<libcodegen::builtin<uint64_t>>
+                             >
+        > out("_llvmflo_%s_getm", mangled_name().c_str());
+
+    return out;
+}
+
+libcodegen::function<
+    libcodegen::builtin<void>,
+    libcodegen::arglist3<libcodegen::pointer<libcodegen::builtin<void>>,
+                         libcodegen::builtin<uint64_t>,
+                         libcodegen::pointer<libcodegen::builtin<uint64_t>>
+                         >
+    > node::setm_func(void) const
+{
+    libcodegen::function<
+        libcodegen::builtin<void>,
+        libcodegen::arglist3<libcodegen::pointer<libcodegen::builtin<void>>,
+                             libcodegen::builtin<uint64_t>,
+                             libcodegen::pointer<libcodegen::builtin<uint64_t>>
+                             >
+        > out("_llvmflo_%s_setm", mangled_name().c_str());
+
+    return out;
+}
+
 const std::string gen_vcd_name(void)
 {
     static size_t i = 0;
