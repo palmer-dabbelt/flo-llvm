@@ -65,6 +65,17 @@ static int generate_llvmir(const flo_ptr flo, FILE *f);
 /* Returns TRUE if the haystack starts with the needle. */
 static bool strsta(const std::string haystack, const std::string needle);
 
+/* Converts between an array of words (as used in the C++ emulator's
+ * header) and an LLVM integer. */
+static void array2int(std::shared_ptr<definition> lo,
+                      fix_t out,
+                      pointer<builtin<uint64_t>> pointer,
+                      size_t words);
+static void int2array(std::shared_ptr<definition> lo,
+                      fix_t out,
+                      pointer<builtin<uint64_t>> pointer,
+                      size_t words);
+
 int main(int argc, const char **argv)
 {
     /* Prints the version if it was asked for. */
@@ -651,57 +662,9 @@ int generate_llvmir(const flo_ptr flo, FILE *f)
                 nop = true;
 
                 auto ptr64 = pointer<builtin<uint64_t>>();
-                auto ptrC = pointer<builtin<void>>();
-
-                /* Obtain a pointer to the C++ structure's internal
-                 * structure definiton so it can be converted into an
-                 * LLVM operation. */
                 lo->operate(alloca_op(ptr64, i64cnt));
                 lo->operate(call_op(op->d()->get_func(), {&dut, &ptr64}));
-
-                /* Here we generate the internal temporary values.
-                 * This series of shift/add operations will probably
-                 * be compiled into NOPs by the LLVM optimizer. */
-                auto ptrs = std::vector<pointer<builtin<uint64_t>>>(i64cnt);
-                for (size_t i = 0; i < i64cnt; i++) {
-                    auto index = constant<size_t>(i);
-                    lo->operate(index_op(ptrs[i], ptr64, index));
-                }
-
-                auto loads = std::vector<builtin<uint64_t>>(i64cnt);
-                for (size_t i = 0; i < i64cnt; ++i) {
-                    lo->operate(load_op(loads[i], ptrs[i]));
-                }
-
-                auto extended = std::vector<fix_t>();
-                for (size_t i = 0; i < i64cnt; ++i) {
-                    /* We need this push here because every one of
-                     * these temporaries needs a new name which means
-                     * the copy constructor can't be used.  The
-                     * default constructor can't be used because we
-                     * need to tag each fix with a width. */
-                    extended.push_back(fix_t(op->width()));
-                    lo->operate(zext_trunc_op(extended[i], loads[i]));
-                }
-
-                auto shifted = std::vector<fix_t>();
-                for (size_t i = 0; i < i64cnt; i++) {
-                    shifted.push_back(fix_t(op->width()));
-                    auto offset = constant<uint32_t>(i * 64);
-                    lo->operate(lsh_op(shifted[i], extended[i], offset));
-                }
-
-                auto ored = std::vector<fix_t>();
-                for (size_t i = 0; i < i64cnt; ++i) {
-                    ored.push_back(fix_t(op->width()));
-                    if (i == 0) {
-                        lo->operate(mov_op(ored[i], shifted[i]));
-                    } else {
-                        lo->operate(or_op(ored[i], shifted[i], ored[i-1]));
-                    }
-                }
-
-                lo->operate(mov_op(op->dv(), ored[i64cnt-1]));
+                array2int(lo, op->dv(), ptr64, i64cnt);
 
                 break;
             }
@@ -754,39 +717,9 @@ int generate_llvmir(const flo_ptr flo, FILE *f)
             if (op->writeback() == true && nop == false) {
                 lo->comment("  Writeback");
 
-                /* This generates a pointer that can be passed to C++,
-                 * in other words, an array-of-uints. */
                 auto ptr64 = pointer<builtin<uint64_t>>();
                 lo->operate(alloca_op(ptr64, i64cnt));
-
-                /* Here we generate the internal temporary values.
-                 * This series of shift/add operations will probably
-                 * be compiled into NOPs by the LLVM optimizer. */
-                auto shifted = std::vector<fix_t>();
-                for (size_t i = 0; i < i64cnt; ++i) {
-                    shifted.push_back(fix_t(op->d()->width()));
-                    auto offset = constant<uint32_t>(i * 64);
-                    lo->operate(lrsh_op(shifted[i], op->dv(), offset));
-                }
-
-                auto trunced = std::vector<builtin<uint64_t>>(i64cnt);
-                for (size_t i = 0; i < i64cnt; ++i) {
-                    lo->operate(zext_trunc_op(trunced[i], shifted[i]));
-                }
-
-                auto ptrs = std::vector<pointer<builtin<uint64_t>>>(i64cnt);
-                for (size_t i = 0; i < i64cnt; ++i) {
-                    auto index = constant<size_t>(i);
-                    lo->operate(index_op(ptrs[i], ptr64, index));
-                }
-
-                for (size_t i = 0; i < i64cnt; ++i) {
-                    lo->operate(store_op(ptrs[i], trunced[i]));
-                }
-
-                /* Here we fetch the actual C++ pointer that can be
-                 * used to move this signal's data out. */
-                auto ptrC = pointer<builtin<void>>();
+                int2array(lo, op->dv(), ptr64, i64cnt);
                 lo->operate(call_op(op->d()->set_func(), {&dut, &ptr64}));
             }
         }
@@ -803,4 +736,78 @@ bool strsta(const std::string haystack, const std::string needle)
     const char *n = needle.c_str();
 
     return (strncmp(h, n, strlen(n)) == 0);
+}
+
+void array2int(std::shared_ptr<definition> lo,
+               fix_t d,
+               pointer<builtin<uint64_t>> ptr64,
+               size_t i64cnt)
+{
+    auto ptrs = std::vector<pointer<builtin<uint64_t>>>(i64cnt);
+    for (size_t i = 0; i < i64cnt; i++) {
+        auto index = constant<size_t>(i);
+        lo->operate(index_op(ptrs[i], ptr64, index));
+    }
+
+    auto loads = std::vector<builtin<uint64_t>>(i64cnt);
+    for (size_t i = 0; i < i64cnt; ++i) {
+        lo->operate(load_op(loads[i], ptrs[i]));
+    }
+
+    auto extended = std::vector<fix_t>();
+    for (size_t i = 0; i < i64cnt; ++i) {
+        /* We need this push here because every one of these
+         * temporaries needs a new name which means the copy
+         * constructor can't be used.  The default constructor can't
+         * be used because we need to tag each fix with a width. */
+        extended.push_back(fix_t(d.width()));
+        lo->operate(zext_trunc_op(extended[i], loads[i]));
+    }
+
+    auto shifted = std::vector<fix_t>();
+    for (size_t i = 0; i < i64cnt; i++) {
+        shifted.push_back(fix_t(d.width()));
+        auto offset = constant<uint32_t>(i * 64);
+        lo->operate(lsh_op(shifted[i], extended[i], offset));
+    }
+
+    auto ored = std::vector<fix_t>();
+    for (size_t i = 0; i < i64cnt; ++i) {
+        ored.push_back(fix_t(d.width()));
+        if (i == 0) {
+            lo->operate(mov_op(ored[i], shifted[i]));
+        } else {
+            lo->operate(or_op(ored[i], shifted[i], ored[i-1]));
+        }
+    }
+
+    lo->operate(mov_op(d, ored[i64cnt-1]));
+}
+
+void int2array(std::shared_ptr<definition> lo,
+               fix_t d,
+               pointer<builtin<uint64_t>> ptr64,
+               size_t i64cnt)
+{
+    auto shifted = std::vector<fix_t>();
+    for (size_t i = 0; i < i64cnt; ++i) {
+        shifted.push_back(fix_t(d.width()));
+        auto offset = constant<uint32_t>(i * 64);
+        lo->operate(lrsh_op(shifted[i], d, offset));
+    }
+
+    auto trunced = std::vector<builtin<uint64_t>>(i64cnt);
+    for (size_t i = 0; i < i64cnt; ++i) {
+        lo->operate(zext_trunc_op(trunced[i], shifted[i]));
+    }
+
+    auto ptrs = std::vector<pointer<builtin<uint64_t>>>(i64cnt);
+    for (size_t i = 0; i < i64cnt; ++i) {
+        auto index = constant<size_t>(i);
+        lo->operate(index_op(ptrs[i], ptr64, index));
+    }
+
+    for (size_t i = 0; i < i64cnt; ++i) {
+        lo->operate(store_op(ptrs[i], trunced[i]));
+    }
 }
