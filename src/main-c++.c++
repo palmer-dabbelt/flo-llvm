@@ -777,6 +777,7 @@ int generate_llvmir(const flo_ptr flo, FILE *f)
             case libflo::opcode::NOP:
             case libflo::opcode::LOG2:
             case libflo::opcode::NEG:
+            case libflo::opcode::INIT:
                 fprintf(stderr, "Unable to compute node '%s'\n",
                         libflo::opcode_to_string(op->op()).c_str());
                 abort();

@@ -43,6 +43,7 @@ operation::operation(std::shared_ptr<node>& dest,
     case libflo::opcode::EQ:
     case libflo::opcode::GTE:
     case libflo::opcode::IN:
+    case libflo::opcode::INIT:
     case libflo::opcode::LD:
     case libflo::opcode::LIT:
     case libflo::opcode::LOG2:
