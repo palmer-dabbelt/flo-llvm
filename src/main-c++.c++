@@ -333,6 +333,19 @@ int generate_compat(const flo_ptr flo, FILE *f)
             fprintf(f, "  this->%s = 0;\n", node->mangled_name().c_str());
         }
     }
+
+    for (auto it = flo->operations(); !it.done(); ++it) {
+        auto op = *it;
+
+        if (op->op() != libflo::opcode::INIT)
+            continue;
+
+        fprintf(f, "  this->%s.put(%s, %s);\n",
+                op->s()->mangled_name().c_str(),
+                op->t()->name().c_str(),
+                op->u()->name().c_str()
+            );
+    }
     fprintf(f, "}\n");
 
     /* clock_hi just copies data around and therefor is simplest to
@@ -648,6 +661,10 @@ int generate_llvmir(const flo_ptr flo, FILE *f)
                 lo->operate(cmp_gte_op(op->dv(), op->sv(), op->tv()));
                 break;
 
+            case libflo::opcode::INIT:
+                /* The INIT operation does _nothing_ at runtime! */
+                break;
+
             case libflo::opcode::LT:
                 lo->operate(cmp_lt_op(op->dv(), op->sv(), op->tv()));
                 break;
@@ -777,7 +794,6 @@ int generate_llvmir(const flo_ptr flo, FILE *f)
             case libflo::opcode::NOP:
             case libflo::opcode::LOG2:
             case libflo::opcode::NEG:
-            case libflo::opcode::INIT:
                 fprintf(stderr, "Unable to compute node '%s'\n",
                         libflo::opcode_to_string(op->op()).c_str());
                 abort();
