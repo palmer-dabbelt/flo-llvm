@@ -21,10 +21,10 @@ then
             --vcd --dumpTestInput
     done
 
-    mv test.vcd gold.vcd
-    mv test-emulator.cpp harness.c++
+    cp -L test.vcd gold.vcd
+    cp -L test-emulator.cpp harness.c++
     cat test.flo
-    cp test.h test-chisel.h
+    cp -L test.h test-chisel.h
 fi
 
 cat test.flo
