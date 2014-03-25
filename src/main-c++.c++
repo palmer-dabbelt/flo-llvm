@@ -449,6 +449,11 @@ int generate_compat(const flo_ptr flo, FILE *f)
                 signal
             );
 
+#ifdef VERBOSE_VCD_FILE
+        fprintf(f, "fprintf(f, \"$comment '%s' $end\\n\");\n",
+                node->name().c_str());
+#endif
+
         /* The last path is always equal to the current one -- note
          * that sometimes this won't do anything as it'll be the same,
          * but this strictly enforces this condition. */
