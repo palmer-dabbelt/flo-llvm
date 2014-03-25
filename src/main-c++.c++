@@ -76,6 +76,14 @@ static void int2array(std::shared_ptr<definition> lo,
                       pointer<builtin<uint64_t>> pointer,
                       size_t words);
 
+/* Counts the number of module components in a list. */
+static size_t count_components(const std::string str);
+
+/* Returns TRUE if the long component is a sub-component of the short
+ * component name. */
+static bool component_start(const std::string haystack,
+                            const std::string needle);
+
 int main(int argc, const char **argv)
 {
     /* Prints the version if it was asked for. */
@@ -376,7 +384,9 @@ int generate_compat(const flo_ptr flo, FILE *f)
     /* On the first cycle we need to write out the VCD header file. */
     fprintf(f, "  if (cycle == 0) {\n");
     fprintf(f, "    fprintf(f, \"$timescale 1ps $end\\n\");\n");
-    
+    fprintf(f, "    fprintf(f, \"$scope module %s $end\\n\");\n",
+            flo->class_name().c_str());
+
     std::string last_path = "";
     for (auto it = flo->nodes_alpha(); !it.done(); ++it) {
         auto node = *it;
@@ -408,9 +418,9 @@ int generate_compat(const flo_ptr flo, FILE *f)
         /* Figure out if we're going up or down a module and perform
          * that move. */
         if (strcmp(module, last_path.c_str()) == 0) {
-        } else if (strsta(last_path, module)) {
+        } else if (component_start(last_path, module)) {
             fprintf(f, "    fprintf(f, \"$upscope $end\\n\");\n");
-        } else if (strsta(module, last_path)) {
+        } else if (component_start(module, last_path)) {
             /* Determine a slightly shorter name for the module, which
              * is what VCD uses.  This is just the last component of
              * the module name, the remainder can be determined by the
@@ -425,7 +435,10 @@ int generate_compat(const flo_ptr flo, FILE *f)
             fprintf(f, "    fprintf(f, \"$scope module %s $end\\n\");\n",
                     lastmodule);
         } else {
-            fprintf(f, "    fprintf(f, \"$upscope $end\\n\");\n");
+            size_t cur_comp  = count_components(node->name());
+            size_t last_comp = count_components(last_path) + 1;
+            for (size_t i = cur_comp; i <= last_comp; ++i)
+                fprintf(f, "    fprintf(f, \"$upscope $end\\n\");\n");
 
             /* Determine a slightly shorter name for the module, which
              * is what VCD uses.  This is just the last component of
@@ -904,4 +917,30 @@ void int2array(std::shared_ptr<definition> lo,
     for (size_t i = 0; i < i64cnt; ++i) {
         lo->operate(store_op(ptrs[i], trunced[i]));
     }
+}
+
+size_t count_components(const std::string str)
+{
+    char buffer[LINE_MAX];
+    snprintf(buffer, LINE_MAX, "%s", str.c_str());
+
+    size_t count = 0;
+    for (size_t i = 0; i < strlen(buffer); ++i)
+        if (buffer[i] == ':' && buffer[i+1] != ':')
+            count++;
+
+    return count;
+}
+
+bool component_start(const std::string haystack,
+                     const std::string needle)
+{
+    /* If their prefix isn't even the same then bail out. */
+    if (strsta(haystack, needle) == false)
+        return false;
+
+    if ((strlen(haystack.c_str()) == 0) || (strlen(needle.c_str()) == 0))
+        return false;
+
+    return haystack.c_str()[strlen(needle.c_str())] == ':';
 }
