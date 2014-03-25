@@ -63,3 +63,8 @@ TESTSRC += tutgen_ResetShiftRegister.bash
 #TESTSRC += tutgen_Stack.bash
 #TESTSRC += tutgen_Tbl.bash
 #TESTSRC += tutgen_VecSearch.bash
+
+# "Large" tests, which really just consist of real code other people
+# wrote.  These are probably all suitable for benchmarking of some
+# sort...
+TESTSRC += large_des.bash
