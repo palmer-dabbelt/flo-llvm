@@ -692,8 +692,8 @@ int generate_llvmir(const flo_ptr flo, FILE *f)
                 auto es = fix_t(op->d()->width());
                 auto et = fix_t(op->d()->width());
 
-                lo->operate(zero_ext_op(es, op->sv()));
-                lo->operate(zero_ext_op(et, op->tv()));
+                lo->operate(zext_trunc_op(es, op->sv()));
+                lo->operate(zext_trunc_op(et, op->tv()));
                 
                 lo->operate(lsh_op(op->dv(), es, et));
 
