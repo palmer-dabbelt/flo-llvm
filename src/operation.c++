@@ -63,6 +63,7 @@ operation::operation(std::shared_ptr<node>& dest,
     case libflo::opcode::RD:
     case libflo::opcode::RND:
     case libflo::opcode::RSH:
+    case libflo::opcode::RSHD:
     case libflo::opcode::RST:
     case libflo::opcode::ST:
     case libflo::opcode::SUB:

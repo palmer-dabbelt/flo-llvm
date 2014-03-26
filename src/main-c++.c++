@@ -784,6 +784,7 @@ int generate_llvmir(const flo_ptr flo, FILE *f)
             }
 
             case libflo::opcode::RSH:
+            case libflo::opcode::RSHD:
             {
                 auto cast = fix_t(op->s()->width());
                 lo->operate(zext_trunc_op(cast, op->tv()));
