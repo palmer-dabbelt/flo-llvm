@@ -481,6 +481,26 @@ int generate_compat(const flo_ptr flo, FILE *f)
     for (size_t i = 0; i <= (colon_count / 2); i++)
         fprintf(f, "    fprintf(f, \"$upscope $end\\n\");\n");
 
+#ifdef EXPORT_ALL_NODES
+    fprintf(f, "    fprintf(f, \"$scope module %s $end\\n\");\n",
+            "_llvmflo_chisel_temps");
+
+    for (auto it = flo->nodes(); !it.done(); ++it) {
+        auto node = *it;
+
+        if (strstr(node->name().c_str(), ":") != NULL)
+            continue;
+
+        fprintf(f, "    fprintf(f, \"$var wire %lu %s %s $end\\n\");\n",
+                node->width(),
+                node->vcd_name().c_str(),
+                node->name().c_str()
+            );
+    }
+
+    fprintf(f, "    fprintf(f, \"$upscope $end\\n\");\n");
+#endif
+
     fprintf(f, "  fprintf(f, \"$enddefinitions $end\\n\");\n");
     fprintf(f, "  fprintf(f, \"$dumpvars\\n\");\n");
     fprintf(f, "  fprintf(f, \"$end\\n\");\n");
