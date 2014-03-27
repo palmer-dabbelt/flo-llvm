@@ -46,6 +46,9 @@ namespace libcodegen {
     gen_as_llvm(char, "i8")
     gen_as_llvm(uint32_t, "i32")
     gen_as_llvm(uint64_t, "i64")
+#if defined(__APPLE__) && defined(__amd64__)
+    gen_as_llvm(unsigned long, "i64")
+#endif
 
     /* Widths also need to be manually defined. */
     gen_width(void, 0)
@@ -53,4 +56,7 @@ namespace libcodegen {
     gen_width(char, 8)
     gen_width(uint32_t, 32)
     gen_width(uint64_t, 64)
+#if defined(__APPLE__) && defined(__amd64__)
+    gen_width(unsigned long, 64)
+#endif
 }
