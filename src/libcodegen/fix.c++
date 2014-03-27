@@ -33,3 +33,9 @@ const std::string fix_t::as_llvm(void) const
     snprintf(buffer, BUFFER_SIZE, "i%lu", _width);
     return buffer;
 }
+
+fix_t& fix_t::operator=(const fix_t& i)
+{
+    this->_width = i._width;
+    return *this;
+}

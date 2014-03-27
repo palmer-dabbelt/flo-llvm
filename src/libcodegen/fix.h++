@@ -48,6 +48,11 @@ namespace libcodegen {
 
         size_t width(void) const { return _width; }
 
+        /* FIXME: This shouldn't be necessary, but it appears that old
+         * GCC versions won't construct a default operator= here.  I
+         * have no idea why... */
+        fix_t& operator=(const fix_t& i);
+
         const std::string as_llvm(void) const;
     };
 
