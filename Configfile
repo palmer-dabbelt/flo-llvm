@@ -41,6 +41,7 @@ TESTSRC += chisel_mem.bash
 TESTSRC += chisel_mem-init.bash
 TESTSRC += chisel_shiftcat.bash
 TESTSRC += chisel_regshift.bash
+TESTSRC += chisel_many-cat.bash
 
 # These tests all come from the Chisel tutorial
 TESTSRC += tutgen_Adder4.bash
