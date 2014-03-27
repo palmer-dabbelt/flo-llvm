@@ -3,7 +3,7 @@ LANGUAGES   += c++
 COMPILEOPTS += -Wall
 COMPILEOPTS += -Wextra
 COMPILEOPTS += -Werror
-COMPILEOPTS += -std=c++11
+COMPILEOPTS += -std=c++0x
 COMPILEOPTS += -pedantic
 
 # Staticly link against some internal libraries
