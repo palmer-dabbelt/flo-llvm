@@ -53,7 +53,7 @@ enum gentype {
     GENTYPE_IR,
     GENTYPE_HEADER,
     GENTYPE_COMPAT,
-    GENTYPE_ERROR,
+    GENTYPE_ERROR
 };
 
 /* These generate the different sorts of files that can be produced by
