@@ -65,14 +65,14 @@ namespace libcodegen {
                     auto arg = *it;
 
                     if (it != _args.begin())
-                        strncat(buffer, " ,", 1024);
+                        strncat(buffer, " ,", 1023);
 
-                    strncat(buffer, arg->as_llvm().c_str(), 1024);
-                    strncat(buffer, " ", 1024);
-                    strncat(buffer, arg->llvm_name().c_str(), 1024);
+                    strncat(buffer, arg->as_llvm().c_str(), 1023);
+                    strncat(buffer, " ", 1023);
+                    strncat(buffer, arg->llvm_name().c_str(), 1023);
                 }
 
-                strncat(buffer, ")", 1024);
+                strncat(buffer, ")", 1023);
 
                 return buffer;
             }
@@ -105,14 +105,14 @@ namespace libcodegen {
                     auto arg = *it;
 
                     if (it != _args.begin())
-                        strncat(buffer, " ,", 1024);
+                        strncat(buffer, " ,", 1023);
 
-                    strncat(buffer, arg->as_llvm().c_str(), 1024);
-                    strncat(buffer, " ", 1024);
-                    strncat(buffer, arg->llvm_name().c_str(), 1024);
+                    strncat(buffer, arg->as_llvm().c_str(), 1023);
+                    strncat(buffer, " ", 1023);
+                    strncat(buffer, arg->llvm_name().c_str(), 1023);
                 }
 
-                strncat(buffer, ")", 1024);
+                strncat(buffer, ")", 1023);
 
                 return buffer;
             }
