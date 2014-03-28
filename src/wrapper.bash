@@ -5,6 +5,12 @@ then
     input="--help"
 fi
 
+if [[ "$input" == "--version" ]]
+then
+    flo-llvm-c++ --version
+    exit $?
+fi
+
 source /etc/lsb-release || true
 
 llvm_link="llvm-link"
