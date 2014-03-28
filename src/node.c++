@@ -77,7 +77,7 @@ const std::string node::chisel_name(void) const
 
     for (size_t i = 0; i < strlen(buffer); ++i) {
         while (buffer[i] == ':' && buffer[i+1] == ':')
-            strcpy(buffer + i, buffer + i + 1);
+            memmove(buffer + i, buffer + i + 1, strlen(buffer + i));
         if (buffer[i] == ':')
             buffer[i] = '.';
     }
