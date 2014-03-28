@@ -123,8 +123,25 @@ then
     cp test.stdin test.stdin.copy
     cat test.stdin.copy
     time cat test.stdin.copy | ./opt
+
+    if [[ "$have_valgrind" == "true" ]]
+    then
+        cat test.stdin.copy | valgrind -q ./opt 2>vg-opt
+        cat vg-opt
+        if [[ "$(cat vg-opt | wc -l)" != "0" ]]
+        then
+            exit 1
+        fi
+    fi
 else
     time ./opt --vcd test.vcd --cycles 100
+
+    valgrind -q ./opt --vcd test.vcd --cycles 100 2>vg-opt
+    cat vg-opt
+    if [[ "$(cat vg-opt | wc -l)" != "0" ]]
+    then
+        exit 1
+    fi
 fi
 cat test.vcd
 
