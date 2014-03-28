@@ -37,6 +37,7 @@
 #include <libcodegen/op_mem.h++>
 #include <libcodegen/pointer.h++>
 #include <libcodegen/vargs.h++>
+#include <libflo/version.h++>
 
 #include <algorithm>
 #include <string.h>
@@ -88,7 +89,9 @@ int main(int argc, const char **argv)
 {
     /* Prints the version if it was asked for. */
     if (argc == 2 && strcmp(argv[1], "--version") == 0) {
-        fprintf(stderr, "%s\n", PCONFIGURE_VERSION);
+        fprintf(stderr, "%s (using libflo %s)\n",
+                PCONFIGURE_VERSION,
+                libflo::version());
         exit(0);
     }
 
