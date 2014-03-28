@@ -1,7 +1,7 @@
 set -e
 set -x
 
-source /etc/lsb-release
+source /etc/lsb-release || true
 
 llvm_link="llvm-link"
 opt="opt"
