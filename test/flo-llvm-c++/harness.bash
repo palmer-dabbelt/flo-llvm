@@ -21,6 +21,12 @@ then
     clang="clang" # That's right, the clang-3.3 package installs clang!
 fi
 
+have_valgrind="true"
+if [[ "$(which valgrind)" == "" ]]
+then
+    have_valgrind="false"
+fi
+
 # Checks if we've been given a scala file, which means everything can
 # be generated right from here.
 if test -f test.scala
@@ -54,8 +60,28 @@ cat test.flo
 time $PTEST_BINARY test.flo --header > test.h
 cat test.h
 
+if [[ "$have_valgrind" == "true" ]]
+then
+    valgrind -q $PTEST_BINARY test.flo --header >test-vg.h 2>vg-test.h
+    cat vg-test.h
+    if [[ "$(cat vg-test.h | wc -l)" != "0" ]]
+    then
+        exit 1
+    fi
+fi
+
 time $PTEST_BINARY test.flo --compat > compat.c++
 cat compat.c++
+
+if [[ "$have_valgrind" == "true" ]]
+then
+    valgrind -q $PTEST_BINARY test.flo --compat >compat-vg.c++ 2>vg-compat.c++
+    cat vg-compat.c++
+    if [[ "$(cat vg-compat.c++ | wc -l)" != "0" ]]
+    then
+        exit 1
+    fi
+fi
 
 time $clang -g -c -std=c++11 harness.c++ -o harness.llvm -S -emit-llvm
 #cat harness.llvm
@@ -68,6 +94,16 @@ time $clang -g -c -include test.h -std=c++11 compat.c++ \
 # lines.
 time $PTEST_BINARY test.flo --ir > test.llvm
 cat test.llvm
+
+if [[ "$have_valgrind" == "true" ]]
+then
+    valgrind -q $PTEST_BINARY test.flo --ir >test-vg.llvm 2>vg-test.llvm
+    cat vg-test.llvm
+    if [[ "$(cat vg-test.llvm | wc -l)" != "0" ]]
+    then
+        exit 1
+    fi
+fi
 
 # Links together all the bitcode files
 time $llvm_link test.llvm compat.llvm harness.llvm -S > exe.llvm
