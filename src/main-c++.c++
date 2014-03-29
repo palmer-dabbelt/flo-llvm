@@ -561,7 +561,7 @@ int generate_compat(const flo_ptr flo, FILE *f)
             continue;
 
         if (node->is_mem() == true) {
-            fprintf(f, "  mem_table[\"%s\"] = new mem_api<%lu, %lu>(&dut->%s, \"%s\", \"\");\n",
+            fprintf(f, "  mem_table[\"%s\"] = new mem_api<" SIZET_FORMAT ", " SIZET_FORMAT ">(&dut->%s, \"%s\", \"\");\n",
                     node->chisel_name().c_str(),
                     node->width(),
                     node->depth(),
