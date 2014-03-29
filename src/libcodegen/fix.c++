@@ -20,6 +20,7 @@
  */
 
 #include "fix.h++"
+#include <libflo/sizet_printf.h++>
 #include <stdlib.h>
 using namespace libcodegen;
 
@@ -30,7 +31,7 @@ using namespace libcodegen;
 const std::string fix_t::as_llvm(void) const
 {
     char buffer[BUFFER_SIZE];
-    snprintf(buffer, BUFFER_SIZE, "i%lu", _width);
+    snprintf(buffer, BUFFER_SIZE, "i" SIZET_FORMAT, _width);
     return buffer;
 }
 
