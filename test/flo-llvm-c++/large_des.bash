@@ -1,14 +1,9 @@
 #include "tempdir.bash"
 #include "chisel-jar.bash"
 
-ln -s DES.flo test.flo
-ln -s DES.vcd test.vcd
-ln -s DES-emulator.cpp test-emulator.cpp
-ln -s DES.stdin test.stdin
-ln -s DES.h test.h
-touch DES.stdin
+TEST="DES"
 
-cat >test.scala <<EOF
+cat >DES.scala <<EOF
 import Chisel._
 import scala.collection.mutable.ArrayBuffer
 
@@ -264,7 +259,7 @@ object Utils {
     }
 }
 
-object test {
+object DES {
   def main(args: Array[String]): Unit = {
     chiselMainTest(args, () => Module(new DES())){ c => new DESTester(c) }
   }

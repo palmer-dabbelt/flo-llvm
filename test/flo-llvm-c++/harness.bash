@@ -1,6 +1,11 @@
 set -e
 set -x
 
+if [[ "$TEST" == "" ]]
+then
+    TEST="test"
+fi
+
 source /etc/lsb-release || true
 
 llvm_link="llvm-link"
@@ -29,53 +34,53 @@ fi
 
 # Checks if we've been given a scala file, which means everything can
 # be generated right from here.
-if test -f test.scala
+if test -f $TEST.scala
 then
-    cat test.scala
+    cat $TEST.scala
 
-    scalac test.scala -classpath chisel.jar:.
+    scalac $TEST.scala -classpath chisel.jar:.
 
-    scala -classpath chisel.jar:. test \
+    scala -classpath chisel.jar:. $TEST \
         --debug --backend flo \
         || true
 
-    touch test.stdin
-    while [[ "$(tail -n1 test.stdin)" != "quit" ]]
+    touch $TEST.stdin
+    while [[ "$(tail -n1 $TEST.stdin)" != "quit" ]]
     do
-        scala -classpath chisel.jar:. test \
+        scala -classpath chisel.jar:. $TEST \
             --debug --genHarness --compile --test --backend c \
             --vcd --dumpTestInput
     done
 
-    cp -L test.vcd gold.vcd
-    cp -L test-emulator.cpp harness.c++
-    cat test.flo
-    cp -L test.h test-chisel.h
+    mv $TEST.vcd gold.vcd
+    mv $TEST-emulator.cpp harness.c++
+    cat $TEST.flo
+    mv $TEST.h $TEST-chisel.h
 fi
 
-cat test.flo
+cat $TEST.flo
 
 # Builds the rest of the C++ emulator, which contains a main() that
 # actually runs the code.
-time $PTEST_BINARY test.flo --header > test.h
-cat test.h
+time $PTEST_BINARY $TEST.flo --header > $TEST.h
+cat $TEST.h
 
 if [[ "$have_valgrind" == "true" ]]
 then
-    valgrind -q $PTEST_BINARY test.flo --header >test-vg.h 2>vg-test.h
-    cat vg-test.h
-    if [[ "$(cat vg-test.h | wc -l)" != "0" ]]
+    valgrind -q $PTEST_BINARY $TEST.flo --header >$TEST-vg.h 2>vg-$TEST.h
+    cat vg-$TEST.h
+    if [[ "$(cat vg-$TEST.h | wc -l)" != "0" ]]
     then
         exit 1
     fi
 fi
 
-time $PTEST_BINARY test.flo --compat > compat.c++
+time $PTEST_BINARY $TEST.flo --compat > compat.c++
 cat compat.c++
 
 if [[ "$have_valgrind" == "true" ]]
 then
-    valgrind -q $PTEST_BINARY test.flo --compat >compat-vg.c++ 2>vg-compat.c++
+    valgrind -q $PTEST_BINARY $TEST.flo --compat >compat-vg.c++ 2>vg-compat.c++
     cat vg-compat.c++
     if [[ "$(cat vg-compat.c++ | wc -l)" != "0" ]]
     then
@@ -86,27 +91,27 @@ fi
 time $clang -g -c -std=c++11 harness.c++ -o harness.llvm -S -emit-llvm
 #cat harness.llvm
 
-time $clang -g -c -include test.h -std=c++11 compat.c++ \
+time $clang -g -c -include $TEST.h -std=c++11 compat.c++ \
     -o compat.llvm -S -emit-llvm
 #cat compat.llvm
 
 # Preforms the Flo->LLVM conversion to generate the actual clock
 # lines.
-time $PTEST_BINARY test.flo --ir > test.llvm
-cat test.llvm
+time $PTEST_BINARY $TEST.flo --ir > $TEST.llvm
+cat $TEST.llvm
 
 if [[ "$have_valgrind" == "true" ]]
 then
-    valgrind -q $PTEST_BINARY test.flo --ir >test-vg.llvm 2>vg-test.llvm
-    cat vg-test.llvm
-    if [[ "$(cat vg-test.llvm | wc -l)" != "0" ]]
+    valgrind -q $PTEST_BINARY $TEST.flo --ir >$TEST-vg.llvm 2>vg-$TEST.llvm
+    cat vg-$TEST.llvm
+    if [[ "$(cat vg-$TEST.llvm | wc -l)" != "0" ]]
     then
         exit 1
     fi
 fi
 
 # Links together all the bitcode files
-time $llvm_link test.llvm compat.llvm harness.llvm -S > exe.llvm
+time $llvm_link $TEST.llvm compat.llvm harness.llvm -S > exe.llvm
 #cat exe.llvm
 
 # Optimizes the assembly that was generated.  I'm not sure if this is
@@ -118,15 +123,15 @@ time $opt -O2 exe.llvm -S > opt.llvm
 # compiler, if you're using a sane architecture).
 $llc opt.llvm -o opt.S
 c++ -g opt.S -o opt
-if test -f test.stdin
+if test -f $TEST.stdin
 then
-    cp test.stdin test.stdin.copy
-    cat test.stdin.copy
-    time cat test.stdin.copy | ./opt
+    cp $TEST.stdin $TEST.stdin.copy
+    cat $TEST.stdin.copy
+    time cat $TEST.stdin.copy | ./opt
 
     if [[ "$have_valgrind" == "true" ]]
     then
-        cat test.stdin.copy | valgrind -q ./opt 2>vg-opt
+        cat $TEST.stdin.copy | valgrind -q ./opt 2>vg-opt
         cat vg-opt
         if [[ "$(cat vg-opt | wc -l)" != "0" ]]
         then
@@ -134,18 +139,18 @@ then
         fi
     fi
 else
-    time ./opt --vcd test.vcd --cycles 100
+    time ./opt --vcd $TEST.vcd --cycles 100
 
-    valgrind -q ./opt --vcd test.vcd --cycles 100 2>vg-opt
+    valgrind -q ./opt --vcd $TEST.vcd --cycles 100 2>vg-opt
     cat vg-opt
     if [[ "$(cat vg-opt | wc -l)" != "0" ]]
     then
         exit 1
     fi
 fi
-cat test.vcd
+cat $TEST.vcd
 
 # Ensures that the two VCD files are actually the same.  Note that
 # this allows extra signals to exist in the test file, but at least
 # every signal from the gold file must exist.
-time vcddiff gold.vcd test.vcd
+time vcddiff gold.vcd $TEST.vcd
