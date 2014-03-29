@@ -7,7 +7,7 @@ fi
 
 if [[ "$input" == "--version" ]]
 then
-    flo-llvm-c++ --version
+    $0-c++ --version
     exit $?
 fi
 
@@ -41,9 +41,9 @@ fi
 tempdir=`mktemp -d -t flo-llvm-wrapper.XXXXXXXXXX`
 trap "rm -rf $tempdir" EXIT
 
-flo-llvm-c++ "$input" --header > $tempdir/design.h
-flo-llvm-c++ "$input" --compat > $tempdir/compat.c++
-flo-llvm-c++ "$input" --ir     > $tempdir/design.llvm
+$0-c++ "$input" --header > $tempdir/design.h
+$0-c++ "$input" --compat > $tempdir/compat.c++
+$0-c++ "$input" --ir     > $tempdir/design.llvm
 
 $clang -c -S -emit-llvm \
     -I "$(dirname $input)" \
