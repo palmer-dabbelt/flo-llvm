@@ -37,6 +37,7 @@
 #include <libcodegen/op_mem.h++>
 #include <libcodegen/pointer.h++>
 #include <libcodegen/vargs.h++>
+#include <libflo/sizet_printf.h++>
 
 #include <algorithm>
 #include <string.h>
@@ -161,16 +162,16 @@ int generate_header(const flo_ptr flo, FILE *f)
             continue;
 
         if (node->is_mem() == true) {
-            fprintf(f, "    mem_t<%lu, %lu> %s;\n",
+            fprintf(f, "    mem_t<" SIZET_FORMAT ", " SIZET_FORMAT "> %s;\n",
                     node->width(),
                     node->depth(),
                     node->mangled_name().c_str());
         } else {
-            fprintf(f, "    dat_t<%lu> %s;\n",
+            fprintf(f, "    dat_t<" SIZET_FORMAT "> %s;\n",
                     node->width(),
                     node->mangled_name().c_str());
 
-            fprintf(f, "    dat_t<%lu> %s__prev;\n",
+            fprintf(f, "    dat_t<" SIZET_FORMAT "> %s__prev;\n",
                     node->width(),
                     node->mangled_name().c_str());
         }
@@ -225,13 +226,14 @@ int generate_compat(const flo_ptr flo, FILE *f)
                     flo->class_name().c_str()
                 );
 
-            fprintf(f, "    dat_t<%lu> v = d->%s.get(i);\n",
+            fprintf(f, "    dat_t<" SIZET_FORMAT "> v = d->%s.get(i);\n",
                     node->width(),
                     node->mangled_name().c_str()
                 );
 
             for (size_t i = 0; i < (node->width() + 63) / 64; ++i) {
-                fprintf(f, "    a[%lu] = v.values[%lu];\n",
+                fprintf(f, "    a[" SIZET_FORMAT "] "
+                        "= v.values[" SIZET_FORMAT "];\n",
                         i,
                         i
                     );
@@ -245,12 +247,13 @@ int generate_compat(const flo_ptr flo, FILE *f)
                     flo->class_name().c_str()
                 );
 
-            fprintf(f, "    dat_t<%lu> v;",
+            fprintf(f, "    dat_t<" SIZET_FORMAT "> v;",
                     node->width()
                 );
 
             for (size_t i = 0; i < (node->width() + 63) / 64; ++i) {
-                fprintf(f, "    v.values[%lu] = a[%lu];\n",
+                fprintf(f, "    v.values[" SIZET_FORMAT "] "
+                        "= a[" SIZET_FORMAT "];\n",
                         i,
                         i
                     );
@@ -271,7 +274,8 @@ int generate_compat(const flo_ptr flo, FILE *f)
                 );
 
             for (size_t i = 0; i < (node->width() + 63) / 64; ++i) {
-                fprintf(f, "    a[%lu] = d->%s.values[%lu];\n",
+                fprintf(f, "    a[" SIZET_FORMAT "] "
+                        "= d->%s.values[" SIZET_FORMAT "];\n",
                         i,
                         node->mangled_name().c_str(),
                         i
@@ -287,7 +291,8 @@ int generate_compat(const flo_ptr flo, FILE *f)
                 );
 
             for (size_t i = 0; i < (node->width() + 63) / 64; ++i) {
-                fprintf(f, "    d->%s.values[%lu] = a[%lu];\n",
+                fprintf(f, "    d->%s.values[" SIZET_FORMAT "] "
+                        "= a[" SIZET_FORMAT ";\n",
                         node->mangled_name().c_str(),
                         i,
                         i
@@ -456,7 +461,7 @@ int generate_compat(const flo_ptr flo, FILE *f)
         }
 
         /* After changing modules, go ahead and output the wire. */
-        fprintf(f, "    fprintf(f, \"$var wire %lu %s %s $end\\n\");\n",
+        fprintf(f, "    fprintf(f, \"$var wire " SIZET_FORMAT " %s %s $end\\n\");\n",
                 node->width(),
                 node->vcd_name().c_str(),
                 signal
@@ -564,7 +569,7 @@ int generate_compat(const flo_ptr flo, FILE *f)
                     node->chisel_name().c_str()
                 );
         } else {
-            fprintf(f, "  dat_table[\"%s\"] = new dat_api<%lu>(&dut->%s, \"%s\", \"\");\n",
+            fprintf(f, "  dat_table[\"%s\"] = new dat_api<" SIZET_FORMAT ">(&dut->%s, \"%s\", \"\");\n",
                     node->chisel_name().c_str(),
                     node->width(),
                     node->mangled_name().c_str(),
