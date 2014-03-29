@@ -295,7 +295,7 @@ int generate_compat(const flo_ptr flo, FILE *f)
 
             for (size_t i = 0; i < (node->width() + 63) / 64; ++i) {
                 fprintf(f, "    d->%s.values[" SIZET_FORMAT "] "
-                        "= a[" SIZET_FORMAT ";\n",
+                        "= a[" SIZET_FORMAT "];\n",
                         node->mangled_name().c_str(),
                         i,
                         i
