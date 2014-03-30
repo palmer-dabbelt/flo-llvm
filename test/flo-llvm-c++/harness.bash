@@ -40,14 +40,14 @@ then
 
     scalac $TEST.scala -classpath chisel.jar:.
 
-    scala -classpath chisel.jar:. $TEST \
+    scala -J-Xss200m -classpath chisel.jar:. $TEST \
         --debug --backend flo \
         || true
 
     touch $TEST.stdin
     while [[ "$(tail -n1 $TEST.stdin)" != "quit" ]]
     do
-        scala -classpath chisel.jar:. $TEST \
+        scala -J-Xss200m -classpath chisel.jar:. $TEST \
             --debug --genHarness --compile --test --backend c \
             --vcd --dumpTestInput
     done
