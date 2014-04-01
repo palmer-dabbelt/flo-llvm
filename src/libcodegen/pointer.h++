@@ -23,6 +23,7 @@
 #define LIBCODEGEN__POINTER_HXX
 
 #include "value.h++"
+#include <string.h>
 
 namespace libcodegen {
     /* This represents a pointer to any sort of type.  In this case, V
@@ -46,7 +47,15 @@ namespace libcodegen {
         /* This is just yet another way of getting at the LLVM name of
          * a pointer. */
         virtual const std::string as_llvm(void) const
-            { return _V.as_llvm() + "*"; }
+            {
+                /* FIXME: This _should_ be handled by the template in
+                 * "pointer.c++", but it appears that doesn't happen
+                 * on Ubuntu's compiler.  I have no idea why... */
+                if (strcmp(_V.as_llvm().c_str(), "void") == 0)
+                    return "i8*";
+
+                return _V.as_llvm() + "*";
+            }
 
         /* This returns the base type of this class, without a
          * name. */
