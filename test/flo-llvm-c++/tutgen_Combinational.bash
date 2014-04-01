@@ -7,7 +7,7 @@ int main (int argc, char* argv[]) {
   module->init();
   Combinational_api_t* api = new Combinational_api_t();
   api->init(module);
-  FILE *f = fopen("Combinational.vcd", "w");
+  FILE *f = fopen("./Combinational.vcd", "w");
   FILE *tee = fopen("Combinational.stdin", "w");
   module->set_dumpfile(f);
   api->set_teefile(tee);
@@ -1815,13 +1815,17 @@ class mod_t {
 
   int timestep;
 
+  void dump () {
+    if (dumpfile != NULL) dump(dumpfile, timestep);
+    timestep += 1;
+  }
+
   int step (bool is_reset, int n) {
     int delta = 0;
+    dat_t<1> reset = LIT<1>(is_reset);
     for (int i = 0; i < n; i++) {
-      dat_t<1> reset = LIT<1>(is_reset);
       delta += clock(reset);
-      if (dumpfile != NULL) dump(dumpfile, timestep);
-      timestep += 1;
+      dump();
     }
     return delta;
   }
@@ -2176,6 +2180,10 @@ public:
 
 	std::string eval_command(string command) {
 		std::vector<std::string> tokens = tokenize(command);
+		if (tokens.size() == 0) {
+			std::cerr << "Empty command: '" << command << "'" << std::endl;
+			return "error";
+		}
 		if (tokens[0] == "get_host_name") {
 			// IN:  get_host_name
 			// OUT: API host's name
@@ -2191,7 +2199,6 @@ public:
 			// OUT: list of supported API features
 			if (!check_command_length(tokens, 0, 0)) { return "error"; }
 			return get_api_support();
-
 		} else if (tokens[0] == "clock") {
 			// IN:  clock <num_cycles>
 			// OUT: actual number of cycles stepped
@@ -2200,6 +2207,7 @@ public:
 		    for (int i=0; i<cycles; i++) {
 		    	module->clock_lo(dat_t<1>(0));
 		    	module->clock_hi(dat_t<1>(0));
+			module->dump();
 		    }
 		    module->clock_lo(dat_t<1>(0));
 		    return itos(cycles);
@@ -2210,8 +2218,8 @@ public:
 			int n = atoi(tokens[1].c_str());
 		    int ret = module->step(false, n);
 		    return itos(ret);
-		} else if (tokens[0] == "set-clocks") {
-			// IN:  set-clocks
+		} else if (tokens[0] == "set_clocks") {
+			// IN:  set_clocks
 			// OUT: ???
 			// I'm not really sure what this is supposed to do, but it was
 			// in the old command API, so it's here now
@@ -2478,10 +2486,10 @@ wire_peek Combinational.io_z
 quit
 EOF
 cat >test.flo <<EOF
-Combinational::io_y = in/16
-Combinational::io_x = in/16
-T0 = add/16 Combinational::io_x Combinational::io_y
-Combinational::io_z = out/16 T0
+Combinational::io_y = in'16
+Combinational::io_x = in'16
+T0 = add'16 Combinational::io_x Combinational::io_y
+Combinational::io_z = out'16 T0
 EOF
 ln -s Combinational.vcd test.vcd
 #include "harness.bash"

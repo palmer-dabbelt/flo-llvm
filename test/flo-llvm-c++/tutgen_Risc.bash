@@ -7,7 +7,7 @@ int main (int argc, char* argv[]) {
   module->init();
   Risc_api_t* api = new Risc_api_t();
   api->init(module);
-  FILE *f = fopen("Risc.vcd", "w");
+  FILE *f = fopen("./Risc.vcd", "w");
   FILE *tee = fopen("Risc.stdin", "w");
   module->set_dumpfile(f);
   api->set_teefile(tee);
@@ -1815,13 +1815,17 @@ class mod_t {
 
   int timestep;
 
+  void dump () {
+    if (dumpfile != NULL) dump(dumpfile, timestep);
+    timestep += 1;
+  }
+
   int step (bool is_reset, int n) {
     int delta = 0;
+    dat_t<1> reset = LIT<1>(is_reset);
     for (int i = 0; i < n; i++) {
-      dat_t<1> reset = LIT<1>(is_reset);
       delta += clock(reset);
-      if (dumpfile != NULL) dump(dumpfile, timestep);
-      timestep += 1;
+      dump();
     }
     return delta;
   }
@@ -2176,6 +2180,10 @@ public:
 
 	std::string eval_command(string command) {
 		std::vector<std::string> tokens = tokenize(command);
+		if (tokens.size() == 0) {
+			std::cerr << "Empty command: '" << command << "'" << std::endl;
+			return "error";
+		}
 		if (tokens[0] == "get_host_name") {
 			// IN:  get_host_name
 			// OUT: API host's name
@@ -2191,7 +2199,6 @@ public:
 			// OUT: list of supported API features
 			if (!check_command_length(tokens, 0, 0)) { return "error"; }
 			return get_api_support();
-
 		} else if (tokens[0] == "clock") {
 			// IN:  clock <num_cycles>
 			// OUT: actual number of cycles stepped
@@ -2200,6 +2207,7 @@ public:
 		    for (int i=0; i<cycles; i++) {
 		    	module->clock_lo(dat_t<1>(0));
 		    	module->clock_hi(dat_t<1>(0));
+			module->dump();
 		    }
 		    module->clock_lo(dat_t<1>(0));
 		    return itos(cycles);
@@ -2210,8 +2218,8 @@ public:
 			int n = atoi(tokens[1].c_str());
 		    int ret = module->step(false, n);
 		    return itos(ret);
-		} else if (tokens[0] == "set-clocks") {
-			// IN:  set-clocks
+		} else if (tokens[0] == "set_clocks") {
+			// IN:  set_clocks
 			// OUT: ???
 			// I'm not really sure what this is supposed to do, but it was
 			// in the old command API, so it's here now
@@ -2507,56 +2515,56 @@ wire_peek Risc.io_out
 quit
 EOF
 cat >test.flo <<EOF
-T0 = rd/32 1 Risc::code Risc::pc
-Risc::rci = rsh/8 T0 16
-T1 = eq/8 Risc::rci 255
-Risc::io_boot = in/1
-Risc::io_isWr = in/1
-T2 = or/1 Risc::io_isWr Risc::io_boot
-T3 = not/1 T2
-T4 = and/1 T3 T1
-Risc::io_valid = out/1 T4
+T0 = rd'32 1 Risc::code Risc::pc
+Risc::rci = rsh'8 T0 16'5
+T1 = eq Risc::rci 255'8
+Risc::io_boot = in'1
+Risc::io_isWr = in'1
+T2 = or Risc::io_isWr Risc::io_boot
+T3 = not'1 T2
+T4 = and T3 T1
+Risc::io_valid = out'1 T4
 reset = rst
-T5 = not/1 Risc::io_isWr
-T6 = and/1 T5 Risc::io_boot
-T7 = mux/8 T6 0 Risc::pc
-T8 = add/8 Risc::pc 1
-T9 = mux/8 T3 T8 T7
-Risc::pc__update = mux/8 reset 0 T9
-Risc::pc = reg/8 1 Risc::pc__update
-Risc::io_wrData = in/32
-T10 = mov/32 Risc::io_wrData
-Risc::io_wrAddr = in/8
-T11 = wr/32 Risc::io_isWr Risc::code Risc::io_wrAddr T10
-Risc::code = mem/32 256
-Risc::rbi = rsh/8 T0 0
-T12 = rd/32 1 Risc::file Risc::rbi
-T13 = eq/8 Risc::rbi 0
-Risc::rb = mux/32 T13 0 T12
-Risc::rai = rsh/8 T0 8
-T14 = rd/32 1 Risc::file Risc::rai
-T15 = eq/8 Risc::rai 0
-Risc::ra = mux/32 T15 0 T14
-T16 = add/32 Risc::ra Risc::rb
-Risc::op = rsh/8 T0 24
-T17 = eq/8 0 Risc::op
-T18 = and/1 T3 T17
-T19 = mux/32 T18 T16 0
-T20 = cat/8 0 Risc::rbi
-T21 = lsh/16 Risc::rai 8
-T22 = or/16 T21 T20
-T23 = cat/16 0 T22
-T24 = eq/8 1 Risc::op
-T25 = and/1 T3 T24
-T26 = mux/32 T25 T23 T19
-Risc::rc = mov/32 T26
-T27 = mov/32 Risc::rc
-T28 = not/1 T1
-T29 = and/1 T3 T28
-T30 = wr/32 T29 Risc::file Risc::rci T27
-Risc::file = mem/32 256
-T31 = mux/32 T3 Risc::rc 0
-Risc::io_out = out/32 T31
+T5 = not'1 Risc::io_isWr
+T6 = and T5 Risc::io_boot
+T7 = mux T6 0'8 Risc::pc
+T8 = add'8 Risc::pc 1'8
+T9 = mux T3 T8 T7
+Risc::pc__update = mux'8 reset 0'8 T9
+Risc::pc = reg'8 1 Risc::pc__update
+Risc::io_wrData = in'32
+T10 = mov Risc::io_wrData
+Risc::io_wrAddr = in'8
+T11 = wr'32 Risc::io_isWr Risc::code Risc::io_wrAddr T10
+Risc::code = mem'32 256
+Risc::rbi = rsh'8 T0 0'1
+T12 = rd'32 1 Risc::file Risc::rbi
+T13 = eq Risc::rbi 0'8
+Risc::rb = mux T13 0'32 T12
+Risc::rai = rsh'8 T0 8'4
+T14 = rd'32 1 Risc::file Risc::rai
+T15 = eq Risc::rai 0'8
+Risc::ra = mux T15 0'32 T14
+T16 = add'32 Risc::ra Risc::rb
+Risc::op = rsh'8 T0 24'5
+T17 = eq 0'8 Risc::op
+T18 = and T3 T17
+T19 = mux T18 T16 0'32
+T20 = cat'8 0'8 Risc::rbi
+T21 = lsh Risc::rai 8'4
+T22 = or T21 T20
+T23 = cat'16 0'16 T22
+T24 = eq 1'8 Risc::op
+T25 = and T3 T24
+T26 = mux T25 T23 T19
+Risc::rc = mov T26
+T27 = mov Risc::rc
+T28 = not'1 T1
+T29 = and T3 T28
+T30 = wr'32 T29 Risc::file Risc::rci T27
+Risc::file = mem'32 256
+T31 = mux T3 Risc::rc 0'32
+Risc::io_out = out'32 T31
 EOF
 ln -s Risc.vcd test.vcd
 #include "harness.bash"

@@ -7,7 +7,7 @@ int main (int argc, char* argv[]) {
   module->init();
   LogShifter_api_t* api = new LogShifter_api_t();
   api->init(module);
-  FILE *f = fopen("LogShifter.vcd", "w");
+  FILE *f = fopen("./LogShifter.vcd", "w");
   FILE *tee = fopen("LogShifter.stdin", "w");
   module->set_dumpfile(f);
   api->set_teefile(tee);
@@ -1815,13 +1815,17 @@ class mod_t {
 
   int timestep;
 
+  void dump () {
+    if (dumpfile != NULL) dump(dumpfile, timestep);
+    timestep += 1;
+  }
+
   int step (bool is_reset, int n) {
     int delta = 0;
+    dat_t<1> reset = LIT<1>(is_reset);
     for (int i = 0; i < n; i++) {
-      dat_t<1> reset = LIT<1>(is_reset);
       delta += clock(reset);
-      if (dumpfile != NULL) dump(dumpfile, timestep);
-      timestep += 1;
+      dump();
     }
     return delta;
   }
@@ -2176,6 +2180,10 @@ public:
 
 	std::string eval_command(string command) {
 		std::vector<std::string> tokens = tokenize(command);
+		if (tokens.size() == 0) {
+			std::cerr << "Empty command: '" << command << "'" << std::endl;
+			return "error";
+		}
 		if (tokens[0] == "get_host_name") {
 			// IN:  get_host_name
 			// OUT: API host's name
@@ -2191,7 +2199,6 @@ public:
 			// OUT: list of supported API features
 			if (!check_command_length(tokens, 0, 0)) { return "error"; }
 			return get_api_support();
-
 		} else if (tokens[0] == "clock") {
 			// IN:  clock <num_cycles>
 			// OUT: actual number of cycles stepped
@@ -2200,6 +2207,7 @@ public:
 		    for (int i=0; i<cycles; i++) {
 		    	module->clock_lo(dat_t<1>(0));
 		    	module->clock_hi(dat_t<1>(0));
+			module->dump();
 		    }
 		    module->clock_lo(dat_t<1>(0));
 		    return itos(cycles);
@@ -2210,8 +2218,8 @@ public:
 			int n = atoi(tokens[1].c_str());
 		    int ret = module->step(false, n);
 		    return itos(ret);
-		} else if (tokens[0] == "set-clocks") {
-			// IN:  set-clocks
+		} else if (tokens[0] == "set_clocks") {
+			// IN:  set_clocks
 			// OUT: ???
 			// I'm not really sure what this is supposed to do, but it was
 			// in the old command API, so it's here now
@@ -2390,51 +2398,51 @@ quit
 EOF
 cat >test.flo <<EOF
 reset = rst
-T0 = cat/16 0 LogShifter::s0
-LogShifter::io_in = in/16
-T1 = lsh/24 LogShifter::io_in 8
-LogShifter::io_shamt = in/4
-T2 = rsh/1 LogShifter::io_shamt 3
-T3 = eq/1 T2 1
-T4 = mux/24 T3 T1 T0
-T5 = cat/16 0 LogShifter::io_in
-T6 = not/1 T3
-T7 = mux/24 T6 T5 T4
-T8 = rsh/16 T7 0
-LogShifter::s0__update = mux/16 reset 0 T8
-LogShifter::s0 = reg/16 1 LogShifter::s0__update
-T9 = cat/16 0 LogShifter::s1
-T10 = lsh/20 LogShifter::s0 4
-T11 = rsh/1 LogShifter::io_shamt 2
-T12 = eq/1 T11 1
-T13 = mux/20 T12 T10 T9
-T14 = cat/16 0 LogShifter::s0
-T15 = not/1 T12
-T16 = mux/20 T15 T14 T13
-T17 = rsh/16 T16 0
-LogShifter::s1__update = mux/16 reset 0 T17
-LogShifter::s1 = reg/16 1 LogShifter::s1__update
-T18 = cat/16 0 LogShifter::s2
-T19 = lsh/18 LogShifter::s1 2
-T20 = rsh/1 LogShifter::io_shamt 1
-T21 = eq/1 T20 1
-T22 = mux/18 T21 T19 T18
-T23 = cat/16 0 LogShifter::s1
-T24 = not/1 T21
-T25 = mux/18 T24 T23 T22
-T26 = rsh/16 T25 0
-LogShifter::s2__update = mux/16 reset 0 T26
-LogShifter::s2 = reg/16 1 LogShifter::s2__update
-T27 = cat/16 0 LogShifter::s2
-T28 = lsh/17 LogShifter::s2 1
-T29 = rsh/1 LogShifter::io_shamt 1
-T30 = eq/1 T29 1
-T31 = mux/17 T30 T28 T27
-T32 = cat/16 0 LogShifter::s2
-T33 = not/1 T30
-T34 = mux/17 T33 T32 T31
-T35 = rsh/16 T34 0
-LogShifter::io_out = out/16 T35
+T0 = cat'16 0'8 LogShifter::s0
+LogShifter::io_in = in'16
+T1 = lsh LogShifter::io_in 8'4
+LogShifter::io_shamt = in'4
+T2 = rsh'1 LogShifter::io_shamt 3'2
+T3 = eq T2 1'1
+T4 = mux T3 T1 T0
+T5 = cat'16 0'8 LogShifter::io_in
+T6 = not'1 T3
+T7 = mux T6 T5 T4
+T8 = rsh'16 T7 0'1
+LogShifter::s0__update = mux'16 reset 0'16 T8
+LogShifter::s0 = reg'16 1 LogShifter::s0__update
+T9 = cat'16 0'4 LogShifter::s1
+T10 = lsh LogShifter::s0 4'3
+T11 = rsh'1 LogShifter::io_shamt 2'2
+T12 = eq T11 1'1
+T13 = mux T12 T10 T9
+T14 = cat'16 0'4 LogShifter::s0
+T15 = not'1 T12
+T16 = mux T15 T14 T13
+T17 = rsh'16 T16 0'1
+LogShifter::s1__update = mux'16 reset 0'16 T17
+LogShifter::s1 = reg'16 1 LogShifter::s1__update
+T18 = cat'16 0'2 LogShifter::s2
+T19 = lsh LogShifter::s1 2'2
+T20 = rsh'1 LogShifter::io_shamt 1'1
+T21 = eq T20 1'1
+T22 = mux T21 T19 T18
+T23 = cat'16 0'2 LogShifter::s1
+T24 = not'1 T21
+T25 = mux T24 T23 T22
+T26 = rsh'16 T25 0'1
+LogShifter::s2__update = mux'16 reset 0'16 T26
+LogShifter::s2 = reg'16 1 LogShifter::s2__update
+T27 = cat'16 0'1 LogShifter::s2
+T28 = lsh LogShifter::s2 1'1
+T29 = rsh'1 LogShifter::io_shamt 1'1
+T30 = eq T29 1'1
+T31 = mux T30 T28 T27
+T32 = cat'16 0'1 LogShifter::s2
+T33 = not'1 T30
+T34 = mux T33 T32 T31
+T35 = rsh'16 T34 0'1
+LogShifter::io_out = out'16 T35
 EOF
 ln -s LogShifter.vcd test.vcd
 #include "harness.bash"

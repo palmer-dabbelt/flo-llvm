@@ -7,7 +7,7 @@ int main (int argc, char* argv[]) {
   module->init();
   ByteSelector_api_t* api = new ByteSelector_api_t();
   api->init(module);
-  FILE *f = fopen("ByteSelector.vcd", "w");
+  FILE *f = fopen("./ByteSelector.vcd", "w");
   FILE *tee = fopen("ByteSelector.stdin", "w");
   module->set_dumpfile(f);
   api->set_teefile(tee);
@@ -1815,13 +1815,17 @@ class mod_t {
 
   int timestep;
 
+  void dump () {
+    if (dumpfile != NULL) dump(dumpfile, timestep);
+    timestep += 1;
+  }
+
   int step (bool is_reset, int n) {
     int delta = 0;
+    dat_t<1> reset = LIT<1>(is_reset);
     for (int i = 0; i < n; i++) {
-      dat_t<1> reset = LIT<1>(is_reset);
       delta += clock(reset);
-      if (dumpfile != NULL) dump(dumpfile, timestep);
-      timestep += 1;
+      dump();
     }
     return delta;
   }
@@ -2176,6 +2180,10 @@ public:
 
 	std::string eval_command(string command) {
 		std::vector<std::string> tokens = tokenize(command);
+		if (tokens.size() == 0) {
+			std::cerr << "Empty command: '" << command << "'" << std::endl;
+			return "error";
+		}
 		if (tokens[0] == "get_host_name") {
 			// IN:  get_host_name
 			// OUT: API host's name
@@ -2191,7 +2199,6 @@ public:
 			// OUT: list of supported API features
 			if (!check_command_length(tokens, 0, 0)) { return "error"; }
 			return get_api_support();
-
 		} else if (tokens[0] == "clock") {
 			// IN:  clock <num_cycles>
 			// OUT: actual number of cycles stepped
@@ -2200,6 +2207,7 @@ public:
 		    for (int i=0; i<cycles; i++) {
 		    	module->clock_lo(dat_t<1>(0));
 		    	module->clock_hi(dat_t<1>(0));
+			module->dump();
 		    }
 		    module->clock_lo(dat_t<1>(0));
 		    return itos(cycles);
@@ -2210,8 +2218,8 @@ public:
 			int n = atoi(tokens[1].c_str());
 		    int ret = module->step(false, n);
 		    return itos(ret);
-		} else if (tokens[0] == "set-clocks") {
-			// IN:  set-clocks
+		} else if (tokens[0] == "set_clocks") {
+			// IN:  set_clocks
 			// OUT: ???
 			// I'm not really sure what this is supposed to do, but it was
 			// in the old command API, so it's here now
@@ -2427,27 +2435,27 @@ wire_peek ByteSelector.io_out
 quit
 EOF
 cat >test.flo <<EOF
-ByteSelector::io_in = in/32
-T0 = rsh/8 ByteSelector::io_in 0
-ByteSelector::io_offset = in/2
-T1 = eq/2 ByteSelector::io_offset 0
-T2 = mux/8 T1 T0 0
-T3 = rsh/8 ByteSelector::io_in 8
-T4 = eq/2 ByteSelector::io_offset 1
-T5 = not/1 T1
-T6 = and/1 T5 T4
-T7 = mux/8 T6 T3 T2
-T8 = rsh/8 ByteSelector::io_in 16
-T9 = eq/2 ByteSelector::io_offset 2
-T10 = or/1 T1 T4
-T11 = not/1 T10
-T12 = and/1 T11 T9
-T13 = mux/8 T12 T8 T7
-T14 = rsh/8 ByteSelector::io_in 24
-T15 = or/1 T10 T9
-T16 = not/1 T15
-T17 = mux/8 T16 T14 T13
-ByteSelector::io_out = out/8 T17
+ByteSelector::io_in = in'32
+T0 = rsh'8 ByteSelector::io_in 0'1
+ByteSelector::io_offset = in'2
+T1 = eq ByteSelector::io_offset 0'2
+T2 = mux T1 T0 0'8
+T3 = rsh'8 ByteSelector::io_in 8'4
+T4 = eq ByteSelector::io_offset 1'2
+T5 = not'1 T1
+T6 = and T5 T4
+T7 = mux T6 T3 T2
+T8 = rsh'8 ByteSelector::io_in 16'5
+T9 = eq ByteSelector::io_offset 2'2
+T10 = or T1 T4
+T11 = not'1 T10
+T12 = and T11 T9
+T13 = mux T12 T8 T7
+T14 = rsh'8 ByteSelector::io_in 24'5
+T15 = or T10 T9
+T16 = not'1 T15
+T17 = mux T16 T14 T13
+ByteSelector::io_out = out'8 T17
 EOF
 ln -s ByteSelector.vcd test.vcd
 #include "harness.bash"

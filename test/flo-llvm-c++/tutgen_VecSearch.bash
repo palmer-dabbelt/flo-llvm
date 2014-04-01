@@ -7,7 +7,7 @@ int main (int argc, char* argv[]) {
   module->init();
   VecSearch_api_t* api = new VecSearch_api_t();
   api->init(module);
-  FILE *f = fopen("VecSearch.vcd", "w");
+  FILE *f = fopen("./VecSearch.vcd", "w");
   FILE *tee = fopen("VecSearch.stdin", "w");
   module->set_dumpfile(f);
   api->set_teefile(tee);
@@ -1815,13 +1815,17 @@ class mod_t {
 
   int timestep;
 
+  void dump () {
+    if (dumpfile != NULL) dump(dumpfile, timestep);
+    timestep += 1;
+  }
+
   int step (bool is_reset, int n) {
     int delta = 0;
+    dat_t<1> reset = LIT<1>(is_reset);
     for (int i = 0; i < n; i++) {
-      dat_t<1> reset = LIT<1>(is_reset);
       delta += clock(reset);
-      if (dumpfile != NULL) dump(dumpfile, timestep);
-      timestep += 1;
+      dump();
     }
     return delta;
   }
@@ -2176,6 +2180,10 @@ public:
 
 	std::string eval_command(string command) {
 		std::vector<std::string> tokens = tokenize(command);
+		if (tokens.size() == 0) {
+			std::cerr << "Empty command: '" << command << "'" << std::endl;
+			return "error";
+		}
 		if (tokens[0] == "get_host_name") {
 			// IN:  get_host_name
 			// OUT: API host's name
@@ -2191,7 +2199,6 @@ public:
 			// OUT: list of supported API features
 			if (!check_command_length(tokens, 0, 0)) { return "error"; }
 			return get_api_support();
-
 		} else if (tokens[0] == "clock") {
 			// IN:  clock <num_cycles>
 			// OUT: actual number of cycles stepped
@@ -2200,6 +2207,7 @@ public:
 		    for (int i=0; i<cycles; i++) {
 		    	module->clock_lo(dat_t<1>(0));
 		    	module->clock_hi(dat_t<1>(0));
+			module->dump();
 		    }
 		    module->clock_lo(dat_t<1>(0));
 		    return itos(cycles);
@@ -2210,8 +2218,8 @@ public:
 			int n = atoi(tokens[1].c_str());
 		    int ret = module->step(false, n);
 		    return itos(ret);
-		} else if (tokens[0] == "set-clocks") {
-			// IN:  set-clocks
+		} else if (tokens[0] == "set_clocks") {
+			// IN:  set_clocks
 			// OUT: ???
 			// I'm not really sure what this is supposed to do, but it was
 			// in the old command API, so it's here now
@@ -2434,19 +2442,19 @@ quit
 EOF
 cat >test.flo <<EOF
 reset = rst
-T0 = add/3 VecSearch::index 1
-VecSearch::index__update = mux/3 reset 0 T0
-VecSearch::index = reg/3 1 VecSearch::index__update
-T1 = mem/4 7
-init T1 0 0
-init T1 1 4
-init T1 2 15
-init T1 3 14
-init T1 4 2
-init T1 5 5
-init T1 6 13
-T2 = rd/4 1 T1 VecSearch::index
-VecSearch::io_out = out/4 T2
+T0 = add'3 VecSearch::index 1'3
+VecSearch::index__update = mux'3 reset 0'3 T0
+VecSearch::index = reg'3 1 VecSearch::index__update
+T1 = mem'4 7
+init T1 0 0'4
+init T1 1 4'4
+init T1 2 15'4
+init T1 3 14'4
+init T1 4 2'4
+init T1 5 5'4
+init T1 6 13'4
+T2 = rd'4 1 T1 VecSearch::index
+VecSearch::io_out = out'4 T2
 EOF
 ln -s VecSearch.vcd test.vcd
 #include "harness.bash"

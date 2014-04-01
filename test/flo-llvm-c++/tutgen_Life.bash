@@ -7,7 +7,7 @@ int main (int argc, char* argv[]) {
   module->init();
   Life_api_t* api = new Life_api_t();
   api->init(module);
-  FILE *f = fopen("Life.vcd", "w");
+  FILE *f = fopen("./Life.vcd", "w");
   FILE *tee = fopen("Life.stdin", "w");
   module->set_dumpfile(f);
   api->set_teefile(tee);
@@ -1815,13 +1815,17 @@ class mod_t {
 
   int timestep;
 
+  void dump () {
+    if (dumpfile != NULL) dump(dumpfile, timestep);
+    timestep += 1;
+  }
+
   int step (bool is_reset, int n) {
     int delta = 0;
+    dat_t<1> reset = LIT<1>(is_reset);
     for (int i = 0; i < n; i++) {
-      dat_t<1> reset = LIT<1>(is_reset);
       delta += clock(reset);
-      if (dumpfile != NULL) dump(dumpfile, timestep);
-      timestep += 1;
+      dump();
     }
     return delta;
   }
@@ -2176,6 +2180,10 @@ public:
 
 	std::string eval_command(string command) {
 		std::vector<std::string> tokens = tokenize(command);
+		if (tokens.size() == 0) {
+			std::cerr << "Empty command: '" << command << "'" << std::endl;
+			return "error";
+		}
 		if (tokens[0] == "get_host_name") {
 			// IN:  get_host_name
 			// OUT: API host's name
@@ -2191,7 +2199,6 @@ public:
 			// OUT: list of supported API features
 			if (!check_command_length(tokens, 0, 0)) { return "error"; }
 			return get_api_support();
-
 		} else if (tokens[0] == "clock") {
 			// IN:  clock <num_cycles>
 			// OUT: actual number of cycles stepped
@@ -2200,6 +2207,7 @@ public:
 		    for (int i=0; i<cycles; i++) {
 		    	module->clock_lo(dat_t<1>(0));
 		    	module->clock_hi(dat_t<1>(0));
+			module->dump();
 		    }
 		    module->clock_lo(dat_t<1>(0));
 		    return itos(cycles);
@@ -2210,8 +2218,8 @@ public:
 			int n = atoi(tokens[1].c_str());
 		    int ret = module->step(false, n);
 		    return itos(ret);
-		} else if (tokens[0] == "set-clocks") {
-			// IN:  set-clocks
+		} else if (tokens[0] == "set_clocks") {
+			// IN:  set_clocks
 			// OUT: ???
 			// I'm not really sure what this is supposed to do, but it was
 			// in the old command API, so it's here now
@@ -2524,10 +2532,10 @@ b0 N4
 b1 N5
 b1 N6
 b0 N7
-b0 N8
-b0 N9
+b1 N8
+b1 N9
 b1 N10
-b010 N11
+b011 N11
 b1 N12
 b0 N13
 b0 N14
@@ -2544,21 +2552,21 @@ b0 N24
 b0 N25
 b0 N26
 b0 N27
-b0 N28
+b1 N28
 b0 N29
 b0 N30
-b0 N31
-b000 N32
-b0 N33
+b1 N31
+b010 N32
+b1 N33
 b0 N34
 b0 N35
 b0 N36
 b0 N37
 b1 N38
 b0 N39
-b0 N40
+b1 N40
 b1 N41
-b010 N42
+b011 N42
 b1 N43
 b0 N44
 b0 N45
@@ -2574,21 +2582,21 @@ b0 N54
 b0 N55
 b0 N56
 b0 N57
-b0 N58
+b1 N58
 b0 N59
 b0 N60
-b0 N61
-b000 N62
-b0 N63
+b1 N61
+b010 N62
+b1 N63
 b0 N64
 b0 N65
 b0 N66
 b0 N67
 b1 N68
 b0 N69
-b0 N70
+b1 N70
 b1 N71
-b010 N72
+b011 N72
 b1 N73
 b0 N74
 b0 N75
@@ -2604,715 +2612,719 @@ b0 N84
 b0 N85
 b0 N86
 b0 N87
-b0 N88
+b1 N88
 b0 N89
 b0 N90
-b0 N91
-b000 N92
-b0 N93
+b1 N91
+b010 N92
+b1 N93
 b0 N94
 b1 N95
-b0 N96
-b1 N97
-b1 N98
+b1 N96
+b0 N97
+b0 N98
 b1 N99
 b1 N100
 b0 N101
 b0 N102
-b0 N103
-b0 N104
-b0 N105
-b0 N106
-b1 N107
-b1 N108
+b1 N103
+b1 N104
+b1 N105
+b1 N106
+b0 N107
+b0 N108
 #1
 b0 N5
 b0 N6
-b1 N8
-b1 N9
 b0 N10
 b001 N11
 b0 N12
+b1 N17
+b1 N18
 b0 N20
-b000 N22
-b1 N28
-b1 N31
-b010 N32
-b1 N33
+b1 N21
+b010 N22
+b1 N23
+b1 N30
+b011 N32
 b0 N38
-b1 N40
 b0 N41
 b001 N42
 b0 N43
+b1 N48
 b0 N50
-b000 N52
-b1 N58
-b1 N61
-b010 N62
-b1 N63
+b1 N51
+b010 N52
+b1 N53
+b1 N60
+b011 N62
 b0 N68
-b1 N70
 b0 N71
 b001 N72
 b0 N73
+b1 N78
 b0 N80
-b000 N82
-b1 N88
-b1 N91
-b010 N92
-b1 N93
+b1 N81
+b010 N82
+b1 N83
+b1 N90
+b011 N92
+b1 N94
 b0 N95
-b1 N96
-b0 N97
-b0 N98
+b1 N97
+b1 N98
 b0 N99
 b0 N100
 b1 N101
 b1 N102
+b0 N105
+b0 N106
+b1 N107
+b1 N108
 #2
+b1 N5
+b1 N6
 b0 N8
 b0 N9
-b000 N11
-b1 N17
-b1 N18
-b1 N21
-b010 N22
-b1 N23
+b1 N10
+b010 N11
+b1 N12
+b1 N20
+b011 N22
 b0 N28
-b1 N30
 b0 N31
 b001 N32
 b0 N33
+b1 N38
 b0 N40
-b000 N42
-b1 N48
-b1 N51
-b010 N52
-b1 N53
+b1 N41
+b010 N42
+b1 N43
+b1 N50
+b011 N52
 b0 N58
-b1 N60
 b0 N61
 b001 N62
 b0 N63
+b1 N68
 b0 N70
-b000 N72
-b1 N78
-b1 N81
-b010 N82
-b1 N83
+b1 N71
+b010 N72
+b1 N73
+b1 N80
+b011 N82
 b0 N88
-b1 N90
 b0 N91
 b001 N92
 b0 N93
-b1 N94
+b1 N95
 b0 N96
-b1 N97
-b1 N98
+b1 N99
+b1 N100
 b0 N101
 b0 N102
-b1 N103
-b1 N104
+b1 N105
+b1 N106
 b0 N107
 b0 N108
 #3
-b1 N5
-b1 N6
-b1 N10
-b010 N11
-b1 N12
+b1 N8
+b1 N9
+b011 N11
 b0 N17
 b0 N18
-b1 N20
 b0 N21
 b001 N22
 b0 N23
+b1 N28
 b0 N30
-b000 N32
-b1 N38
-b1 N41
-b010 N42
-b1 N43
+b1 N31
+b010 N32
+b1 N33
+b1 N40
+b011 N42
 b0 N48
-b1 N50
 b0 N51
 b001 N52
 b0 N53
+b1 N58
 b0 N60
-b000 N62
-b1 N68
-b1 N71
-b010 N72
-b1 N73
+b1 N61
+b010 N62
+b1 N63
+b1 N70
+b011 N72
 b0 N78
-b1 N80
 b0 N81
 b001 N82
 b0 N83
+b1 N88
 b0 N90
-b000 N92
+b1 N91
+b010 N92
+b1 N93
 b0 N94
-b1 N95
+b1 N96
 b0 N97
 b0 N98
-b1 N99
-b1 N100
+b1 N101
+b1 N102
 b0 N103
 b0 N104
-b1 N105
-b1 N106
+b1 N107
+b1 N108
 #4
 b0 N5
 b0 N6
-b1 N8
-b1 N9
 b0 N10
 b001 N11
 b0 N12
-b0 N20
-b000 N22
-b1 N28
-b1 N31
-b010 N32
-b1 N33
-b0 N38
-b1 N40
-b0 N41
-b001 N42
-b0 N43
-b0 N50
-b000 N52
-b1 N58
-b1 N61
-b010 N62
-b1 N63
-b0 N68
-b1 N70
-b0 N71
-b001 N72
-b0 N73
-b0 N80
-b000 N82
-b1 N88
-b1 N91
-b010 N92
-b1 N93
-b0 N95
-b1 N96
-b0 N99
-b0 N100
-b1 N101
-b1 N102
-b0 N105
-b0 N106
-b1 N107
-b1 N108
-#5
-b0 N8
-b0 N9
-b000 N11
 b1 N17
 b1 N18
+b0 N20
 b1 N21
 b010 N22
 b1 N23
-b0 N28
 b1 N30
-b0 N31
-b001 N32
-b0 N33
-b0 N40
-b000 N42
+b011 N32
+b0 N38
+b0 N41
+b001 N42
+b0 N43
 b1 N48
+b0 N50
 b1 N51
 b010 N52
 b1 N53
-b0 N58
 b1 N60
-b0 N61
-b001 N62
-b0 N63
-b0 N70
-b000 N72
+b011 N62
+b0 N68
+b0 N71
+b001 N72
+b0 N73
 b1 N78
+b0 N80
 b1 N81
 b010 N82
 b1 N83
-b0 N88
 b1 N90
+b011 N92
+b1 N94
+b0 N95
+b1 N97
+b1 N98
+b0 N99
+b0 N100
+b1 N103
+b1 N104
+b0 N105
+b0 N106
+#5
+b1 N5
+b1 N6
+b0 N8
+b0 N9
+b1 N10
+b010 N11
+b1 N12
+b1 N20
+b011 N22
+b0 N28
+b0 N31
+b001 N32
+b0 N33
+b1 N38
+b0 N40
+b1 N41
+b010 N42
+b1 N43
+b1 N50
+b011 N52
+b0 N58
+b0 N61
+b001 N62
+b0 N63
+b1 N68
+b0 N70
+b1 N71
+b010 N72
+b1 N73
+b1 N80
+b011 N82
+b0 N88
 b0 N91
 b001 N92
 b0 N93
-b1 N94
+b1 N95
 b0 N96
-b1 N97
-b1 N98
+b1 N99
+b1 N100
 b0 N101
 b0 N102
-b1 N103
-b1 N104
+b1 N105
+b1 N106
 b0 N107
 b0 N108
 #6
-b1 N5
-b1 N6
-b1 N10
-b010 N11
-b1 N12
+b1 N8
+b1 N9
+b011 N11
 b0 N17
 b0 N18
-b1 N20
 b0 N21
 b001 N22
 b0 N23
+b1 N28
 b0 N30
-b000 N32
-b1 N38
-b1 N41
-b010 N42
-b1 N43
+b1 N31
+b010 N32
+b1 N33
+b1 N40
+b011 N42
 b0 N48
-b1 N50
 b0 N51
 b001 N52
 b0 N53
+b1 N58
 b0 N60
-b000 N62
-b1 N68
-b1 N71
-b010 N72
-b1 N73
+b1 N61
+b010 N62
+b1 N63
+b1 N70
+b011 N72
 b0 N78
-b1 N80
 b0 N81
 b001 N82
 b0 N83
+b1 N88
 b0 N90
-b000 N92
+b1 N91
+b010 N92
+b1 N93
 b0 N94
-b1 N95
+b1 N96
 b0 N97
 b0 N98
-b1 N99
-b1 N100
+b1 N101
+b1 N102
 b0 N103
 b0 N104
-b1 N105
-b1 N106
+b1 N107
+b1 N108
 #7
 b0 N5
 b0 N6
-b1 N8
-b1 N9
 b0 N10
 b001 N11
 b0 N12
-b0 N20
-b000 N22
-b1 N28
-b1 N31
-b010 N32
-b1 N33
-b0 N38
-b1 N40
-b0 N41
-b001 N42
-b0 N43
-b0 N50
-b000 N52
-b1 N58
-b1 N61
-b010 N62
-b1 N63
-b0 N68
-b1 N70
-b0 N71
-b001 N72
-b0 N73
-b0 N80
-b000 N82
-b1 N88
-b1 N91
-b010 N92
-b1 N93
-b0 N95
-b1 N96
-b0 N99
-b0 N100
-b1 N101
-b1 N102
-b0 N105
-b0 N106
-b1 N107
-b1 N108
-#8
-b0 N8
-b0 N9
-b000 N11
 b1 N17
 b1 N18
+b0 N20
 b1 N21
 b010 N22
 b1 N23
-b0 N28
 b1 N30
-b0 N31
-b001 N32
-b0 N33
-b0 N40
-b000 N42
+b011 N32
+b0 N38
+b0 N41
+b001 N42
+b0 N43
 b1 N48
+b0 N50
 b1 N51
 b010 N52
 b1 N53
-b0 N58
 b1 N60
-b0 N61
-b001 N62
-b0 N63
-b0 N70
-b000 N72
+b011 N62
+b0 N68
+b0 N71
+b001 N72
+b0 N73
 b1 N78
+b0 N80
 b1 N81
 b010 N82
 b1 N83
-b0 N88
 b1 N90
+b011 N92
+b1 N94
+b0 N95
+b1 N97
+b1 N98
+b0 N99
+b0 N100
+b1 N103
+b1 N104
+b0 N105
+b0 N106
+#8
+b1 N5
+b1 N6
+b0 N8
+b0 N9
+b1 N10
+b010 N11
+b1 N12
+b1 N20
+b011 N22
+b0 N28
+b0 N31
+b001 N32
+b0 N33
+b1 N38
+b0 N40
+b1 N41
+b010 N42
+b1 N43
+b1 N50
+b011 N52
+b0 N58
+b0 N61
+b001 N62
+b0 N63
+b1 N68
+b0 N70
+b1 N71
+b010 N72
+b1 N73
+b1 N80
+b011 N82
+b0 N88
 b0 N91
 b001 N92
 b0 N93
-b1 N94
+b1 N95
 b0 N96
-b1 N97
-b1 N98
+b1 N99
+b1 N100
 b0 N101
 b0 N102
-b1 N103
-b1 N104
+b1 N105
+b1 N106
 b0 N107
 b0 N108
 #9
-b1 N5
-b1 N6
-b1 N10
-b010 N11
-b1 N12
+b1 N8
+b1 N9
+b011 N11
 b0 N17
 b0 N18
-b1 N20
 b0 N21
 b001 N22
 b0 N23
+b1 N28
 b0 N30
-b000 N32
-b1 N38
-b1 N41
-b010 N42
-b1 N43
+b1 N31
+b010 N32
+b1 N33
+b1 N40
+b011 N42
 b0 N48
-b1 N50
 b0 N51
 b001 N52
 b0 N53
+b1 N58
 b0 N60
-b000 N62
-b1 N68
-b1 N71
-b010 N72
-b1 N73
+b1 N61
+b010 N62
+b1 N63
+b1 N70
+b011 N72
 b0 N78
-b1 N80
 b0 N81
 b001 N82
 b0 N83
+b1 N88
 b0 N90
-b000 N92
+b1 N91
+b010 N92
+b1 N93
 b0 N94
-b1 N95
+b1 N96
 b0 N97
 b0 N98
-b1 N99
-b1 N100
+b1 N101
+b1 N102
 b0 N103
 b0 N104
-b1 N105
-b1 N106
+b1 N107
+b1 N108
 #10
 b0 N5
 b0 N6
-b1 N8
-b1 N9
 b0 N10
 b001 N11
 b0 N12
-b0 N20
-b000 N22
-b1 N28
-b1 N31
-b010 N32
-b1 N33
-b0 N38
-b1 N40
-b0 N41
-b001 N42
-b0 N43
-b0 N50
-b000 N52
-b1 N58
-b1 N61
-b010 N62
-b1 N63
-b0 N68
-b1 N70
-b0 N71
-b001 N72
-b0 N73
-b0 N80
-b000 N82
-b1 N88
-b1 N91
-b010 N92
-b1 N93
-b0 N95
-b1 N96
-b0 N99
-b0 N100
-b1 N101
-b1 N102
-b0 N105
-b0 N106
-b1 N107
-b1 N108
-#11
-b0 N8
-b0 N9
-b000 N11
 b1 N17
 b1 N18
+b0 N20
 b1 N21
 b010 N22
 b1 N23
-b0 N28
 b1 N30
-b0 N31
-b001 N32
-b0 N33
-b0 N40
-b000 N42
+b011 N32
+b0 N38
+b0 N41
+b001 N42
+b0 N43
 b1 N48
+b0 N50
 b1 N51
 b010 N52
 b1 N53
-b0 N58
 b1 N60
-b0 N61
-b001 N62
-b0 N63
-b0 N70
-b000 N72
+b011 N62
+b0 N68
+b0 N71
+b001 N72
+b0 N73
 b1 N78
+b0 N80
 b1 N81
 b010 N82
 b1 N83
-b0 N88
 b1 N90
+b011 N92
+b1 N94
+b0 N95
+b1 N97
+b1 N98
+b0 N99
+b0 N100
+b1 N103
+b1 N104
+b0 N105
+b0 N106
+#11
+b1 N5
+b1 N6
+b0 N8
+b0 N9
+b1 N10
+b010 N11
+b1 N12
+b1 N20
+b011 N22
+b0 N28
+b0 N31
+b001 N32
+b0 N33
+b1 N38
+b0 N40
+b1 N41
+b010 N42
+b1 N43
+b1 N50
+b011 N52
+b0 N58
+b0 N61
+b001 N62
+b0 N63
+b1 N68
+b0 N70
+b1 N71
+b010 N72
+b1 N73
+b1 N80
+b011 N82
+b0 N88
 b0 N91
 b001 N92
 b0 N93
-b1 N94
+b1 N95
 b0 N96
-b1 N97
-b1 N98
+b1 N99
+b1 N100
 b0 N101
 b0 N102
-b1 N103
-b1 N104
+b1 N105
+b1 N106
 b0 N107
 b0 N108
 #12
-b1 N5
-b1 N6
-b1 N10
-b010 N11
-b1 N12
+b1 N8
+b1 N9
+b011 N11
 b0 N17
 b0 N18
-b1 N20
 b0 N21
 b001 N22
 b0 N23
-b0 N30
-b000 N32
-b1 N38
-b1 N41
-b010 N42
-b1 N43
-b0 N48
-b1 N50
-b0 N51
-b001 N52
-b0 N53
-b0 N60
-b000 N62
-b1 N68
-b1 N71
-b010 N72
-b1 N73
-b0 N78
-b1 N80
-b0 N81
-b001 N82
-b0 N83
-b0 N90
-b000 N92
-b0 N94
-b1 N95
-b0 N97
-b0 N98
-b1 N99
-b1 N100
-b0 N103
-b0 N104
-b1 N105
-b1 N106
-#13
-b0 N5
-b0 N6
-b1 N8
-b1 N9
-b0 N10
-b001 N11
-b0 N12
-b0 N20
-b000 N22
 b1 N28
+b0 N30
 b1 N31
 b010 N32
 b1 N33
-b0 N38
 b1 N40
-b0 N41
-b001 N42
-b0 N43
-b0 N50
-b000 N52
-b1 N58
-b1 N61
-b010 N62
-b1 N63
-b0 N68
-b1 N70
-b0 N71
-b001 N72
-b0 N73
-b0 N80
-b000 N82
-b1 N88
-b1 N91
-b010 N92
-b1 N93
-b0 N95
-b1 N96
-b0 N99
-b0 N100
-b1 N101
-b1 N102
-b0 N105
-b0 N106
-b1 N107
-b1 N108
-#14
-b0 N8
-b0 N9
-b000 N11
-b1 N17
-b1 N18
-b1 N21
-b010 N22
-b1 N23
-b0 N28
-b1 N30
-b0 N31
-b001 N32
-b0 N33
-b0 N40
-b000 N42
-b1 N48
-b1 N51
-b010 N52
-b1 N53
-b0 N58
-b1 N60
-b0 N61
-b001 N62
-b0 N63
-b0 N70
-b000 N72
-b1 N78
-b1 N81
-b010 N82
-b1 N83
-b0 N88
-b1 N90
-b0 N91
-b001 N92
-b0 N93
-b1 N94
-b0 N96
-b1 N97
-b1 N98
-b0 N101
-b0 N102
-b1 N103
-b1 N104
-b0 N107
-b0 N108
-#15
-b1 N5
-b1 N6
-b1 N10
-b010 N11
-b1 N12
-b0 N17
-b0 N18
-b1 N20
-b0 N21
-b001 N22
-b0 N23
-b0 N30
-b000 N32
-b1 N38
-b1 N41
-b010 N42
-b1 N43
+b011 N42
 b0 N48
-b1 N50
 b0 N51
 b001 N52
 b0 N53
+b1 N58
 b0 N60
-b000 N62
-b1 N68
-b1 N71
-b010 N72
-b1 N73
+b1 N61
+b010 N62
+b1 N63
+b1 N70
+b011 N72
 b0 N78
-b1 N80
 b0 N81
 b001 N82
 b0 N83
+b1 N88
 b0 N90
-b000 N92
+b1 N91
+b010 N92
+b1 N93
 b0 N94
-b1 N95
+b1 N96
 b0 N97
 b0 N98
-b1 N99
-b1 N100
+b1 N101
+b1 N102
 b0 N103
 b0 N104
+b1 N107
+b1 N108
+#13
+b0 N5
+b0 N6
+b0 N10
+b001 N11
+b0 N12
+b1 N17
+b1 N18
+b0 N20
+b1 N21
+b010 N22
+b1 N23
+b1 N30
+b011 N32
+b0 N38
+b0 N41
+b001 N42
+b0 N43
+b1 N48
+b0 N50
+b1 N51
+b010 N52
+b1 N53
+b1 N60
+b011 N62
+b0 N68
+b0 N71
+b001 N72
+b0 N73
+b1 N78
+b0 N80
+b1 N81
+b010 N82
+b1 N83
+b1 N90
+b011 N92
+b1 N94
+b0 N95
+b1 N97
+b1 N98
+b0 N99
+b0 N100
+b1 N103
+b1 N104
+b0 N105
+b0 N106
+#14
+b1 N5
+b1 N6
+b0 N8
+b0 N9
+b1 N10
+b010 N11
+b1 N12
+b1 N20
+b011 N22
+b0 N28
+b0 N31
+b001 N32
+b0 N33
+b1 N38
+b0 N40
+b1 N41
+b010 N42
+b1 N43
+b1 N50
+b011 N52
+b0 N58
+b0 N61
+b001 N62
+b0 N63
+b1 N68
+b0 N70
+b1 N71
+b010 N72
+b1 N73
+b1 N80
+b011 N82
+b0 N88
+b0 N91
+b001 N92
+b0 N93
+b1 N95
+b0 N96
+b1 N99
+b1 N100
+b0 N101
+b0 N102
 b1 N105
 b1 N106
+b0 N107
+b0 N108
+#15
+b1 N8
+b1 N9
+b011 N11
+b0 N17
+b0 N18
+b0 N21
+b001 N22
+b0 N23
+b1 N28
+b0 N30
+b1 N31
+b010 N32
+b1 N33
+b1 N40
+b011 N42
+b0 N48
+b0 N51
+b001 N52
+b0 N53
+b1 N58
+b0 N60
+b1 N61
+b010 N62
+b1 N63
+b1 N70
+b011 N72
+b0 N78
+b0 N81
+b001 N82
+b0 N83
+b1 N88
+b0 N90
+b1 N91
+b010 N92
+b1 N93
+b0 N94
+b1 N96
+b0 N97
+b0 N98
+b1 N101
+b1 N102
+b0 N103
+b0 N104
+b1 N107
+b1 N108
 EOF
 cat >test.stdin <<EOF
 reset 5
@@ -3480,411 +3492,411 @@ quit
 EOF
 cat >test.flo <<EOF
 reset = rst
-Life:Cell_8::reset = mov/1 reset
-Life:Cell_8::io_nbrs_7 = in/1
-T0 = cat/1 0 Life:Cell_8::io_nbrs_7
-T1 = add/3 T0 0
-Life:Cell_8::io_nbrs_6 = in/1
-T2 = cat/1 0 Life:Cell_8::io_nbrs_6
-T3 = add/3 T2 T1
-Life:Cell_8::io_nbrs_5 = in/1
-T4 = cat/1 0 Life:Cell_8::io_nbrs_5
-T5 = add/3 T4 T3
-T6 = add/3 0 T5
-Life:Cell_1::io_out = out/1 Life:Cell_1::isAlive
-Life:Cell_8::io_nbrs_3 = mov/1 Life:Cell_1::io_out
-T7 = cat/1 0 Life:Cell_8::io_nbrs_3
-T8 = add/3 T7 T6
-Life:Cell_8::io_nbrs_2 = in/1
-T9 = cat/1 0 Life:Cell_8::io_nbrs_2
-T10 = add/3 T9 T8
-Life:Cell_2::io_out = out/1 Life:Cell_2::isAlive
-Life:Cell_8::io_nbrs_1 = mov/1 Life:Cell_2::io_out
-T11 = cat/1 0 Life:Cell_8::io_nbrs_1
-T12 = add/3 T11 T10
-Life:Cell_8::io_nbrs_0 = mov/1 Life:Cell_1::io_out
-T13 = cat/1 0 Life:Cell_8::io_nbrs_0
-Life:Cell_8::count = add/3 T13 T12
-T14 = lt/3 Life:Cell_8::count 2
-T15 = mux/1 T14 0 Life:Cell_8::isAlive
-T16 = lt/3 Life:Cell_8::count 4
-T17 = not/1 T14
-T18 = and/1 T17 T16
-T19 = mux/1 T18 1 T15
-T20 = gte/3 Life:Cell_8::count 4
-T21 = or/1 T14 T16
-T22 = not/1 T21
-T23 = and/1 T22 T20
-T24 = mux/1 T23 0 T19
-T25 = eq/3 Life:Cell_8::count 3
-T26 = not/1 Life:Cell_8::isAlive
-T27 = and/1 T26 T25
-T28 = or/1 T21 T20
-T29 = not/1 T28
-T30 = and/1 T29 T27
-T31 = mux/1 T30 1 T24
-Life:Cell_8::isAlive__update = mux/1 Life:Cell_8::reset 0 T31
-Life:Cell_8::isAlive = reg/1 1 Life:Cell_8::isAlive__update
-Life:Cell_7::reset = mov/1 reset
-Life:Cell_7::io_nbrs_7 = in/1
-T32 = cat/1 0 Life:Cell_7::io_nbrs_7
-T33 = add/3 T32 0
-Life:Cell_7::io_nbrs_6 = in/1
-T34 = cat/1 0 Life:Cell_7::io_nbrs_6
-T35 = add/3 T34 T33
-Life:Cell_7::io_nbrs_5 = in/1
-T36 = cat/1 0 Life:Cell_7::io_nbrs_5
-T37 = add/3 T36 T35
-T38 = add/3 0 T37
-Life:Cell_0::io_out = out/1 Life:Cell_0::isAlive
-Life:Cell_7::io_nbrs_3 = mov/1 Life:Cell_0::io_out
-T39 = cat/1 0 Life:Cell_7::io_nbrs_3
-T40 = add/3 T39 T38
-Life:Cell_7::io_nbrs_2 = in/1
-T41 = cat/1 0 Life:Cell_7::io_nbrs_2
-T42 = add/3 T41 T40
-Life:Cell_7::io_nbrs_1 = mov/1 Life:Cell_1::io_out
-T43 = cat/1 0 Life:Cell_7::io_nbrs_1
-T44 = add/3 T43 T42
-Life:Cell_7::io_nbrs_0 = mov/1 Life:Cell_0::io_out
-T45 = cat/1 0 Life:Cell_7::io_nbrs_0
-Life:Cell_7::count = add/3 T45 T44
-T46 = lt/3 Life:Cell_7::count 2
-T47 = mux/1 T46 0 Life:Cell_7::isAlive
-T48 = lt/3 Life:Cell_7::count 4
-T49 = not/1 T46
-T50 = and/1 T49 T48
-T51 = mux/1 T50 1 T47
-T52 = gte/3 Life:Cell_7::count 4
-T53 = or/1 T46 T48
-T54 = not/1 T53
-T55 = and/1 T54 T52
-T56 = mux/1 T55 0 T51
-T57 = eq/3 Life:Cell_7::count 3
-T58 = not/1 Life:Cell_7::isAlive
-T59 = and/1 T58 T57
-T60 = or/1 T53 T52
-T61 = not/1 T60
-T62 = and/1 T61 T59
-T63 = mux/1 T62 1 T56
-Life:Cell_7::isAlive__update = mux/1 Life:Cell_7::reset 1 T63
-Life:Cell_7::isAlive = reg/1 1 Life:Cell_7::isAlive__update
-Life:Cell_6::reset = mov/1 reset
-Life:Cell_6::io_nbrs_7 = in/1
-T64 = cat/1 0 Life:Cell_6::io_nbrs_7
-T65 = add/3 T64 0
-Life:Cell_6::io_nbrs_6 = in/1
-T66 = cat/1 0 Life:Cell_6::io_nbrs_6
-T67 = add/3 T66 T65
-Life:Cell_6::io_nbrs_5 = in/1
-T68 = cat/1 0 Life:Cell_6::io_nbrs_5
-T69 = add/3 T68 T67
-T70 = add/3 0 T69
-Life:Cell_6::io_nbrs_3 = mov/1 Life:Cell_2::io_out
-T71 = cat/1 0 Life:Cell_6::io_nbrs_3
-T72 = add/3 T71 T70
-Life:Cell_6::io_nbrs_2 = in/1
-T73 = cat/1 0 Life:Cell_6::io_nbrs_2
-T74 = add/3 T73 T72
-Life:Cell_6::io_nbrs_1 = mov/1 Life:Cell_0::io_out
-T75 = cat/1 0 Life:Cell_6::io_nbrs_1
-T76 = add/3 T75 T74
-Life:Cell_6::io_nbrs_0 = mov/1 Life:Cell_2::io_out
-T77 = cat/1 0 Life:Cell_6::io_nbrs_0
-Life:Cell_6::count = add/3 T77 T76
-T78 = lt/3 Life:Cell_6::count 2
-T79 = mux/1 T78 0 Life:Cell_6::isAlive
-T80 = lt/3 Life:Cell_6::count 4
-T81 = not/1 T78
-T82 = and/1 T81 T80
-T83 = mux/1 T82 1 T79
-T84 = gte/3 Life:Cell_6::count 4
-T85 = or/1 T78 T80
-T86 = not/1 T85
-T87 = and/1 T86 T84
-T88 = mux/1 T87 0 T83
-T89 = eq/3 Life:Cell_6::count 3
-T90 = not/1 Life:Cell_6::isAlive
-T91 = and/1 T90 T89
-T92 = or/1 T85 T84
-T93 = not/1 T92
-T94 = and/1 T93 T91
-T95 = mux/1 T94 1 T88
-Life:Cell_6::isAlive__update = mux/1 Life:Cell_6::reset 0 T95
-Life:Cell_6::isAlive = reg/1 1 Life:Cell_6::isAlive__update
-Life:Cell_5::reset = mov/1 reset
-Life:Cell_5::io_nbrs_7 = in/1
-T96 = cat/1 0 Life:Cell_5::io_nbrs_7
-T97 = add/3 T96 0
-Life:Cell_5::io_nbrs_6 = in/1
-T98 = cat/1 0 Life:Cell_5::io_nbrs_6
-T99 = add/3 T98 T97
-Life:Cell_5::io_nbrs_5 = in/1
-T100 = cat/1 0 Life:Cell_5::io_nbrs_5
-T101 = add/3 T100 T99
-T102 = add/3 0 T101
-Life:Cell_5::io_nbrs_3 = mov/1 Life:Cell_1::io_out
-T103 = cat/1 0 Life:Cell_5::io_nbrs_3
-T104 = add/3 T103 T102
-Life:Cell_5::io_nbrs_2 = in/1
-T105 = cat/1 0 Life:Cell_5::io_nbrs_2
-T106 = add/3 T105 T104
-Life:Cell_5::io_nbrs_1 = mov/1 Life:Cell_2::io_out
-T107 = cat/1 0 Life:Cell_5::io_nbrs_1
-T108 = add/3 T107 T106
-Life:Cell_5::io_nbrs_0 = mov/1 Life:Cell_1::io_out
-T109 = cat/1 0 Life:Cell_5::io_nbrs_0
-Life:Cell_5::count = add/3 T109 T108
-T110 = lt/3 Life:Cell_5::count 2
-T111 = mux/1 T110 0 Life:Cell_5::isAlive
-T112 = lt/3 Life:Cell_5::count 4
-T113 = not/1 T110
-T114 = and/1 T113 T112
-T115 = mux/1 T114 1 T111
-T116 = gte/3 Life:Cell_5::count 4
-T117 = or/1 T110 T112
-T118 = not/1 T117
-T119 = and/1 T118 T116
-T120 = mux/1 T119 0 T115
-T121 = eq/3 Life:Cell_5::count 3
-T122 = not/1 Life:Cell_5::isAlive
-T123 = and/1 T122 T121
-T124 = or/1 T117 T116
-T125 = not/1 T124
-T126 = and/1 T125 T123
-T127 = mux/1 T126 1 T120
-Life:Cell_5::isAlive__update = mux/1 Life:Cell_5::reset 1 T127
-Life:Cell_5::isAlive = reg/1 1 Life:Cell_5::isAlive__update
-Life:Cell_4::reset = mov/1 reset
-Life:Cell_4::io_nbrs_7 = in/1
-T128 = cat/1 0 Life:Cell_4::io_nbrs_7
-T129 = add/3 T128 0
-Life:Cell_4::io_nbrs_6 = in/1
-T130 = cat/1 0 Life:Cell_4::io_nbrs_6
-T131 = add/3 T130 T129
-Life:Cell_4::io_nbrs_5 = in/1
-T132 = cat/1 0 Life:Cell_4::io_nbrs_5
-T133 = add/3 T132 T131
-T134 = add/3 0 T133
-Life:Cell_4::io_nbrs_3 = mov/1 Life:Cell_0::io_out
-T135 = cat/1 0 Life:Cell_4::io_nbrs_3
-T136 = add/3 T135 T134
-Life:Cell_4::io_nbrs_2 = in/1
-T137 = cat/1 0 Life:Cell_4::io_nbrs_2
-T138 = add/3 T137 T136
-Life:Cell_4::io_nbrs_1 = mov/1 Life:Cell_1::io_out
-T139 = cat/1 0 Life:Cell_4::io_nbrs_1
-T140 = add/3 T139 T138
-Life:Cell_4::io_nbrs_0 = mov/1 Life:Cell_0::io_out
-T141 = cat/1 0 Life:Cell_4::io_nbrs_0
-Life:Cell_4::count = add/3 T141 T140
-T142 = lt/3 Life:Cell_4::count 2
-T143 = mux/1 T142 0 Life:Cell_4::isAlive
-T144 = lt/3 Life:Cell_4::count 4
-T145 = not/1 T142
-T146 = and/1 T145 T144
-T147 = mux/1 T146 1 T143
-T148 = gte/3 Life:Cell_4::count 4
-T149 = or/1 T142 T144
-T150 = not/1 T149
-T151 = and/1 T150 T148
-T152 = mux/1 T151 0 T147
-T153 = eq/3 Life:Cell_4::count 3
-T154 = not/1 Life:Cell_4::isAlive
-T155 = and/1 T154 T153
-T156 = or/1 T149 T148
-T157 = not/1 T156
-T158 = and/1 T157 T155
-T159 = mux/1 T158 1 T152
-Life:Cell_4::isAlive__update = mux/1 Life:Cell_4::reset 0 T159
-Life:Cell_4::isAlive = reg/1 1 Life:Cell_4::isAlive__update
-Life:Cell_3::reset = mov/1 reset
-Life:Cell_3::io_nbrs_7 = in/1
-T160 = cat/1 0 Life:Cell_3::io_nbrs_7
-T161 = add/3 T160 0
-Life:Cell_3::io_nbrs_6 = in/1
-T162 = cat/1 0 Life:Cell_3::io_nbrs_6
-T163 = add/3 T162 T161
-Life:Cell_3::io_nbrs_5 = in/1
-T164 = cat/1 0 Life:Cell_3::io_nbrs_5
-T165 = add/3 T164 T163
-T166 = add/3 0 T165
-Life:Cell_3::io_nbrs_3 = mov/1 Life:Cell_2::io_out
-T167 = cat/1 0 Life:Cell_3::io_nbrs_3
-T168 = add/3 T167 T166
-Life:Cell_3::io_nbrs_2 = in/1
-T169 = cat/1 0 Life:Cell_3::io_nbrs_2
-T170 = add/3 T169 T168
-Life:Cell_3::io_nbrs_1 = mov/1 Life:Cell_0::io_out
-T171 = cat/1 0 Life:Cell_3::io_nbrs_1
-T172 = add/3 T171 T170
-Life:Cell_3::io_nbrs_0 = mov/1 Life:Cell_2::io_out
-T173 = cat/1 0 Life:Cell_3::io_nbrs_0
-Life:Cell_3::count = add/3 T173 T172
-T174 = lt/3 Life:Cell_3::count 2
-T175 = mux/1 T174 0 Life:Cell_3::isAlive
-T176 = lt/3 Life:Cell_3::count 4
-T177 = not/1 T174
-T178 = and/1 T177 T176
-T179 = mux/1 T178 1 T175
-T180 = gte/3 Life:Cell_3::count 4
-T181 = or/1 T174 T176
-T182 = not/1 T181
-T183 = and/1 T182 T180
-T184 = mux/1 T183 0 T179
-T185 = eq/3 Life:Cell_3::count 3
-T186 = not/1 Life:Cell_3::isAlive
-T187 = and/1 T186 T185
-T188 = or/1 T181 T180
-T189 = not/1 T188
-T190 = and/1 T189 T187
-T191 = mux/1 T190 1 T184
-Life:Cell_3::isAlive__update = mux/1 Life:Cell_3::reset 0 T191
-Life:Cell_3::isAlive = reg/1 1 Life:Cell_3::isAlive__update
-Life:Cell_2::reset = mov/1 reset
-Life:Cell_2::io_nbrs_7 = in/1
-T192 = cat/1 0 Life:Cell_2::io_nbrs_7
-T193 = add/3 T192 0
-Life:Cell_2::io_nbrs_6 = in/1
-T194 = cat/1 0 Life:Cell_2::io_nbrs_6
-T195 = add/3 T194 T193
-Life:Cell_2::io_nbrs_5 = in/1
-T196 = cat/1 0 Life:Cell_2::io_nbrs_5
-T197 = add/3 T196 T195
-T198 = add/3 0 T197
-Life:Cell_2::io_nbrs_3 = mov/1 Life:Cell_1::io_out
-T199 = cat/1 0 Life:Cell_2::io_nbrs_3
-T200 = add/3 T199 T198
-Life:Cell_2::io_nbrs_2 = in/1
-T201 = cat/1 0 Life:Cell_2::io_nbrs_2
-T202 = add/3 T201 T200
-Life:Cell_2::io_nbrs_1 = mov/1 Life:Cell_2::io_out
-T203 = cat/1 0 Life:Cell_2::io_nbrs_1
-T204 = add/3 T203 T202
-Life:Cell_2::io_nbrs_0 = mov/1 Life:Cell_1::io_out
-T205 = cat/1 0 Life:Cell_2::io_nbrs_0
-Life:Cell_2::count = add/3 T205 T204
-T206 = lt/3 Life:Cell_2::count 2
-T207 = mux/1 T206 0 Life:Cell_2::isAlive
-T208 = lt/3 Life:Cell_2::count 4
-T209 = not/1 T206
-T210 = and/1 T209 T208
-T211 = mux/1 T210 1 T207
-T212 = gte/3 Life:Cell_2::count 4
-T213 = or/1 T206 T208
-T214 = not/1 T213
-T215 = and/1 T214 T212
-T216 = mux/1 T215 0 T211
-T217 = eq/3 Life:Cell_2::count 3
-T218 = not/1 Life:Cell_2::isAlive
-T219 = and/1 T218 T217
-T220 = or/1 T213 T212
-T221 = not/1 T220
-T222 = and/1 T221 T219
-T223 = mux/1 T222 1 T216
-Life:Cell_2::isAlive__update = mux/1 Life:Cell_2::reset 0 T223
-Life:Cell_2::isAlive = reg/1 1 Life:Cell_2::isAlive__update
-Life:Cell_1::reset = mov/1 reset
-Life:Cell_1::io_nbrs_7 = in/1
-T224 = cat/1 0 Life:Cell_1::io_nbrs_7
-T225 = add/3 T224 0
-Life:Cell_1::io_nbrs_6 = in/1
-T226 = cat/1 0 Life:Cell_1::io_nbrs_6
-T227 = add/3 T226 T225
-Life:Cell_1::io_nbrs_5 = in/1
-T228 = cat/1 0 Life:Cell_1::io_nbrs_5
-T229 = add/3 T228 T227
-T230 = add/3 0 T229
-Life:Cell_1::io_nbrs_3 = mov/1 Life:Cell_0::io_out
-T231 = cat/1 0 Life:Cell_1::io_nbrs_3
-T232 = add/3 T231 T230
-Life:Cell_1::io_nbrs_2 = in/1
-T233 = cat/1 0 Life:Cell_1::io_nbrs_2
-T234 = add/3 T233 T232
-Life:Cell_1::io_nbrs_1 = mov/1 Life:Cell_1::io_out
-T235 = cat/1 0 Life:Cell_1::io_nbrs_1
-T236 = add/3 T235 T234
-Life:Cell_1::io_nbrs_0 = mov/1 Life:Cell_0::io_out
-T237 = cat/1 0 Life:Cell_1::io_nbrs_0
-Life:Cell_1::count = add/3 T237 T236
-T238 = lt/3 Life:Cell_1::count 2
-T239 = mux/1 T238 0 Life:Cell_1::isAlive
-T240 = lt/3 Life:Cell_1::count 4
-T241 = not/1 T238
-T242 = and/1 T241 T240
-T243 = mux/1 T242 1 T239
-T244 = gte/3 Life:Cell_1::count 4
-T245 = or/1 T238 T240
-T246 = not/1 T245
-T247 = and/1 T246 T244
-T248 = mux/1 T247 0 T243
-T249 = eq/3 Life:Cell_1::count 3
-T250 = not/1 Life:Cell_1::isAlive
-T251 = and/1 T250 T249
-T252 = or/1 T245 T244
-T253 = not/1 T252
-T254 = and/1 T253 T251
-T255 = mux/1 T254 1 T248
-Life:Cell_1::isAlive__update = mux/1 Life:Cell_1::reset 0 T255
-Life:Cell_1::isAlive = reg/1 1 Life:Cell_1::isAlive__update
-Life:Cell_0::reset = mov/1 reset
-Life:Cell_0::io_nbrs_7 = in/1
-T256 = cat/1 0 Life:Cell_0::io_nbrs_7
-T257 = add/3 T256 0
-Life:Cell_0::io_nbrs_6 = in/1
-T258 = cat/1 0 Life:Cell_0::io_nbrs_6
-T259 = add/3 T258 T257
-Life:Cell_0::io_nbrs_5 = in/1
-T260 = cat/1 0 Life:Cell_0::io_nbrs_5
-T261 = add/3 T260 T259
-T262 = add/3 0 T261
-Life:Cell_0::io_nbrs_3 = mov/1 Life:Cell_2::io_out
-T263 = cat/1 0 Life:Cell_0::io_nbrs_3
-T264 = add/3 T263 T262
-Life:Cell_0::io_nbrs_2 = in/1
-T265 = cat/1 0 Life:Cell_0::io_nbrs_2
-T266 = add/3 T265 T264
-Life:Cell_0::io_nbrs_1 = mov/1 Life:Cell_0::io_out
-T267 = cat/1 0 Life:Cell_0::io_nbrs_1
-T268 = add/3 T267 T266
-Life:Cell_0::io_nbrs_0 = mov/1 Life:Cell_2::io_out
-T269 = cat/1 0 Life:Cell_0::io_nbrs_0
-Life:Cell_0::count = add/3 T269 T268
-T270 = lt/3 Life:Cell_0::count 2
-T271 = mux/1 T270 0 Life:Cell_0::isAlive
-T272 = lt/3 Life:Cell_0::count 4
-T273 = not/1 T270
-T274 = and/1 T273 T272
-T275 = mux/1 T274 1 T271
-T276 = gte/3 Life:Cell_0::count 4
-T277 = or/1 T270 T272
-T278 = not/1 T277
-T279 = and/1 T278 T276
-T280 = mux/1 T279 0 T275
-T281 = eq/3 Life:Cell_0::count 3
-T282 = not/1 Life:Cell_0::isAlive
-T283 = and/1 T282 T281
-T284 = or/1 T277 T276
-T285 = not/1 T284
-T286 = and/1 T285 T283
-T287 = mux/1 T286 1 T280
-Life:Cell_0::isAlive__update = mux/1 Life:Cell_0::reset 0 T287
-Life:Cell_0::isAlive = reg/1 1 Life:Cell_0::isAlive__update
-Life::io_state_0 = out/1 Life:Cell_0::io_out
-Life::io_state_1 = out/1 Life:Cell_1::io_out
-Life::io_state_2 = out/1 Life:Cell_2::io_out
-Life:Cell_3::io_out = out/1 Life:Cell_3::isAlive
-Life::io_state_3 = out/1 Life:Cell_3::io_out
-Life:Cell_4::io_out = out/1 Life:Cell_4::isAlive
-Life::io_state_4 = out/1 Life:Cell_4::io_out
-Life:Cell_5::io_out = out/1 Life:Cell_5::isAlive
-Life::io_state_5 = out/1 Life:Cell_5::io_out
-Life:Cell_6::io_out = out/1 Life:Cell_6::isAlive
-Life::io_state_6 = out/1 Life:Cell_6::io_out
-Life:Cell_7::io_out = out/1 Life:Cell_7::isAlive
-Life::io_state_7 = out/1 Life:Cell_7::io_out
-Life:Cell_8::io_out = out/1 Life:Cell_8::isAlive
-Life::io_state_8 = out/1 Life:Cell_8::io_out
+Life:Cell_8::reset = mov reset
+Life:Cell_8::io_nbrs_7 = in'1
+T0 = cat'1 0'2 Life:Cell_8::io_nbrs_7
+T1 = add'3 T0 0'3
+Life:Cell_8::io_nbrs_6 = in'1
+T2 = cat'1 0'2 Life:Cell_8::io_nbrs_6
+T3 = add'3 T2 T1
+Life:Cell_8::io_nbrs_5 = in'1
+T4 = cat'1 0'2 Life:Cell_8::io_nbrs_5
+T5 = add'3 T4 T3
+T6 = add'3 0'3 T5
+Life:Cell_1::io_out = out'1 Life:Cell_1::isAlive
+Life:Cell_8::io_nbrs_3 = mov Life:Cell_1::io_out
+T7 = cat'1 0'2 Life:Cell_8::io_nbrs_3
+T8 = add'3 T7 T6
+Life:Cell_8::io_nbrs_2 = in'1
+T9 = cat'1 0'2 Life:Cell_8::io_nbrs_2
+T10 = add'3 T9 T8
+Life:Cell_2::io_out = out'1 Life:Cell_2::isAlive
+Life:Cell_8::io_nbrs_1 = mov Life:Cell_2::io_out
+T11 = cat'1 0'2 Life:Cell_8::io_nbrs_1
+T12 = add'3 T11 T10
+Life:Cell_8::io_nbrs_0 = mov Life:Cell_1::io_out
+T13 = cat'1 0'2 Life:Cell_8::io_nbrs_0
+Life:Cell_8::count = add'3 T13 T12
+T14 = lt'3 Life:Cell_8::count 2'3
+T15 = mux T14 0'1 Life:Cell_8::isAlive
+T16 = lt'3 Life:Cell_8::count 4'3
+T17 = not'1 T14
+T18 = and T17 T16
+T19 = mux T18 1'1 T15
+T20 = gte'3 Life:Cell_8::count 4'3
+T21 = or T14 T16
+T22 = not'1 T21
+T23 = and T22 T20
+T24 = mux T23 0'1 T19
+T25 = eq Life:Cell_8::count 3'3
+T26 = not'1 Life:Cell_8::isAlive
+T27 = and T26 T25
+T28 = or T21 T20
+T29 = not'1 T28
+T30 = and T29 T27
+T31 = mux T30 1'1 T24
+Life:Cell_8::isAlive__update = mux'1 Life:Cell_8::reset 1'1 T31
+Life:Cell_8::isAlive = reg'1 1 Life:Cell_8::isAlive__update
+Life:Cell_7::reset = mov reset
+Life:Cell_7::io_nbrs_7 = in'1
+T32 = cat'1 0'2 Life:Cell_7::io_nbrs_7
+T33 = add'3 T32 0'3
+Life:Cell_7::io_nbrs_6 = in'1
+T34 = cat'1 0'2 Life:Cell_7::io_nbrs_6
+T35 = add'3 T34 T33
+Life:Cell_7::io_nbrs_5 = in'1
+T36 = cat'1 0'2 Life:Cell_7::io_nbrs_5
+T37 = add'3 T36 T35
+T38 = add'3 0'3 T37
+Life:Cell_0::io_out = out'1 Life:Cell_0::isAlive
+Life:Cell_7::io_nbrs_3 = mov Life:Cell_0::io_out
+T39 = cat'1 0'2 Life:Cell_7::io_nbrs_3
+T40 = add'3 T39 T38
+Life:Cell_7::io_nbrs_2 = in'1
+T41 = cat'1 0'2 Life:Cell_7::io_nbrs_2
+T42 = add'3 T41 T40
+Life:Cell_7::io_nbrs_1 = mov Life:Cell_1::io_out
+T43 = cat'1 0'2 Life:Cell_7::io_nbrs_1
+T44 = add'3 T43 T42
+Life:Cell_7::io_nbrs_0 = mov Life:Cell_0::io_out
+T45 = cat'1 0'2 Life:Cell_7::io_nbrs_0
+Life:Cell_7::count = add'3 T45 T44
+T46 = lt'3 Life:Cell_7::count 2'3
+T47 = mux T46 0'1 Life:Cell_7::isAlive
+T48 = lt'3 Life:Cell_7::count 4'3
+T49 = not'1 T46
+T50 = and T49 T48
+T51 = mux T50 1'1 T47
+T52 = gte'3 Life:Cell_7::count 4'3
+T53 = or T46 T48
+T54 = not'1 T53
+T55 = and T54 T52
+T56 = mux T55 0'1 T51
+T57 = eq Life:Cell_7::count 3'3
+T58 = not'1 Life:Cell_7::isAlive
+T59 = and T58 T57
+T60 = or T53 T52
+T61 = not'1 T60
+T62 = and T61 T59
+T63 = mux T62 1'1 T56
+Life:Cell_7::isAlive__update = mux'1 Life:Cell_7::reset 1'1 T63
+Life:Cell_7::isAlive = reg'1 1 Life:Cell_7::isAlive__update
+Life:Cell_6::reset = mov reset
+Life:Cell_6::io_nbrs_7 = in'1
+T64 = cat'1 0'2 Life:Cell_6::io_nbrs_7
+T65 = add'3 T64 0'3
+Life:Cell_6::io_nbrs_6 = in'1
+T66 = cat'1 0'2 Life:Cell_6::io_nbrs_6
+T67 = add'3 T66 T65
+Life:Cell_6::io_nbrs_5 = in'1
+T68 = cat'1 0'2 Life:Cell_6::io_nbrs_5
+T69 = add'3 T68 T67
+T70 = add'3 0'3 T69
+Life:Cell_6::io_nbrs_3 = mov Life:Cell_2::io_out
+T71 = cat'1 0'2 Life:Cell_6::io_nbrs_3
+T72 = add'3 T71 T70
+Life:Cell_6::io_nbrs_2 = in'1
+T73 = cat'1 0'2 Life:Cell_6::io_nbrs_2
+T74 = add'3 T73 T72
+Life:Cell_6::io_nbrs_1 = mov Life:Cell_0::io_out
+T75 = cat'1 0'2 Life:Cell_6::io_nbrs_1
+T76 = add'3 T75 T74
+Life:Cell_6::io_nbrs_0 = mov Life:Cell_2::io_out
+T77 = cat'1 0'2 Life:Cell_6::io_nbrs_0
+Life:Cell_6::count = add'3 T77 T76
+T78 = lt'3 Life:Cell_6::count 2'3
+T79 = mux T78 0'1 Life:Cell_6::isAlive
+T80 = lt'3 Life:Cell_6::count 4'3
+T81 = not'1 T78
+T82 = and T81 T80
+T83 = mux T82 1'1 T79
+T84 = gte'3 Life:Cell_6::count 4'3
+T85 = or T78 T80
+T86 = not'1 T85
+T87 = and T86 T84
+T88 = mux T87 0'1 T83
+T89 = eq Life:Cell_6::count 3'3
+T90 = not'1 Life:Cell_6::isAlive
+T91 = and T90 T89
+T92 = or T85 T84
+T93 = not'1 T92
+T94 = and T93 T91
+T95 = mux T94 1'1 T88
+Life:Cell_6::isAlive__update = mux'1 Life:Cell_6::reset 1'1 T95
+Life:Cell_6::isAlive = reg'1 1 Life:Cell_6::isAlive__update
+Life:Cell_5::reset = mov reset
+Life:Cell_5::io_nbrs_7 = in'1
+T96 = cat'1 0'2 Life:Cell_5::io_nbrs_7
+T97 = add'3 T96 0'3
+Life:Cell_5::io_nbrs_6 = in'1
+T98 = cat'1 0'2 Life:Cell_5::io_nbrs_6
+T99 = add'3 T98 T97
+Life:Cell_5::io_nbrs_5 = in'1
+T100 = cat'1 0'2 Life:Cell_5::io_nbrs_5
+T101 = add'3 T100 T99
+T102 = add'3 0'3 T101
+Life:Cell_5::io_nbrs_3 = mov Life:Cell_1::io_out
+T103 = cat'1 0'2 Life:Cell_5::io_nbrs_3
+T104 = add'3 T103 T102
+Life:Cell_5::io_nbrs_2 = in'1
+T105 = cat'1 0'2 Life:Cell_5::io_nbrs_2
+T106 = add'3 T105 T104
+Life:Cell_5::io_nbrs_1 = mov Life:Cell_2::io_out
+T107 = cat'1 0'2 Life:Cell_5::io_nbrs_1
+T108 = add'3 T107 T106
+Life:Cell_5::io_nbrs_0 = mov Life:Cell_1::io_out
+T109 = cat'1 0'2 Life:Cell_5::io_nbrs_0
+Life:Cell_5::count = add'3 T109 T108
+T110 = lt'3 Life:Cell_5::count 2'3
+T111 = mux T110 0'1 Life:Cell_5::isAlive
+T112 = lt'3 Life:Cell_5::count 4'3
+T113 = not'1 T110
+T114 = and T113 T112
+T115 = mux T114 1'1 T111
+T116 = gte'3 Life:Cell_5::count 4'3
+T117 = or T110 T112
+T118 = not'1 T117
+T119 = and T118 T116
+T120 = mux T119 0'1 T115
+T121 = eq Life:Cell_5::count 3'3
+T122 = not'1 Life:Cell_5::isAlive
+T123 = and T122 T121
+T124 = or T117 T116
+T125 = not'1 T124
+T126 = and T125 T123
+T127 = mux T126 1'1 T120
+Life:Cell_5::isAlive__update = mux'1 Life:Cell_5::reset 1'1 T127
+Life:Cell_5::isAlive = reg'1 1 Life:Cell_5::isAlive__update
+Life:Cell_4::reset = mov reset
+Life:Cell_4::io_nbrs_7 = in'1
+T128 = cat'1 0'2 Life:Cell_4::io_nbrs_7
+T129 = add'3 T128 0'3
+Life:Cell_4::io_nbrs_6 = in'1
+T130 = cat'1 0'2 Life:Cell_4::io_nbrs_6
+T131 = add'3 T130 T129
+Life:Cell_4::io_nbrs_5 = in'1
+T132 = cat'1 0'2 Life:Cell_4::io_nbrs_5
+T133 = add'3 T132 T131
+T134 = add'3 0'3 T133
+Life:Cell_4::io_nbrs_3 = mov Life:Cell_0::io_out
+T135 = cat'1 0'2 Life:Cell_4::io_nbrs_3
+T136 = add'3 T135 T134
+Life:Cell_4::io_nbrs_2 = in'1
+T137 = cat'1 0'2 Life:Cell_4::io_nbrs_2
+T138 = add'3 T137 T136
+Life:Cell_4::io_nbrs_1 = mov Life:Cell_1::io_out
+T139 = cat'1 0'2 Life:Cell_4::io_nbrs_1
+T140 = add'3 T139 T138
+Life:Cell_4::io_nbrs_0 = mov Life:Cell_0::io_out
+T141 = cat'1 0'2 Life:Cell_4::io_nbrs_0
+Life:Cell_4::count = add'3 T141 T140
+T142 = lt'3 Life:Cell_4::count 2'3
+T143 = mux T142 0'1 Life:Cell_4::isAlive
+T144 = lt'3 Life:Cell_4::count 4'3
+T145 = not'1 T142
+T146 = and T145 T144
+T147 = mux T146 1'1 T143
+T148 = gte'3 Life:Cell_4::count 4'3
+T149 = or T142 T144
+T150 = not'1 T149
+T151 = and T150 T148
+T152 = mux T151 0'1 T147
+T153 = eq Life:Cell_4::count 3'3
+T154 = not'1 Life:Cell_4::isAlive
+T155 = and T154 T153
+T156 = or T149 T148
+T157 = not'1 T156
+T158 = and T157 T155
+T159 = mux T158 1'1 T152
+Life:Cell_4::isAlive__update = mux'1 Life:Cell_4::reset 1'1 T159
+Life:Cell_4::isAlive = reg'1 1 Life:Cell_4::isAlive__update
+Life:Cell_3::reset = mov reset
+Life:Cell_3::io_nbrs_7 = in'1
+T160 = cat'1 0'2 Life:Cell_3::io_nbrs_7
+T161 = add'3 T160 0'3
+Life:Cell_3::io_nbrs_6 = in'1
+T162 = cat'1 0'2 Life:Cell_3::io_nbrs_6
+T163 = add'3 T162 T161
+Life:Cell_3::io_nbrs_5 = in'1
+T164 = cat'1 0'2 Life:Cell_3::io_nbrs_5
+T165 = add'3 T164 T163
+T166 = add'3 0'3 T165
+Life:Cell_3::io_nbrs_3 = mov Life:Cell_2::io_out
+T167 = cat'1 0'2 Life:Cell_3::io_nbrs_3
+T168 = add'3 T167 T166
+Life:Cell_3::io_nbrs_2 = in'1
+T169 = cat'1 0'2 Life:Cell_3::io_nbrs_2
+T170 = add'3 T169 T168
+Life:Cell_3::io_nbrs_1 = mov Life:Cell_0::io_out
+T171 = cat'1 0'2 Life:Cell_3::io_nbrs_1
+T172 = add'3 T171 T170
+Life:Cell_3::io_nbrs_0 = mov Life:Cell_2::io_out
+T173 = cat'1 0'2 Life:Cell_3::io_nbrs_0
+Life:Cell_3::count = add'3 T173 T172
+T174 = lt'3 Life:Cell_3::count 2'3
+T175 = mux T174 0'1 Life:Cell_3::isAlive
+T176 = lt'3 Life:Cell_3::count 4'3
+T177 = not'1 T174
+T178 = and T177 T176
+T179 = mux T178 1'1 T175
+T180 = gte'3 Life:Cell_3::count 4'3
+T181 = or T174 T176
+T182 = not'1 T181
+T183 = and T182 T180
+T184 = mux T183 0'1 T179
+T185 = eq Life:Cell_3::count 3'3
+T186 = not'1 Life:Cell_3::isAlive
+T187 = and T186 T185
+T188 = or T181 T180
+T189 = not'1 T188
+T190 = and T189 T187
+T191 = mux T190 1'1 T184
+Life:Cell_3::isAlive__update = mux'1 Life:Cell_3::reset 1'1 T191
+Life:Cell_3::isAlive = reg'1 1 Life:Cell_3::isAlive__update
+Life:Cell_2::reset = mov reset
+Life:Cell_2::io_nbrs_7 = in'1
+T192 = cat'1 0'2 Life:Cell_2::io_nbrs_7
+T193 = add'3 T192 0'3
+Life:Cell_2::io_nbrs_6 = in'1
+T194 = cat'1 0'2 Life:Cell_2::io_nbrs_6
+T195 = add'3 T194 T193
+Life:Cell_2::io_nbrs_5 = in'1
+T196 = cat'1 0'2 Life:Cell_2::io_nbrs_5
+T197 = add'3 T196 T195
+T198 = add'3 0'3 T197
+Life:Cell_2::io_nbrs_3 = mov Life:Cell_1::io_out
+T199 = cat'1 0'2 Life:Cell_2::io_nbrs_3
+T200 = add'3 T199 T198
+Life:Cell_2::io_nbrs_2 = in'1
+T201 = cat'1 0'2 Life:Cell_2::io_nbrs_2
+T202 = add'3 T201 T200
+Life:Cell_2::io_nbrs_1 = mov Life:Cell_2::io_out
+T203 = cat'1 0'2 Life:Cell_2::io_nbrs_1
+T204 = add'3 T203 T202
+Life:Cell_2::io_nbrs_0 = mov Life:Cell_1::io_out
+T205 = cat'1 0'2 Life:Cell_2::io_nbrs_0
+Life:Cell_2::count = add'3 T205 T204
+T206 = lt'3 Life:Cell_2::count 2'3
+T207 = mux T206 0'1 Life:Cell_2::isAlive
+T208 = lt'3 Life:Cell_2::count 4'3
+T209 = not'1 T206
+T210 = and T209 T208
+T211 = mux T210 1'1 T207
+T212 = gte'3 Life:Cell_2::count 4'3
+T213 = or T206 T208
+T214 = not'1 T213
+T215 = and T214 T212
+T216 = mux T215 0'1 T211
+T217 = eq Life:Cell_2::count 3'3
+T218 = not'1 Life:Cell_2::isAlive
+T219 = and T218 T217
+T220 = or T213 T212
+T221 = not'1 T220
+T222 = and T221 T219
+T223 = mux T222 1'1 T216
+Life:Cell_2::isAlive__update = mux'1 Life:Cell_2::reset 0'1 T223
+Life:Cell_2::isAlive = reg'1 1 Life:Cell_2::isAlive__update
+Life:Cell_1::reset = mov reset
+Life:Cell_1::io_nbrs_7 = in'1
+T224 = cat'1 0'2 Life:Cell_1::io_nbrs_7
+T225 = add'3 T224 0'3
+Life:Cell_1::io_nbrs_6 = in'1
+T226 = cat'1 0'2 Life:Cell_1::io_nbrs_6
+T227 = add'3 T226 T225
+Life:Cell_1::io_nbrs_5 = in'1
+T228 = cat'1 0'2 Life:Cell_1::io_nbrs_5
+T229 = add'3 T228 T227
+T230 = add'3 0'3 T229
+Life:Cell_1::io_nbrs_3 = mov Life:Cell_0::io_out
+T231 = cat'1 0'2 Life:Cell_1::io_nbrs_3
+T232 = add'3 T231 T230
+Life:Cell_1::io_nbrs_2 = in'1
+T233 = cat'1 0'2 Life:Cell_1::io_nbrs_2
+T234 = add'3 T233 T232
+Life:Cell_1::io_nbrs_1 = mov Life:Cell_1::io_out
+T235 = cat'1 0'2 Life:Cell_1::io_nbrs_1
+T236 = add'3 T235 T234
+Life:Cell_1::io_nbrs_0 = mov Life:Cell_0::io_out
+T237 = cat'1 0'2 Life:Cell_1::io_nbrs_0
+Life:Cell_1::count = add'3 T237 T236
+T238 = lt'3 Life:Cell_1::count 2'3
+T239 = mux T238 0'1 Life:Cell_1::isAlive
+T240 = lt'3 Life:Cell_1::count 4'3
+T241 = not'1 T238
+T242 = and T241 T240
+T243 = mux T242 1'1 T239
+T244 = gte'3 Life:Cell_1::count 4'3
+T245 = or T238 T240
+T246 = not'1 T245
+T247 = and T246 T244
+T248 = mux T247 0'1 T243
+T249 = eq Life:Cell_1::count 3'3
+T250 = not'1 Life:Cell_1::isAlive
+T251 = and T250 T249
+T252 = or T245 T244
+T253 = not'1 T252
+T254 = and T253 T251
+T255 = mux T254 1'1 T248
+Life:Cell_1::isAlive__update = mux'1 Life:Cell_1::reset 1'1 T255
+Life:Cell_1::isAlive = reg'1 1 Life:Cell_1::isAlive__update
+Life:Cell_0::reset = mov reset
+Life:Cell_0::io_nbrs_7 = in'1
+T256 = cat'1 0'2 Life:Cell_0::io_nbrs_7
+T257 = add'3 T256 0'3
+Life:Cell_0::io_nbrs_6 = in'1
+T258 = cat'1 0'2 Life:Cell_0::io_nbrs_6
+T259 = add'3 T258 T257
+Life:Cell_0::io_nbrs_5 = in'1
+T260 = cat'1 0'2 Life:Cell_0::io_nbrs_5
+T261 = add'3 T260 T259
+T262 = add'3 0'3 T261
+Life:Cell_0::io_nbrs_3 = mov Life:Cell_2::io_out
+T263 = cat'1 0'2 Life:Cell_0::io_nbrs_3
+T264 = add'3 T263 T262
+Life:Cell_0::io_nbrs_2 = in'1
+T265 = cat'1 0'2 Life:Cell_0::io_nbrs_2
+T266 = add'3 T265 T264
+Life:Cell_0::io_nbrs_1 = mov Life:Cell_0::io_out
+T267 = cat'1 0'2 Life:Cell_0::io_nbrs_1
+T268 = add'3 T267 T266
+Life:Cell_0::io_nbrs_0 = mov Life:Cell_2::io_out
+T269 = cat'1 0'2 Life:Cell_0::io_nbrs_0
+Life:Cell_0::count = add'3 T269 T268
+T270 = lt'3 Life:Cell_0::count 2'3
+T271 = mux T270 0'1 Life:Cell_0::isAlive
+T272 = lt'3 Life:Cell_0::count 4'3
+T273 = not'1 T270
+T274 = and T273 T272
+T275 = mux T274 1'1 T271
+T276 = gte'3 Life:Cell_0::count 4'3
+T277 = or T270 T272
+T278 = not'1 T277
+T279 = and T278 T276
+T280 = mux T279 0'1 T275
+T281 = eq Life:Cell_0::count 3'3
+T282 = not'1 Life:Cell_0::isAlive
+T283 = and T282 T281
+T284 = or T277 T276
+T285 = not'1 T284
+T286 = and T285 T283
+T287 = mux T286 1'1 T280
+Life:Cell_0::isAlive__update = mux'1 Life:Cell_0::reset 0'1 T287
+Life:Cell_0::isAlive = reg'1 1 Life:Cell_0::isAlive__update
+Life::io_state_0 = out'1 Life:Cell_0::io_out
+Life::io_state_1 = out'1 Life:Cell_1::io_out
+Life::io_state_2 = out'1 Life:Cell_2::io_out
+Life:Cell_3::io_out = out'1 Life:Cell_3::isAlive
+Life::io_state_3 = out'1 Life:Cell_3::io_out
+Life:Cell_4::io_out = out'1 Life:Cell_4::isAlive
+Life::io_state_4 = out'1 Life:Cell_4::io_out
+Life:Cell_5::io_out = out'1 Life:Cell_5::isAlive
+Life::io_state_5 = out'1 Life:Cell_5::io_out
+Life:Cell_6::io_out = out'1 Life:Cell_6::isAlive
+Life::io_state_6 = out'1 Life:Cell_6::io_out
+Life:Cell_7::io_out = out'1 Life:Cell_7::isAlive
+Life::io_state_7 = out'1 Life:Cell_7::io_out
+Life:Cell_8::io_out = out'1 Life:Cell_8::isAlive
+Life::io_state_8 = out'1 Life:Cell_8::io_out
 EOF
 ln -s Life.vcd test.vcd
 #include "harness.bash"

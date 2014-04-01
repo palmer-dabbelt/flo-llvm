@@ -7,7 +7,7 @@ int main (int argc, char* argv[]) {
   module->init();
   Router_api_t* api = new Router_api_t();
   api->init(module);
-  FILE *f = fopen("Router.vcd", "w");
+  FILE *f = fopen("./Router.vcd", "w");
   FILE *tee = fopen("Router.stdin", "w");
   module->set_dumpfile(f);
   api->set_teefile(tee);
@@ -1815,13 +1815,17 @@ class mod_t {
 
   int timestep;
 
+  void dump () {
+    if (dumpfile != NULL) dump(dumpfile, timestep);
+    timestep += 1;
+  }
+
   int step (bool is_reset, int n) {
     int delta = 0;
+    dat_t<1> reset = LIT<1>(is_reset);
     for (int i = 0; i < n; i++) {
-      dat_t<1> reset = LIT<1>(is_reset);
       delta += clock(reset);
-      if (dumpfile != NULL) dump(dumpfile, timestep);
-      timestep += 1;
+      dump();
     }
     return delta;
   }
@@ -2176,6 +2180,10 @@ public:
 
 	std::string eval_command(string command) {
 		std::vector<std::string> tokens = tokenize(command);
+		if (tokens.size() == 0) {
+			std::cerr << "Empty command: '" << command << "'" << std::endl;
+			return "error";
+		}
 		if (tokens[0] == "get_host_name") {
 			// IN:  get_host_name
 			// OUT: API host's name
@@ -2191,7 +2199,6 @@ public:
 			// OUT: list of supported API features
 			if (!check_command_length(tokens, 0, 0)) { return "error"; }
 			return get_api_support();
-
 		} else if (tokens[0] == "clock") {
 			// IN:  clock <num_cycles>
 			// OUT: actual number of cycles stepped
@@ -2200,6 +2207,7 @@ public:
 		    for (int i=0; i<cycles; i++) {
 		    	module->clock_lo(dat_t<1>(0));
 		    	module->clock_hi(dat_t<1>(0));
+			module->dump();
 		    }
 		    module->clock_lo(dat_t<1>(0));
 		    return itos(cycles);
@@ -2210,8 +2218,8 @@ public:
 			int n = atoi(tokens[1].c_str());
 		    int ret = module->step(false, n);
 		    return itos(ret);
-		} else if (tokens[0] == "set-clocks") {
-			// IN:  set-clocks
+		} else if (tokens[0] == "set_clocks") {
+			// IN:  set_clocks
 			// OUT: ???
 			// I'm not really sure what this is supposed to do, but it was
 			// in the old command API, so it's here now
@@ -2516,79 +2524,79 @@ wire_peek Router.io_outs_1_valid
 quit
 EOF
 cat >test.flo <<EOF
-Router::io_replies_ready = in/1
-Router::io_reads_valid = in/1
-T0 = and/1 Router::io_reads_valid Router::io_replies_ready
-Router::io_reads_ready = out/1 T0
-Router::io_replies_valid = out/1 T0
-Router::io_reads_bits_addr = in/32
-T1 = rsh/5 Router::io_reads_bits_addr 0
-T2 = rd/3 1 Router::tbl T1
-T3 = mux/3 T0 T2 0
-T4 = cat/3 0 T3
-Router::io_replies_bits = out/8 T4
-Router::io_writes_valid = in/1
-T5 = not/1 T0
-T6 = and/1 T5 Router::io_writes_valid
-Router::io_writes_ready = out/1 T6
-Router::io_outs_0_ready = in/1
-Router::io_outs_1_ready = in/1
-Router::io_in_bits_header = in/8
-T7 = rsh/1 Router::io_in_bits_header 0
-T8 = cat/1 0 T7
-T9 = rd/3 1 Router::tbl T8
-T10 = rsh/2 T9 0
-T11 = rsh/1 T10 0
-T12 = mux/1 T11 Router::io_outs_1_ready Router::io_outs_0_ready
-Router::io_outs_2_ready = in/1
-Router::io_outs_3_ready = in/1
-T13 = rsh/1 T10 0
-T14 = mux/1 T13 Router::io_outs_3_ready Router::io_outs_2_ready
-T15 = rsh/1 T10 1
-T16 = mux/1 T15 T14 T12
-Router::io_in_valid = in/1
-T17 = or/1 T0 Router::io_writes_valid
-T18 = not/1 T17
-T19 = and/1 T18 Router::io_in_valid
-T20 = and/1 T19 T16
-Router::io_in_ready = out/1 T20
-T21 = lsh/7 1 T10
-T22 = rsh/4 T21 0
-T23 = rsh/1 T22 0
-T24 = and/1 T20 T23
-Router::io_outs_0_valid = out/1 T24
-T25 = mux/8 T24 Router::io_in_bits_header 0
-Router::io_outs_0_bits_header = out/8 T25
-Router::io_in_bits_body = in/64
-T26 = mux/64 T24 Router::io_in_bits_body 0
-Router::io_outs_0_bits_body = out/64 T26
-T27 = rsh/1 T22 1
-T28 = and/1 T20 T27
-Router::io_outs_1_valid = out/1 T28
-T29 = mux/8 T28 Router::io_in_bits_header 0
-Router::io_outs_1_bits_header = out/8 T29
-T30 = mux/64 T28 Router::io_in_bits_body 0
-Router::io_outs_1_bits_body = out/64 T30
-T31 = rsh/1 T22 2
-T32 = and/1 T20 T31
-Router::io_outs_2_valid = out/1 T32
-T33 = mux/8 T32 Router::io_in_bits_header 0
-Router::io_outs_2_bits_header = out/8 T33
-T34 = mux/64 T32 Router::io_in_bits_body 0
-Router::io_outs_2_bits_body = out/64 T34
-T35 = rsh/1 T22 3
-T36 = and/1 T20 T35
-Router::io_outs_3_valid = out/1 T36
-T37 = mux/8 T36 Router::io_in_bits_header 0
-Router::io_outs_3_bits_header = out/8 T37
-Router::io_writes_bits_data = in/32
-T38 = rsh/3 Router::io_writes_bits_data 0
-Router::io_writes_bits_addr = in/32
-T39 = rsh/5 Router::io_writes_bits_addr 0
-T40 = wr/3 T6 Router::tbl T39 T38
-Router::tbl = mem/3 32
-T41 = mux/64 T36 Router::io_in_bits_body 0
-Router::io_outs_3_bits_body = out/64 T41
+Router::io_replies_ready = in'1
+Router::io_reads_valid = in'1
+T0 = and Router::io_reads_valid Router::io_replies_ready
+Router::io_reads_ready = out'1 T0
+Router::io_replies_valid = out'1 T0
+Router::io_reads_bits_addr = in'32
+T1 = rsh'5 Router::io_reads_bits_addr 0'1
+T2 = rd'3 1 Router::tbl T1
+T3 = mux T0 T2 0'3
+T4 = cat'3 0'5 T3
+Router::io_replies_bits = out'8 T4
+Router::io_writes_valid = in'1
+T5 = not'1 T0
+T6 = and T5 Router::io_writes_valid
+Router::io_writes_ready = out'1 T6
+Router::io_outs_0_ready = in'1
+Router::io_outs_1_ready = in'1
+Router::io_in_bits_header = in'8
+T7 = rsh'1 Router::io_in_bits_header 0'1
+T8 = cat'1 0'4 T7
+T9 = rd'3 1 Router::tbl T8
+T10 = rsh'2 T9 0'1
+T11 = rsh'1 T10 0'1
+T12 = mux T11 Router::io_outs_1_ready Router::io_outs_0_ready
+Router::io_outs_2_ready = in'1
+Router::io_outs_3_ready = in'1
+T13 = rsh'1 T10 0'1
+T14 = mux T13 Router::io_outs_3_ready Router::io_outs_2_ready
+T15 = rsh'1 T10 1'1
+T16 = mux T15 T14 T12
+Router::io_in_valid = in'1
+T17 = or T0 Router::io_writes_valid
+T18 = not'1 T17
+T19 = and T18 Router::io_in_valid
+T20 = and T19 T16
+Router::io_in_ready = out'1 T20
+T21 = lsh 1'4 T10
+T22 = rsh'4 T21 0'1
+T23 = rsh'1 T22 0'1
+T24 = and T20 T23
+Router::io_outs_0_valid = out'1 T24
+T25 = mux T24 Router::io_in_bits_header 0'8
+Router::io_outs_0_bits_header = out'8 T25
+Router::io_in_bits_body = in'64
+T26 = mux T24 Router::io_in_bits_body 0'64
+Router::io_outs_0_bits_body = out'64 T26
+T27 = rsh'1 T22 1'1
+T28 = and T20 T27
+Router::io_outs_1_valid = out'1 T28
+T29 = mux T28 Router::io_in_bits_header 0'8
+Router::io_outs_1_bits_header = out'8 T29
+T30 = mux T28 Router::io_in_bits_body 0'64
+Router::io_outs_1_bits_body = out'64 T30
+T31 = rsh'1 T22 2'2
+T32 = and T20 T31
+Router::io_outs_2_valid = out'1 T32
+T33 = mux T32 Router::io_in_bits_header 0'8
+Router::io_outs_2_bits_header = out'8 T33
+T34 = mux T32 Router::io_in_bits_body 0'64
+Router::io_outs_2_bits_body = out'64 T34
+T35 = rsh'1 T22 3'2
+T36 = and T20 T35
+Router::io_outs_3_valid = out'1 T36
+T37 = mux T36 Router::io_in_bits_header 0'8
+Router::io_outs_3_bits_header = out'8 T37
+Router::io_writes_bits_data = in'32
+T38 = rsh'3 Router::io_writes_bits_data 0'1
+Router::io_writes_bits_addr = in'32
+T39 = rsh'5 Router::io_writes_bits_addr 0'1
+T40 = wr'3 T6 Router::tbl T39 T38
+Router::tbl = mem'3 32
+T41 = mux T36 Router::io_in_bits_body 0'64
+Router::io_outs_3_bits_body = out'64 T41
 EOF
 ln -s Router.vcd test.vcd
 #include "harness.bash"

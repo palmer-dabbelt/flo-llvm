@@ -7,7 +7,7 @@ int main (int argc, char* argv[]) {
   module->init();
   Tbl_api_t* api = new Tbl_api_t();
   api->init(module);
-  FILE *f = fopen("Tbl.vcd", "w");
+  FILE *f = fopen("./Tbl.vcd", "w");
   FILE *tee = fopen("Tbl.stdin", "w");
   module->set_dumpfile(f);
   api->set_teefile(tee);
@@ -1815,13 +1815,17 @@ class mod_t {
 
   int timestep;
 
+  void dump () {
+    if (dumpfile != NULL) dump(dumpfile, timestep);
+    timestep += 1;
+  }
+
   int step (bool is_reset, int n) {
     int delta = 0;
+    dat_t<1> reset = LIT<1>(is_reset);
     for (int i = 0; i < n; i++) {
-      dat_t<1> reset = LIT<1>(is_reset);
       delta += clock(reset);
-      if (dumpfile != NULL) dump(dumpfile, timestep);
-      timestep += 1;
+      dump();
     }
     return delta;
   }
@@ -2176,6 +2180,10 @@ public:
 
 	std::string eval_command(string command) {
 		std::vector<std::string> tokens = tokenize(command);
+		if (tokens.size() == 0) {
+			std::cerr << "Empty command: '" << command << "'" << std::endl;
+			return "error";
+		}
 		if (tokens[0] == "get_host_name") {
 			// IN:  get_host_name
 			// OUT: API host's name
@@ -2191,7 +2199,6 @@ public:
 			// OUT: list of supported API features
 			if (!check_command_length(tokens, 0, 0)) { return "error"; }
 			return get_api_support();
-
 		} else if (tokens[0] == "clock") {
 			// IN:  clock <num_cycles>
 			// OUT: actual number of cycles stepped
@@ -2200,6 +2207,7 @@ public:
 		    for (int i=0; i<cycles; i++) {
 		    	module->clock_lo(dat_t<1>(0));
 		    	module->clock_hi(dat_t<1>(0));
+			module->dump();
 		    }
 		    module->clock_lo(dat_t<1>(0));
 		    return itos(cycles);
@@ -2210,8 +2218,8 @@ public:
 			int n = atoi(tokens[1].c_str());
 		    int ret = module->step(false, n);
 		    return itos(ret);
-		} else if (tokens[0] == "set-clocks") {
-			// IN:  set-clocks
+		} else if (tokens[0] == "set_clocks") {
+			// IN:  set_clocks
 			// OUT: ???
 			// I'm not really sure what this is supposed to do, but it was
 			// in the old command API, so it's here now
@@ -2493,266 +2501,266 @@ wire_peek Tbl.io_out
 quit
 EOF
 cat >test.flo <<EOF
-T0 = mem/8 256
-init T0 0 0
-init T0 1 1
-init T0 2 2
-init T0 3 3
-init T0 4 4
-init T0 5 5
-init T0 6 6
-init T0 7 7
-init T0 8 8
-init T0 9 9
-init T0 10 10
-init T0 11 11
-init T0 12 12
-init T0 13 13
-init T0 14 14
-init T0 15 15
-init T0 16 16
-init T0 17 17
-init T0 18 18
-init T0 19 19
-init T0 20 20
-init T0 21 21
-init T0 22 22
-init T0 23 23
-init T0 24 24
-init T0 25 25
-init T0 26 26
-init T0 27 27
-init T0 28 28
-init T0 29 29
-init T0 30 30
-init T0 31 31
-init T0 32 32
-init T0 33 33
-init T0 34 34
-init T0 35 35
-init T0 36 36
-init T0 37 37
-init T0 38 38
-init T0 39 39
-init T0 40 40
-init T0 41 41
-init T0 42 42
-init T0 43 43
-init T0 44 44
-init T0 45 45
-init T0 46 46
-init T0 47 47
-init T0 48 48
-init T0 49 49
-init T0 50 50
-init T0 51 51
-init T0 52 52
-init T0 53 53
-init T0 54 54
-init T0 55 55
-init T0 56 56
-init T0 57 57
-init T0 58 58
-init T0 59 59
-init T0 60 60
-init T0 61 61
-init T0 62 62
-init T0 63 63
-init T0 64 64
-init T0 65 65
-init T0 66 66
-init T0 67 67
-init T0 68 68
-init T0 69 69
-init T0 70 70
-init T0 71 71
-init T0 72 72
-init T0 73 73
-init T0 74 74
-init T0 75 75
-init T0 76 76
-init T0 77 77
-init T0 78 78
-init T0 79 79
-init T0 80 80
-init T0 81 81
-init T0 82 82
-init T0 83 83
-init T0 84 84
-init T0 85 85
-init T0 86 86
-init T0 87 87
-init T0 88 88
-init T0 89 89
-init T0 90 90
-init T0 91 91
-init T0 92 92
-init T0 93 93
-init T0 94 94
-init T0 95 95
-init T0 96 96
-init T0 97 97
-init T0 98 98
-init T0 99 99
-init T0 100 100
-init T0 101 101
-init T0 102 102
-init T0 103 103
-init T0 104 104
-init T0 105 105
-init T0 106 106
-init T0 107 107
-init T0 108 108
-init T0 109 109
-init T0 110 110
-init T0 111 111
-init T0 112 112
-init T0 113 113
-init T0 114 114
-init T0 115 115
-init T0 116 116
-init T0 117 117
-init T0 118 118
-init T0 119 119
-init T0 120 120
-init T0 121 121
-init T0 122 122
-init T0 123 123
-init T0 124 124
-init T0 125 125
-init T0 126 126
-init T0 127 127
-init T0 128 128
-init T0 129 129
-init T0 130 130
-init T0 131 131
-init T0 132 132
-init T0 133 133
-init T0 134 134
-init T0 135 135
-init T0 136 136
-init T0 137 137
-init T0 138 138
-init T0 139 139
-init T0 140 140
-init T0 141 141
-init T0 142 142
-init T0 143 143
-init T0 144 144
-init T0 145 145
-init T0 146 146
-init T0 147 147
-init T0 148 148
-init T0 149 149
-init T0 150 150
-init T0 151 151
-init T0 152 152
-init T0 153 153
-init T0 154 154
-init T0 155 155
-init T0 156 156
-init T0 157 157
-init T0 158 158
-init T0 159 159
-init T0 160 160
-init T0 161 161
-init T0 162 162
-init T0 163 163
-init T0 164 164
-init T0 165 165
-init T0 166 166
-init T0 167 167
-init T0 168 168
-init T0 169 169
-init T0 170 170
-init T0 171 171
-init T0 172 172
-init T0 173 173
-init T0 174 174
-init T0 175 175
-init T0 176 176
-init T0 177 177
-init T0 178 178
-init T0 179 179
-init T0 180 180
-init T0 181 181
-init T0 182 182
-init T0 183 183
-init T0 184 184
-init T0 185 185
-init T0 186 186
-init T0 187 187
-init T0 188 188
-init T0 189 189
-init T0 190 190
-init T0 191 191
-init T0 192 192
-init T0 193 193
-init T0 194 194
-init T0 195 195
-init T0 196 196
-init T0 197 197
-init T0 198 198
-init T0 199 199
-init T0 200 200
-init T0 201 201
-init T0 202 202
-init T0 203 203
-init T0 204 204
-init T0 205 205
-init T0 206 206
-init T0 207 207
-init T0 208 208
-init T0 209 209
-init T0 210 210
-init T0 211 211
-init T0 212 212
-init T0 213 213
-init T0 214 214
-init T0 215 215
-init T0 216 216
-init T0 217 217
-init T0 218 218
-init T0 219 219
-init T0 220 220
-init T0 221 221
-init T0 222 222
-init T0 223 223
-init T0 224 224
-init T0 225 225
-init T0 226 226
-init T0 227 227
-init T0 228 228
-init T0 229 229
-init T0 230 230
-init T0 231 231
-init T0 232 232
-init T0 233 233
-init T0 234 234
-init T0 235 235
-init T0 236 236
-init T0 237 237
-init T0 238 238
-init T0 239 239
-init T0 240 240
-init T0 241 241
-init T0 242 242
-init T0 243 243
-init T0 244 244
-init T0 245 245
-init T0 246 246
-init T0 247 247
-init T0 248 248
-init T0 249 249
-init T0 250 250
-init T0 251 251
-init T0 252 252
-init T0 253 253
-init T0 254 254
-init T0 255 255
-Tbl::io_addr = in/8
-T1 = rd/8 1 T0 Tbl::io_addr
-Tbl::io_out = out/8 T1
+T0 = mem'8 256
+init T0 0 0'8
+init T0 1 1'8
+init T0 2 2'8
+init T0 3 3'8
+init T0 4 4'8
+init T0 5 5'8
+init T0 6 6'8
+init T0 7 7'8
+init T0 8 8'8
+init T0 9 9'8
+init T0 10 10'8
+init T0 11 11'8
+init T0 12 12'8
+init T0 13 13'8
+init T0 14 14'8
+init T0 15 15'8
+init T0 16 16'8
+init T0 17 17'8
+init T0 18 18'8
+init T0 19 19'8
+init T0 20 20'8
+init T0 21 21'8
+init T0 22 22'8
+init T0 23 23'8
+init T0 24 24'8
+init T0 25 25'8
+init T0 26 26'8
+init T0 27 27'8
+init T0 28 28'8
+init T0 29 29'8
+init T0 30 30'8
+init T0 31 31'8
+init T0 32 32'8
+init T0 33 33'8
+init T0 34 34'8
+init T0 35 35'8
+init T0 36 36'8
+init T0 37 37'8
+init T0 38 38'8
+init T0 39 39'8
+init T0 40 40'8
+init T0 41 41'8
+init T0 42 42'8
+init T0 43 43'8
+init T0 44 44'8
+init T0 45 45'8
+init T0 46 46'8
+init T0 47 47'8
+init T0 48 48'8
+init T0 49 49'8
+init T0 50 50'8
+init T0 51 51'8
+init T0 52 52'8
+init T0 53 53'8
+init T0 54 54'8
+init T0 55 55'8
+init T0 56 56'8
+init T0 57 57'8
+init T0 58 58'8
+init T0 59 59'8
+init T0 60 60'8
+init T0 61 61'8
+init T0 62 62'8
+init T0 63 63'8
+init T0 64 64'8
+init T0 65 65'8
+init T0 66 66'8
+init T0 67 67'8
+init T0 68 68'8
+init T0 69 69'8
+init T0 70 70'8
+init T0 71 71'8
+init T0 72 72'8
+init T0 73 73'8
+init T0 74 74'8
+init T0 75 75'8
+init T0 76 76'8
+init T0 77 77'8
+init T0 78 78'8
+init T0 79 79'8
+init T0 80 80'8
+init T0 81 81'8
+init T0 82 82'8
+init T0 83 83'8
+init T0 84 84'8
+init T0 85 85'8
+init T0 86 86'8
+init T0 87 87'8
+init T0 88 88'8
+init T0 89 89'8
+init T0 90 90'8
+init T0 91 91'8
+init T0 92 92'8
+init T0 93 93'8
+init T0 94 94'8
+init T0 95 95'8
+init T0 96 96'8
+init T0 97 97'8
+init T0 98 98'8
+init T0 99 99'8
+init T0 100 100'8
+init T0 101 101'8
+init T0 102 102'8
+init T0 103 103'8
+init T0 104 104'8
+init T0 105 105'8
+init T0 106 106'8
+init T0 107 107'8
+init T0 108 108'8
+init T0 109 109'8
+init T0 110 110'8
+init T0 111 111'8
+init T0 112 112'8
+init T0 113 113'8
+init T0 114 114'8
+init T0 115 115'8
+init T0 116 116'8
+init T0 117 117'8
+init T0 118 118'8
+init T0 119 119'8
+init T0 120 120'8
+init T0 121 121'8
+init T0 122 122'8
+init T0 123 123'8
+init T0 124 124'8
+init T0 125 125'8
+init T0 126 126'8
+init T0 127 127'8
+init T0 128 128'8
+init T0 129 129'8
+init T0 130 130'8
+init T0 131 131'8
+init T0 132 132'8
+init T0 133 133'8
+init T0 134 134'8
+init T0 135 135'8
+init T0 136 136'8
+init T0 137 137'8
+init T0 138 138'8
+init T0 139 139'8
+init T0 140 140'8
+init T0 141 141'8
+init T0 142 142'8
+init T0 143 143'8
+init T0 144 144'8
+init T0 145 145'8
+init T0 146 146'8
+init T0 147 147'8
+init T0 148 148'8
+init T0 149 149'8
+init T0 150 150'8
+init T0 151 151'8
+init T0 152 152'8
+init T0 153 153'8
+init T0 154 154'8
+init T0 155 155'8
+init T0 156 156'8
+init T0 157 157'8
+init T0 158 158'8
+init T0 159 159'8
+init T0 160 160'8
+init T0 161 161'8
+init T0 162 162'8
+init T0 163 163'8
+init T0 164 164'8
+init T0 165 165'8
+init T0 166 166'8
+init T0 167 167'8
+init T0 168 168'8
+init T0 169 169'8
+init T0 170 170'8
+init T0 171 171'8
+init T0 172 172'8
+init T0 173 173'8
+init T0 174 174'8
+init T0 175 175'8
+init T0 176 176'8
+init T0 177 177'8
+init T0 178 178'8
+init T0 179 179'8
+init T0 180 180'8
+init T0 181 181'8
+init T0 182 182'8
+init T0 183 183'8
+init T0 184 184'8
+init T0 185 185'8
+init T0 186 186'8
+init T0 187 187'8
+init T0 188 188'8
+init T0 189 189'8
+init T0 190 190'8
+init T0 191 191'8
+init T0 192 192'8
+init T0 193 193'8
+init T0 194 194'8
+init T0 195 195'8
+init T0 196 196'8
+init T0 197 197'8
+init T0 198 198'8
+init T0 199 199'8
+init T0 200 200'8
+init T0 201 201'8
+init T0 202 202'8
+init T0 203 203'8
+init T0 204 204'8
+init T0 205 205'8
+init T0 206 206'8
+init T0 207 207'8
+init T0 208 208'8
+init T0 209 209'8
+init T0 210 210'8
+init T0 211 211'8
+init T0 212 212'8
+init T0 213 213'8
+init T0 214 214'8
+init T0 215 215'8
+init T0 216 216'8
+init T0 217 217'8
+init T0 218 218'8
+init T0 219 219'8
+init T0 220 220'8
+init T0 221 221'8
+init T0 222 222'8
+init T0 223 223'8
+init T0 224 224'8
+init T0 225 225'8
+init T0 226 226'8
+init T0 227 227'8
+init T0 228 228'8
+init T0 229 229'8
+init T0 230 230'8
+init T0 231 231'8
+init T0 232 232'8
+init T0 233 233'8
+init T0 234 234'8
+init T0 235 235'8
+init T0 236 236'8
+init T0 237 237'8
+init T0 238 238'8
+init T0 239 239'8
+init T0 240 240'8
+init T0 241 241'8
+init T0 242 242'8
+init T0 243 243'8
+init T0 244 244'8
+init T0 245 245'8
+init T0 246 246'8
+init T0 247 247'8
+init T0 248 248'8
+init T0 249 249'8
+init T0 250 250'8
+init T0 251 251'8
+init T0 252 252'8
+init T0 253 253'8
+init T0 254 254'8
+init T0 255 255'8
+Tbl::io_addr = in'8
+T1 = rd'8 1 T0 Tbl::io_addr
+Tbl::io_out = out'8 T1
 EOF
 ln -s Tbl.vcd test.vcd
 #include "harness.bash"

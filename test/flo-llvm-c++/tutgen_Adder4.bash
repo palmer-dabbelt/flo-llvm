@@ -7,7 +7,7 @@ int main (int argc, char* argv[]) {
   module->init();
   Adder4_api_t* api = new Adder4_api_t();
   api->init(module);
-  FILE *f = fopen("Adder4.vcd", "w");
+  FILE *f = fopen("./Adder4.vcd", "w");
   FILE *tee = fopen("Adder4.stdin", "w");
   module->set_dumpfile(f);
   api->set_teefile(tee);
@@ -1815,13 +1815,17 @@ class mod_t {
 
   int timestep;
 
+  void dump () {
+    if (dumpfile != NULL) dump(dumpfile, timestep);
+    timestep += 1;
+  }
+
   int step (bool is_reset, int n) {
     int delta = 0;
+    dat_t<1> reset = LIT<1>(is_reset);
     for (int i = 0; i < n; i++) {
-      dat_t<1> reset = LIT<1>(is_reset);
       delta += clock(reset);
-      if (dumpfile != NULL) dump(dumpfile, timestep);
-      timestep += 1;
+      dump();
     }
     return delta;
   }
@@ -2176,6 +2180,10 @@ public:
 
 	std::string eval_command(string command) {
 		std::vector<std::string> tokens = tokenize(command);
+		if (tokens.size() == 0) {
+			std::cerr << "Empty command: '" << command << "'" << std::endl;
+			return "error";
+		}
 		if (tokens[0] == "get_host_name") {
 			// IN:  get_host_name
 			// OUT: API host's name
@@ -2191,7 +2199,6 @@ public:
 			// OUT: list of supported API features
 			if (!check_command_length(tokens, 0, 0)) { return "error"; }
 			return get_api_support();
-
 		} else if (tokens[0] == "clock") {
 			// IN:  clock <num_cycles>
 			// OUT: actual number of cycles stepped
@@ -2200,6 +2207,7 @@ public:
 		    for (int i=0; i<cycles; i++) {
 		    	module->clock_lo(dat_t<1>(0));
 		    	module->clock_hi(dat_t<1>(0));
+			module->dump();
 		    }
 		    module->clock_lo(dat_t<1>(0));
 		    return itos(cycles);
@@ -2210,8 +2218,8 @@ public:
 			int n = atoi(tokens[1].c_str());
 		    int ret = module->step(false, n);
 		    return itos(ret);
-		} else if (tokens[0] == "set-clocks") {
-			// IN:  set-clocks
+		} else if (tokens[0] == "set_clocks") {
+			// IN:  set_clocks
 			// OUT: ???
 			// I'm not really sure what this is supposed to do, but it was
 			// in the old command API, so it's here now
@@ -2585,70 +2593,70 @@ wire_peek Adder4.io_Cout
 quit
 EOF
 cat >test.flo <<EOF
-Adder4::io_Cin = in/1
-Adder4:Adder0::io_cin = mov/1 Adder4::io_Cin
-Adder4::io_B = in/4
-T0 = rsh/1 Adder4::io_B 0
-Adder4:Adder0::io_b = mov/1 T0
-Adder4::io_A = in/4
-T1 = rsh/1 Adder4::io_A 0
-Adder4:Adder0::io_a = mov/1 T1
-Adder4:Adder0::a_xor_b = xor/1 Adder4:Adder0::io_a Adder4:Adder0::io_b
-T2 = xor/1 Adder4:Adder0::a_xor_b Adder4:Adder0::io_cin
-Adder4:Adder0::io_sum = out/1 T2
-Adder4:Adder0::a_and_cin = and/1 Adder4:Adder0::io_a Adder4:Adder0::io_cin
-Adder4:Adder0::b_and_cin = and/1 Adder4:Adder0::io_b Adder4:Adder0::io_cin
-Adder4:Adder0::a_and_b = and/1 Adder4:Adder0::io_a Adder4:Adder0::io_b
-T3 = or/1 Adder4:Adder0::a_and_b Adder4:Adder0::b_and_cin
-T4 = or/1 T3 Adder4:Adder0::a_and_cin
-Adder4:Adder0::io_cout = out/1 T4
-Adder4:Adder1::io_cin = mov/1 Adder4:Adder0::io_cout
-T5 = rsh/1 Adder4::io_B 1
-Adder4:Adder1::io_b = mov/1 T5
-T6 = rsh/1 Adder4::io_A 1
-Adder4:Adder1::io_a = mov/1 T6
-Adder4:Adder1::a_xor_b = xor/1 Adder4:Adder1::io_a Adder4:Adder1::io_b
-T7 = xor/1 Adder4:Adder1::a_xor_b Adder4:Adder1::io_cin
-Adder4:Adder1::io_sum = out/1 T7
-Adder4::s1 = cat/1 Adder4:Adder1::io_sum Adder4:Adder0::io_sum
-Adder4:Adder1::a_and_cin = and/1 Adder4:Adder1::io_a Adder4:Adder1::io_cin
-Adder4:Adder1::b_and_cin = and/1 Adder4:Adder1::io_b Adder4:Adder1::io_cin
-Adder4:Adder1::a_and_b = and/1 Adder4:Adder1::io_a Adder4:Adder1::io_b
-T8 = or/1 Adder4:Adder1::a_and_b Adder4:Adder1::b_and_cin
-T9 = or/1 T8 Adder4:Adder1::a_and_cin
-Adder4:Adder1::io_cout = out/1 T9
-Adder4:Adder2::io_cin = mov/1 Adder4:Adder1::io_cout
-T10 = rsh/1 Adder4::io_B 2
-Adder4:Adder2::io_b = mov/1 T10
-T11 = rsh/1 Adder4::io_A 2
-Adder4:Adder2::io_a = mov/1 T11
-Adder4:Adder2::a_xor_b = xor/1 Adder4:Adder2::io_a Adder4:Adder2::io_b
-T12 = xor/1 Adder4:Adder2::a_xor_b Adder4:Adder2::io_cin
-Adder4:Adder2::io_sum = out/1 T12
-Adder4::s2 = cat/2 Adder4:Adder2::io_sum Adder4::s1
-Adder4:Adder2::a_and_cin = and/1 Adder4:Adder2::io_a Adder4:Adder2::io_cin
-Adder4:Adder2::b_and_cin = and/1 Adder4:Adder2::io_b Adder4:Adder2::io_cin
-Adder4:Adder2::a_and_b = and/1 Adder4:Adder2::io_a Adder4:Adder2::io_b
-T13 = or/1 Adder4:Adder2::a_and_b Adder4:Adder2::b_and_cin
-T14 = or/1 T13 Adder4:Adder2::a_and_cin
-Adder4:Adder2::io_cout = out/1 T14
-Adder4:Adder3::io_cin = mov/1 Adder4:Adder2::io_cout
-T15 = rsh/1 Adder4::io_B 3
-Adder4:Adder3::io_b = mov/1 T15
-T16 = rsh/1 Adder4::io_A 3
-Adder4:Adder3::io_a = mov/1 T16
-Adder4:Adder3::a_xor_b = xor/1 Adder4:Adder3::io_a Adder4:Adder3::io_b
-T17 = xor/1 Adder4:Adder3::a_xor_b Adder4:Adder3::io_cin
-Adder4:Adder3::io_sum = out/1 T17
-T18 = cat/3 Adder4:Adder3::io_sum Adder4::s2
-Adder4::io_Sum = out/4 T18
-Adder4:Adder3::a_and_cin = and/1 Adder4:Adder3::io_a Adder4:Adder3::io_cin
-Adder4:Adder3::b_and_cin = and/1 Adder4:Adder3::io_b Adder4:Adder3::io_cin
-Adder4:Adder3::a_and_b = and/1 Adder4:Adder3::io_a Adder4:Adder3::io_b
-T19 = or/1 Adder4:Adder3::a_and_b Adder4:Adder3::b_and_cin
-T20 = or/1 T19 Adder4:Adder3::a_and_cin
-Adder4:Adder3::io_cout = out/1 T20
-Adder4::io_Cout = out/1 Adder4:Adder3::io_cout
+Adder4::io_Cin = in'1
+Adder4:Adder0::io_cin = mov Adder4::io_Cin
+Adder4::io_B = in'4
+T0 = rsh'1 Adder4::io_B 0'1
+Adder4:Adder0::io_b = mov T0
+Adder4::io_A = in'4
+T1 = rsh'1 Adder4::io_A 0'1
+Adder4:Adder0::io_a = mov T1
+Adder4:Adder0::a_xor_b = xor Adder4:Adder0::io_a Adder4:Adder0::io_b
+T2 = xor Adder4:Adder0::a_xor_b Adder4:Adder0::io_cin
+Adder4:Adder0::io_sum = out'1 T2
+Adder4:Adder0::a_and_cin = and Adder4:Adder0::io_a Adder4:Adder0::io_cin
+Adder4:Adder0::b_and_cin = and Adder4:Adder0::io_b Adder4:Adder0::io_cin
+Adder4:Adder0::a_and_b = and Adder4:Adder0::io_a Adder4:Adder0::io_b
+T3 = or Adder4:Adder0::a_and_b Adder4:Adder0::b_and_cin
+T4 = or T3 Adder4:Adder0::a_and_cin
+Adder4:Adder0::io_cout = out'1 T4
+Adder4:Adder1::io_cin = mov Adder4:Adder0::io_cout
+T5 = rsh'1 Adder4::io_B 1'1
+Adder4:Adder1::io_b = mov T5
+T6 = rsh'1 Adder4::io_A 1'1
+Adder4:Adder1::io_a = mov T6
+Adder4:Adder1::a_xor_b = xor Adder4:Adder1::io_a Adder4:Adder1::io_b
+T7 = xor Adder4:Adder1::a_xor_b Adder4:Adder1::io_cin
+Adder4:Adder1::io_sum = out'1 T7
+Adder4::s1 = cat'1 Adder4:Adder1::io_sum Adder4:Adder0::io_sum
+Adder4:Adder1::a_and_cin = and Adder4:Adder1::io_a Adder4:Adder1::io_cin
+Adder4:Adder1::b_and_cin = and Adder4:Adder1::io_b Adder4:Adder1::io_cin
+Adder4:Adder1::a_and_b = and Adder4:Adder1::io_a Adder4:Adder1::io_b
+T8 = or Adder4:Adder1::a_and_b Adder4:Adder1::b_and_cin
+T9 = or T8 Adder4:Adder1::a_and_cin
+Adder4:Adder1::io_cout = out'1 T9
+Adder4:Adder2::io_cin = mov Adder4:Adder1::io_cout
+T10 = rsh'1 Adder4::io_B 2'2
+Adder4:Adder2::io_b = mov T10
+T11 = rsh'1 Adder4::io_A 2'2
+Adder4:Adder2::io_a = mov T11
+Adder4:Adder2::a_xor_b = xor Adder4:Adder2::io_a Adder4:Adder2::io_b
+T12 = xor Adder4:Adder2::a_xor_b Adder4:Adder2::io_cin
+Adder4:Adder2::io_sum = out'1 T12
+Adder4::s2 = cat'2 Adder4:Adder2::io_sum Adder4::s1
+Adder4:Adder2::a_and_cin = and Adder4:Adder2::io_a Adder4:Adder2::io_cin
+Adder4:Adder2::b_and_cin = and Adder4:Adder2::io_b Adder4:Adder2::io_cin
+Adder4:Adder2::a_and_b = and Adder4:Adder2::io_a Adder4:Adder2::io_b
+T13 = or Adder4:Adder2::a_and_b Adder4:Adder2::b_and_cin
+T14 = or T13 Adder4:Adder2::a_and_cin
+Adder4:Adder2::io_cout = out'1 T14
+Adder4:Adder3::io_cin = mov Adder4:Adder2::io_cout
+T15 = rsh'1 Adder4::io_B 3'2
+Adder4:Adder3::io_b = mov T15
+T16 = rsh'1 Adder4::io_A 3'2
+Adder4:Adder3::io_a = mov T16
+Adder4:Adder3::a_xor_b = xor Adder4:Adder3::io_a Adder4:Adder3::io_b
+T17 = xor Adder4:Adder3::a_xor_b Adder4:Adder3::io_cin
+Adder4:Adder3::io_sum = out'1 T17
+T18 = cat'3 Adder4:Adder3::io_sum Adder4::s2
+Adder4::io_Sum = out'4 T18
+Adder4:Adder3::a_and_cin = and Adder4:Adder3::io_a Adder4:Adder3::io_cin
+Adder4:Adder3::b_and_cin = and Adder4:Adder3::io_b Adder4:Adder3::io_cin
+Adder4:Adder3::a_and_b = and Adder4:Adder3::io_a Adder4:Adder3::io_b
+T19 = or Adder4:Adder3::a_and_b Adder4:Adder3::b_and_cin
+T20 = or T19 Adder4:Adder3::a_and_cin
+Adder4:Adder3::io_cout = out'1 T20
+Adder4::io_Cout = out'1 Adder4:Adder3::io_cout
 EOF
 ln -s Adder4.vcd test.vcd
 #include "harness.bash"

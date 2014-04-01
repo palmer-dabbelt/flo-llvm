@@ -7,7 +7,7 @@ int main (int argc, char* argv[]) {
   module->init();
   GCD_api_t* api = new GCD_api_t();
   api->init(module);
-  FILE *f = fopen("GCD.vcd", "w");
+  FILE *f = fopen("./GCD.vcd", "w");
   FILE *tee = fopen("GCD.stdin", "w");
   module->set_dumpfile(f);
   api->set_teefile(tee);
@@ -1815,13 +1815,17 @@ class mod_t {
 
   int timestep;
 
+  void dump () {
+    if (dumpfile != NULL) dump(dumpfile, timestep);
+    timestep += 1;
+  }
+
   int step (bool is_reset, int n) {
     int delta = 0;
+    dat_t<1> reset = LIT<1>(is_reset);
     for (int i = 0; i < n; i++) {
-      dat_t<1> reset = LIT<1>(is_reset);
       delta += clock(reset);
-      if (dumpfile != NULL) dump(dumpfile, timestep);
-      timestep += 1;
+      dump();
     }
     return delta;
   }
@@ -2176,6 +2180,10 @@ public:
 
 	std::string eval_command(string command) {
 		std::vector<std::string> tokens = tokenize(command);
+		if (tokens.size() == 0) {
+			std::cerr << "Empty command: '" << command << "'" << std::endl;
+			return "error";
+		}
 		if (tokens[0] == "get_host_name") {
 			// IN:  get_host_name
 			// OUT: API host's name
@@ -2191,7 +2199,6 @@ public:
 			// OUT: list of supported API features
 			if (!check_command_length(tokens, 0, 0)) { return "error"; }
 			return get_api_support();
-
 		} else if (tokens[0] == "clock") {
 			// IN:  clock <num_cycles>
 			// OUT: actual number of cycles stepped
@@ -2200,6 +2207,7 @@ public:
 		    for (int i=0; i<cycles; i++) {
 		    	module->clock_lo(dat_t<1>(0));
 		    	module->clock_hi(dat_t<1>(0));
+			module->dump();
 		    }
 		    module->clock_lo(dat_t<1>(0));
 		    return itos(cycles);
@@ -2210,8 +2218,8 @@ public:
 			int n = atoi(tokens[1].c_str());
 		    int ret = module->step(false, n);
 		    return itos(ret);
-		} else if (tokens[0] == "set-clocks") {
-			// IN:  set-clocks
+		} else if (tokens[0] == "set_clocks") {
+			// IN:  set_clocks
 			// OUT: ???
 			// I'm not really sure what this is supposed to do, but it was
 			// in the old command API, so it's here now
@@ -2454,23 +2462,23 @@ wire_peek GCD.io_z
 quit
 EOF
 cat >test.flo <<EOF
-GCD::io_z = out/16 GCD::x
-T0 = sub/16 GCD::x GCD::y
-T1 = lt/16 GCD::y GCD::x
-T2 = mux/16 T1 T0 GCD::x
-GCD::io_a = in/16
-GCD::io_e = in/1
-T3 = mux/16 GCD::io_e GCD::io_a T2
-GCD::x = reg/16 1 T3
-T4 = sub/16 GCD::y GCD::x
-T5 = lt/16 GCD::y GCD::x
-T6 = not/1 T5
-T7 = mux/16 T6 T4 GCD::y
-GCD::io_b = in/16
-T8 = mux/16 GCD::io_e GCD::io_b T7
-GCD::y = reg/16 1 T8
-T9 = eq/16 GCD::y 0
-GCD::io_v = out/1 T9
+GCD::io_z = out'16 GCD::x
+T0 = sub'16 GCD::x GCD::y
+T1 = lt'16 GCD::y GCD::x
+T2 = mux T1 T0 GCD::x
+GCD::io_a = in'16
+GCD::io_e = in'1
+T3 = mux GCD::io_e GCD::io_a T2
+GCD::x = reg'16 1 T3
+T4 = sub'16 GCD::y GCD::x
+T5 = lt'16 GCD::y GCD::x
+T6 = not'1 T5
+T7 = mux T6 T4 GCD::y
+GCD::io_b = in'16
+T8 = mux GCD::io_e GCD::io_b T7
+GCD::y = reg'16 1 T8
+T9 = eq GCD::y 0'16
+GCD::io_v = out'1 T9
 EOF
 ln -s GCD.vcd test.vcd
 #include "harness.bash"

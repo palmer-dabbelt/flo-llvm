@@ -7,7 +7,7 @@ int main (int argc, char* argv[]) {
   module->init();
   Stack_api_t* api = new Stack_api_t();
   api->init(module);
-  FILE *f = fopen("Stack.vcd", "w");
+  FILE *f = fopen("./Stack.vcd", "w");
   FILE *tee = fopen("Stack.stdin", "w");
   module->set_dumpfile(f);
   api->set_teefile(tee);
@@ -1815,13 +1815,17 @@ class mod_t {
 
   int timestep;
 
+  void dump () {
+    if (dumpfile != NULL) dump(dumpfile, timestep);
+    timestep += 1;
+  }
+
   int step (bool is_reset, int n) {
     int delta = 0;
+    dat_t<1> reset = LIT<1>(is_reset);
     for (int i = 0; i < n; i++) {
-      dat_t<1> reset = LIT<1>(is_reset);
       delta += clock(reset);
-      if (dumpfile != NULL) dump(dumpfile, timestep);
-      timestep += 1;
+      dump();
     }
     return delta;
   }
@@ -2176,6 +2180,10 @@ public:
 
 	std::string eval_command(string command) {
 		std::vector<std::string> tokens = tokenize(command);
+		if (tokens.size() == 0) {
+			std::cerr << "Empty command: '" << command << "'" << std::endl;
+			return "error";
+		}
 		if (tokens[0] == "get_host_name") {
 			// IN:  get_host_name
 			// OUT: API host's name
@@ -2191,7 +2199,6 @@ public:
 			// OUT: list of supported API features
 			if (!check_command_length(tokens, 0, 0)) { return "error"; }
 			return get_api_support();
-
 		} else if (tokens[0] == "clock") {
 			// IN:  clock <num_cycles>
 			// OUT: actual number of cycles stepped
@@ -2200,6 +2207,7 @@ public:
 		    for (int i=0; i<cycles; i++) {
 		    	module->clock_lo(dat_t<1>(0));
 		    	module->clock_hi(dat_t<1>(0));
+			module->dump();
 		    }
 		    module->clock_lo(dat_t<1>(0));
 		    return itos(cycles);
@@ -2210,8 +2218,8 @@ public:
 			int n = atoi(tokens[1].c_str());
 		    int ret = module->step(false, n);
 		    return itos(ret);
-		} else if (tokens[0] == "set-clocks") {
-			// IN:  set-clocks
+		} else if (tokens[0] == "set_clocks") {
+			// IN:  set_clocks
 			// OUT: ???
 			// I'm not really sure what this is supposed to do, but it was
 			// in the old command API, so it's here now
@@ -2583,37 +2591,37 @@ quit
 EOF
 cat >test.flo <<EOF
 reset = rst
-T0 = add/4 Stack::sp 1
-T1 = lt/4 Stack::sp 8
-Stack::io_push = in/1
-T2 = and/1 Stack::io_push T1
-Stack::io_en = in/1
-T3 = and/1 Stack::io_en T2
-T4 = mux/4 T3 T0 Stack::sp
-T5 = sub/4 Stack::sp 1
-T6 = lt/4 0 Stack::sp
-Stack::io_pop = in/1
-T7 = and/1 Stack::io_pop T6
-T8 = not/1 T2
-T9 = and/1 T8 T7
-T10 = and/1 Stack::io_en T9
-T11 = mux/4 T10 T5 T4
-Stack::sp__update = mux/4 reset 0 T11
-Stack::sp = reg/4 1 Stack::sp__update
-Stack::io_dataIn = in/32
-T12 = mov/32 Stack::io_dataIn
-T13 = rsh/3 Stack::sp 0
-T14 = wr/32 T3 Stack::stack_mem T13 T12
-Stack::stack_mem = mem/32 8
-T15 = sub/4 Stack::sp 1
-T16 = rsh/3 T15 0
-T17 = rd/32 1 Stack::stack_mem T16
-T18 = lt/4 0 Stack::sp
-T19 = and/1 Stack::io_en T18
-T20 = mux/32 T19 T17 Stack::dataOut
-Stack::dataOut__update = mux/32 reset 0 T20
-Stack::dataOut = reg/32 1 Stack::dataOut__update
-Stack::io_dataOut = out/32 Stack::dataOut
+T0 = add'4 Stack::sp 1'4
+T1 = lt'4 Stack::sp 8'4
+Stack::io_push = in'1
+T2 = and Stack::io_push T1
+Stack::io_en = in'1
+T3 = and Stack::io_en T2
+T4 = mux T3 T0 Stack::sp
+T5 = sub'4 Stack::sp 1'4
+T6 = lt'4 0'4 Stack::sp
+Stack::io_pop = in'1
+T7 = and Stack::io_pop T6
+T8 = not'1 T2
+T9 = and T8 T7
+T10 = and Stack::io_en T9
+T11 = mux T10 T5 T4
+Stack::sp__update = mux'4 reset 0'4 T11
+Stack::sp = reg'4 1 Stack::sp__update
+Stack::io_dataIn = in'32
+T12 = mov Stack::io_dataIn
+T13 = rsh'3 Stack::sp 0'1
+T14 = wr'32 T3 Stack::stack_mem T13 T12
+Stack::stack_mem = mem'32 8
+T15 = sub'4 Stack::sp 1'4
+T16 = rsh'3 T15 0'1
+T17 = rd'32 1 Stack::stack_mem T16
+T18 = lt'4 0'4 Stack::sp
+T19 = and Stack::io_en T18
+T20 = mux T19 T17 Stack::dataOut
+Stack::dataOut__update = mux'32 reset 0'32 T20
+Stack::dataOut = reg'32 1 Stack::dataOut__update
+Stack::io_dataOut = out'32 Stack::dataOut
 EOF
 ln -s Stack.vcd test.vcd
 #include "harness.bash"

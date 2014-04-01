@@ -7,7 +7,7 @@ int main (int argc, char* argv[]) {
   module->init();
   EnableShiftRegister_api_t* api = new EnableShiftRegister_api_t();
   api->init(module);
-  FILE *f = fopen("EnableShiftRegister.vcd", "w");
+  FILE *f = fopen("./EnableShiftRegister.vcd", "w");
   FILE *tee = fopen("EnableShiftRegister.stdin", "w");
   module->set_dumpfile(f);
   api->set_teefile(tee);
@@ -1815,13 +1815,17 @@ class mod_t {
 
   int timestep;
 
+  void dump () {
+    if (dumpfile != NULL) dump(dumpfile, timestep);
+    timestep += 1;
+  }
+
   int step (bool is_reset, int n) {
     int delta = 0;
+    dat_t<1> reset = LIT<1>(is_reset);
     for (int i = 0; i < n; i++) {
-      dat_t<1> reset = LIT<1>(is_reset);
       delta += clock(reset);
-      if (dumpfile != NULL) dump(dumpfile, timestep);
-      timestep += 1;
+      dump();
     }
     return delta;
   }
@@ -2176,6 +2180,10 @@ public:
 
 	std::string eval_command(string command) {
 		std::vector<std::string> tokens = tokenize(command);
+		if (tokens.size() == 0) {
+			std::cerr << "Empty command: '" << command << "'" << std::endl;
+			return "error";
+		}
 		if (tokens[0] == "get_host_name") {
 			// IN:  get_host_name
 			// OUT: API host's name
@@ -2191,7 +2199,6 @@ public:
 			// OUT: list of supported API features
 			if (!check_command_length(tokens, 0, 0)) { return "error"; }
 			return get_api_support();
-
 		} else if (tokens[0] == "clock") {
 			// IN:  clock <num_cycles>
 			// OUT: actual number of cycles stepped
@@ -2200,6 +2207,7 @@ public:
 		    for (int i=0; i<cycles; i++) {
 		    	module->clock_lo(dat_t<1>(0));
 		    	module->clock_hi(dat_t<1>(0));
+			module->dump();
 		    }
 		    module->clock_lo(dat_t<1>(0));
 		    return itos(cycles);
@@ -2210,8 +2218,8 @@ public:
 			int n = atoi(tokens[1].c_str());
 		    int ret = module->step(false, n);
 		    return itos(ret);
-		} else if (tokens[0] == "set-clocks") {
-			// IN:  set-clocks
+		} else if (tokens[0] == "set_clocks") {
+			// IN:  set_clocks
 			// OUT: ???
 			// I'm not really sure what this is supposed to do, but it was
 			// in the old command API, so it's here now
@@ -2529,23 +2537,23 @@ quit
 EOF
 cat >test.flo <<EOF
 reset = rst
-T0 = mux/4 reset 0 EnableShiftRegister::r0
-EnableShiftRegister::io_in = in/4
-EnableShiftRegister::io_shift = in/1
-T1 = not/1 reset
-T2 = and/1 T1 EnableShiftRegister::io_shift
-T3 = mux/4 T2 EnableShiftRegister::io_in T0
-EnableShiftRegister::r0 = reg/4 1 T3
-T4 = mux/4 reset 0 EnableShiftRegister::r1
-T5 = mux/4 T2 EnableShiftRegister::r0 T4
-EnableShiftRegister::r1 = reg/4 1 T5
-T6 = mux/4 reset 0 EnableShiftRegister::r2
-T7 = mux/4 T2 EnableShiftRegister::r1 T6
-EnableShiftRegister::r2 = reg/4 1 T7
-T8 = mux/4 reset 0 EnableShiftRegister::r3
-T9 = mux/4 T2 EnableShiftRegister::r2 T8
-EnableShiftRegister::r3 = reg/4 1 T9
-EnableShiftRegister::io_out = out/4 EnableShiftRegister::r3
+T0 = mux reset 0'4 EnableShiftRegister::r0
+EnableShiftRegister::io_in = in'4
+EnableShiftRegister::io_shift = in'1
+T1 = not'1 reset
+T2 = and T1 EnableShiftRegister::io_shift
+T3 = mux T2 EnableShiftRegister::io_in T0
+EnableShiftRegister::r0 = reg'4 1 T3
+T4 = mux reset 0'4 EnableShiftRegister::r1
+T5 = mux T2 EnableShiftRegister::r0 T4
+EnableShiftRegister::r1 = reg'4 1 T5
+T6 = mux reset 0'4 EnableShiftRegister::r2
+T7 = mux T2 EnableShiftRegister::r1 T6
+EnableShiftRegister::r2 = reg'4 1 T7
+T8 = mux reset 0'4 EnableShiftRegister::r3
+T9 = mux T2 EnableShiftRegister::r2 T8
+EnableShiftRegister::r3 = reg'4 1 T9
+EnableShiftRegister::io_out = out'4 EnableShiftRegister::r3
 EOF
 ln -s EnableShiftRegister.vcd test.vcd
 #include "harness.bash"
