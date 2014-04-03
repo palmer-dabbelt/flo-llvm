@@ -497,7 +497,7 @@ int generate_compat(const flo_ptr flo, FILE *f)
 
 #ifdef EXPORT_ALL_NODES
     fprintf(f, "    fprintf(f, \"$scope module %s $end\\n\");\n",
-            "_llvmflo_chisel_temps");
+            "_chisel_temps_");
 
     for (auto it = flo->nodes(); !it.done(); ++it) {
         auto node = *it;
