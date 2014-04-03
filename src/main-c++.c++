@@ -344,7 +344,12 @@ int generate_compat(const flo_ptr flo, FILE *f)
             continue;
 
         if (node->is_mem() == true) {
-            /* FIXME: Do we initailize memories? */
+            for (size_t i = 0; i < node->depth(); ++i) {
+                fprintf(f, "  this->%s.put(" SIZET_FORMAT ", 0);\n",
+                        node->mangled_name().c_str(),
+                        i
+                    );
+            }
         } else {
             fprintf(f, "  this->%s = 0;\n", node->mangled_name().c_str());
         }
