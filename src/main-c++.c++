@@ -490,6 +490,7 @@ int generate_compat(const flo_ptr flo, FILE *f)
     for (size_t i = 0; i < strlen(last_path.c_str()); i++)
         if (last_path[i] == ':')
             colon_count++;
+    colon_count++;
 
     for (size_t i = 0; i <= (colon_count / 2); i++)
         fprintf(f, "    fprintf(f, \"$upscope $end\\n\");\n");
