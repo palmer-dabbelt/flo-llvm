@@ -42,6 +42,9 @@ public:
     /* Lists every node sorted alphabetically by the node's name. */
     const node_viter nodes_alpha(void) const;
 
+    /* Lists every node sorted by their cycle. */
+    const node_viter nodes_cycle(void) const;
+
 public:
     flo(std::map<std::string, std::shared_ptr<node>>& nodes,
         std::vector<std::shared_ptr<operation>>& ops);

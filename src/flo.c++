@@ -29,6 +29,7 @@
 #endif
 
 static bool node_alpha_cmp(std::shared_ptr<node> a, std::shared_ptr<node> b);
+static bool node_cycle_cmp(std::shared_ptr<node> a, std::shared_ptr<node> b);
 
 flo::flo(std::map<std::string, std::shared_ptr<node>>& nodes,
          std::vector<std::shared_ptr<operation>>& ops)
@@ -84,9 +85,26 @@ const flo::node_viter flo::nodes_alpha(void) const
     return node_viter(copy);
 }
 
+const flo::node_viter flo::nodes_cycle(void) const
+{
+    std::vector<std::shared_ptr<node>> copy;
+    for (auto it = nodes(); !it.done(); ++it) {
+        copy.push_back(*it);
+    }
+
+    std::sort(copy.begin(), copy.end(), &node_cycle_cmp);
+
+    return node_viter(copy);
+}
+
 bool node_alpha_cmp(std::shared_ptr<node> a, std::shared_ptr<node> b)
 {
     return a->name() < b->name();
+}
+
+bool node_cycle_cmp(std::shared_ptr<node> a, std::shared_ptr<node> b)
+{
+    return a->cycle() < b->cycle();
 }
 
 const std::shared_ptr<flo> flo::parse(const std::string filename)
