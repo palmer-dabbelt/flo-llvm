@@ -139,6 +139,7 @@ then
 
     if [[ "$have_valgrind" == "true" ]]
     then
+        cp $TEST.vcd $TEST-novg.vcd
         cat $TEST.stdin.copy | valgrind -q ./opt 2>vg-opt
         cat vg-opt
         if [[ "$(cat vg-opt | wc -l)" != "0" ]]
@@ -149,6 +150,7 @@ then
 else
     time ./opt --vcd $TEST.vcd --cycles 100
 
+    cp $TEST.vcd $TEST-novg.vcd
     valgrind -q ./opt --vcd $TEST.vcd --cycles 100 2>vg-opt
     cat vg-opt
     if [[ "$(cat vg-opt | wc -l)" != "0" ]]
@@ -157,6 +159,15 @@ else
     fi
 fi
 cat $TEST.vcd
+
+if [[ "$have_valgrind" == "true" ]]
+then
+    if [[ "$(diff $TEST.vcd $TEST-novg.vcd | wc -l)" != "0" ]]
+    then
+        diff $TEST.vcd $TEST-novg.vcd
+        exit 1
+    fi
+fi
 
 # Ensures that the two VCD files are actually the same.  Note that
 # this allows extra signals to exist in the test file, but at least
