@@ -715,6 +715,7 @@ int generate_llvmir(const flo_ptr flo, FILE *f)
 
             case libflo::opcode::INIT:
                 /* The INIT operation does _nothing_ at runtime! */
+                nop = true;
                 break;
 
             case libflo::opcode::LT:
