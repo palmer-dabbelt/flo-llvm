@@ -40,7 +40,7 @@ if test -f $TEST.scala
 then
     cat $TEST.scala
 
-    scalac $TEST.scala -classpath chisel.jar:.
+    scalac *.scala -classpath chisel.jar:.
 
     scala $SCALA_FLAGS -classpath chisel.jar:. $TEST \
         --debug --backend flo \
