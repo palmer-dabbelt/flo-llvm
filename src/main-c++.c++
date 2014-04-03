@@ -824,11 +824,34 @@ int generate_llvmir(const flo_ptr flo, FILE *f)
                 auto index64 = builtin<uint64_t>();
                 lo->operate(zero_ext_op(index64, index));
 
-                auto ptr64 = pointer<builtin<uint64_t>>();
-                lo->operate(alloca_op(ptr64, i64cnt));
-                int2array(lo, op->vv(), ptr64, i64cnt);
+                /* On a CPU we have to emulate WR with a
+                 * read-modify-write cycle: no modification is made if
+                 * write-enable is FALSE. */
+                auto read_value = fix_t(op->v()->width());
+
+                auto read_ptr = pointer<builtin<uint64_t>>();
+                lo->operate(alloca_op(read_ptr, i64cnt));
+                lo->operate(call_op(op->t()->getm_func(),
+                                    {&dut, &index64, &read_ptr}));
+                array2int(lo, read_value, read_ptr, i64cnt);
+
+                auto write_value = fix_t(op->v()->width());
+                lo->operate(mux_op(write_value,
+                                   op->sv(),
+                                   op->vv(),
+                                   read_value
+                                ));
+
+                auto write_ptr = pointer<builtin<uint64_t>>();
+                lo->operate(alloca_op(write_ptr, i64cnt));
+                int2array(lo, write_value, write_ptr, i64cnt);
                 lo->operate(call_op(op->t()->setm_func(),
-                                    {&dut, &index64, &ptr64}));
+                                    {&dut, &index64, &write_ptr}));
+
+                /* WR doesn't return anything despite having a node in
+                 * there.  Don't attempt to write this back to the
+                 * header. */
+                nop = true;
 
                 break;
             }
