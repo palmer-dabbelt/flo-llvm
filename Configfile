@@ -31,3 +31,12 @@ COMPILEOPTS += `ppkg-config flo --cflags`
 LINKOPTS    += `ppkg-config flo --libs`
 SOURCES     += main-c++.c++
 CONFIG      += designs
+
+# This binary generates code that emits a VCD dump that has every node
+# (even temporaries) inside it.
+BINARIES    += flo-llvm-vcdtmp
+COMPILEOPTS += `ppkg-config flo --cflags`
+LINKOPTS    += `ppkg-config flo --libs`
+COMPILEOPTS += -DEXPORT_ALL_NODES
+SOURCES     += main-c++.c++
+CONFIG      += designs

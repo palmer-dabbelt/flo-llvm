@@ -46,12 +46,18 @@ then
         --debug --backend flo \
         || true
 
+    exargs=""
+    if [[ "$(basename $PTEST_BINARY)" == "flo-llvm-vcdtmp" ]]
+    then
+        exargs="--emitTempNodes"
+    fi
+
     touch $TEST.stdin
     while [[ "$(tail -n1 $TEST.stdin)" != "quit" ]]
     do
         scala $SCALA_FLAGS -classpath chisel.jar:. $TEST \
             --debug --genHarness --compile --test --backend c \
-            --vcd --dumpTestInput --testerSeed 0
+            --vcd --dumpTestInput --testerSeed 0 $exargs
     done
 
     mv $TEST.vcd gold.vcd
