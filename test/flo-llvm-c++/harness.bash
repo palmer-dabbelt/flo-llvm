@@ -51,7 +51,7 @@ then
     do
         scala $SCALA_FLAGS -classpath chisel.jar:. $TEST \
             --debug --genHarness --compile --test --backend c \
-            --vcd --dumpTestInput
+            --vcd --dumpTestInput --testerSeed 0
     done
 
     mv $TEST.vcd gold.vcd
