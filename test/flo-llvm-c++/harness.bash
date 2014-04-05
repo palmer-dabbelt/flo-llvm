@@ -15,6 +15,14 @@ opt="opt"
 llc="llc"
 clang="clang"
 
+if [[ "$(basename $PTEST_BINARY)" == "flo-llvm-vcdtmp" ]]
+then
+    if [[ "$LARGE" == "true" ]]
+    then
+        exit 0
+    fi
+fi
+
 # For some crazy reason, Ubuntu has decided to have a clang that's
 # actually incompatible with their installed LLVM tools.  I don't know
 # why anyone would do such a thing... :(.  To avoid all this I just

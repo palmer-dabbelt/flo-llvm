@@ -2,6 +2,7 @@
 #include "chisel-jar.bash"
 
 TEST="DES"
+LARGE="true"
 
 cat >DES.scala <<EOF
 import Chisel._
