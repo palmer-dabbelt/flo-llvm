@@ -1,4 +1,3 @@
-
 # Here are some handwritten tests that use Chisel
 TESTSRC += chisel_iomux.bash
 TESTSRC += chisel_iocnt.bash
@@ -10,6 +9,7 @@ TESTSRC += chisel_mem-init.bash
 TESTSRC += chisel_shiftcat.bash
 TESTSRC += chisel_regshift.bash
 TESTSRC += chisel_many-cat.bash
+TESTSRC += chisel_extract-zero.bash
 #TESTSRC += chisel_ecdsa-mod-mul.bash
 
 # These tests all come from the Chisel tutorial

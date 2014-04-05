@@ -806,7 +806,18 @@ int generate_llvmir(const flo_ptr flo, FILE *f)
 
                 auto shifted = fix_t(op->s()->width());
                 lo->operate(lrsh_op(shifted, op->sv(), cast));
-                lo->operate(zext_trunc_op(op->dv(), shifted));
+
+                auto zero = fix_t(op->t()->width());
+                lo->operate(zext_trunc_op(zero, constant<uint64_t>(0)));
+
+                auto is_zero = builtin<bool>();
+                lo->operate(cmp_eq_op(is_zero, op->tv(), zero));
+
+                auto zero_check = fix_t(cast.width());
+                lo->operate(mux_op(zero_check, is_zero, op->sv(), shifted));
+
+                lo->operate(zext_trunc_op(op->dv(), zero_check));
+
                 break;
             }
 
