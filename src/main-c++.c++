@@ -540,6 +540,11 @@ int generate_compat(const flo_ptr flo, FILE *f)
 
         fprintf(f, "  {\n");
 
+#ifdef VERBOSE_VCD_FILE
+        fprintf(f, "    fprintf(f, \"$comment '%s' $end\\n\");\n",
+                node->name().c_str());
+#endif
+
         fprintf(f, "    dat_dump(f, %s, \"%s\");\n",
                 node->mangled_name().c_str(),
                 node->vcd_name().c_str()
