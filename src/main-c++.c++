@@ -530,11 +530,15 @@ int generate_compat(const flo_ptr flo, FILE *f)
         if (node->vcd_exported() == false)
             continue;
 
+#ifndef UNCOMPRESSED_VCD
         fprintf(f,
-                "  if ((cycle == 0) || (%s__prev != %s).to_ulong()) {\n",
+                "  if ((cycle == 0) || (%s__prev != %s).to_ulong())",
                 node->mangled_name().c_str(),
                 node->mangled_name().c_str()
             );
+#endif
+
+        fprintf(f, "  {\n");
 
         fprintf(f, "    dat_dump(f, %s, \"%s\");\n",
                 node->mangled_name().c_str(),
