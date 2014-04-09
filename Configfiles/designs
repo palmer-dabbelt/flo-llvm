@@ -11,6 +11,7 @@ TESTSRC += chisel_regshift.bash
 TESTSRC += chisel_many-cat.bash
 TESTSRC += chisel_extract-zero.bash
 #TESTSRC += chisel_ecdsa-mod-mul.bash
+TESTSRC += chisel_temp-reg.bash
 
 # These tests all come from the Chisel tutorial
 TESTSRC += tutgen_Adder4.bash

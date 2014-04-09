@@ -35,6 +35,7 @@ class node: public libflo::node {
 
 private:
     bool _exported;
+    bool _vcd_exported;
 
     const std::string _vcd_name;
 
@@ -53,7 +54,10 @@ public:
 
     /* Returns TRUE if this node should be exported into the VCD
      * file. */
-    bool vcd_exported(void) const;
+    bool vcd_exported(void) const { return _vcd_exported; }
+
+    /* Returns TRUE if this node is a Chisel temporary node. */
+    bool chisel_temp(void) const { return (mangled_name() == chisel_name()); }
 
     /* Returns the mangled name of this node, which refers to the name
      * this node is expected to have when inside the C++ header
@@ -115,6 +119,7 @@ public:
     /* Forces that this node is always exported into the header
      * file. */
     void force_export(void) { _exported = true; }
+    void force_vcd_export(void) { _vcd_exported = true; }
 };
 
 #endif

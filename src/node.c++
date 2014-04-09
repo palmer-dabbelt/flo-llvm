@@ -20,6 +20,7 @@
  */
 
 #include "node.h++"
+#include <libflo/sizet_printf.h++>
 
 #ifndef LINE_MAX
 #define LINE_MAX 1024
@@ -36,8 +37,10 @@ node::node(const std::string name,
     : libflo::node(name, width, depth, is_mem, is_const, cycle),
 #ifdef EXPORT_ALL_NODES
       _exported(true),
+      _vcd_exported(!is_mem),
 #else
       _exported(is_mem),
+      _vcd_exported(!is_mem && (strstr(name.c_str(), ":") != NULL)),
 #endif
       _vcd_name(gen_vcd_name())
 {
@@ -56,18 +59,6 @@ const std::string node::mangled_name(void) const
     }
 
     return buffer;
-}
-
-bool node::vcd_exported(void) const
-{
-    if (this->is_mem())
-        return false;
-
-#ifdef EXPORT_ALL_NODES
-    return true;
-#else
-    return strstr(name().c_str(), ":") != NULL;
-#endif
 }
 
 const std::string node::chisel_name(void) const
