@@ -401,6 +401,7 @@ int generate_compat(const flo_ptr flo, FILE *f)
             flo->class_name().c_str());
 
     std::string last_path = "";
+    ssize_t scope = 1;
     for (auto it = flo->nodes_alpha(); !it.done(); ++it) {
         auto node = *it;
 
@@ -433,6 +434,7 @@ int generate_compat(const flo_ptr flo, FILE *f)
         if (strcmp(module, last_path.c_str()) == 0) {
         } else if (component_start(last_path, module)) {
             fprintf(f, "    fprintf(f, \"$upscope $end\\n\");\n");
+            scope--;
         } else if (component_start(module, last_path)) {
             /* Determine a slightly shorter name for the module, which
              * is what VCD uses.  This is just the last component of
@@ -447,11 +449,14 @@ int generate_compat(const flo_ptr flo, FILE *f)
 
             fprintf(f, "    fprintf(f, \"$scope module %s $end\\n\");\n",
                     lastmodule);
+            scope++;
         } else {
             size_t cur_comp  = count_components(node->name());
             size_t last_comp = count_components(last_path) + 1;
-            for (size_t i = cur_comp; i <= last_comp; ++i)
+            for (size_t i = cur_comp; i <= last_comp; ++i) {
                 fprintf(f, "    fprintf(f, \"$upscope $end\\n\");\n");
+                scope--;
+            }
 
             /* Determine a slightly shorter name for the module, which
              * is what VCD uses.  This is just the last component of
@@ -466,6 +471,7 @@ int generate_compat(const flo_ptr flo, FILE *f)
 
             fprintf(f, "    fprintf(f, \"$scope module %s $end\\n\");\n",
                     lastmodule);
+            scope++;
         }
 
         /* After changing modules, go ahead and output the wire. */
@@ -486,13 +492,7 @@ int generate_compat(const flo_ptr flo, FILE *f)
         last_path = module;
     }
 
-    size_t colon_count = 0;
-    for (size_t i = 0; i < strlen(last_path.c_str()); i++)
-        if (last_path[i] == ':')
-            colon_count++;
-    colon_count++;
-
-    for (size_t i = 0; i <= (colon_count / 2); i++)
+    for (ssize_t i = 0; i < scope; i++)
         fprintf(f, "    fprintf(f, \"$upscope $end\\n\");\n");
 
     fprintf(f, "    fprintf(f, \"$scope module %s $end\\n\");\n",
