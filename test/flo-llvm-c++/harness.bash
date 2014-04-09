@@ -50,7 +50,7 @@ then
 
     scalac *.scala -classpath chisel.jar:.
 
-    scala $SCALA_FLAGS -classpath chisel.jar:. $TEST \
+    scala $SCALA_FLAGS -classpath chisel.jar:. $TEST $ARGS \
         --debug --backend flo \
         || true
 
@@ -63,7 +63,7 @@ then
     touch $TEST.stdin
     while [[ "$(tail -n1 $TEST.stdin)" != "quit" ]]
     do
-        scala $SCALA_FLAGS -classpath chisel.jar:. $TEST \
+        scala $SCALA_FLAGS -classpath chisel.jar:. $TEST $ARGS \
             --debug --genHarness --compile --test --backend c \
             --vcd --dumpTestInput --testerSeed 0 $exargs
     done
