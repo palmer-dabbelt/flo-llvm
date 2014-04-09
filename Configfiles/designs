@@ -42,3 +42,4 @@ TESTSRC += tutgen_ResetShiftRegister.bash
 # sort...
 TESTSRC += large_des.bash
 #TESTSRC += large_ecdsa.bash
+TESTSRC += large_sift.bash
