@@ -545,10 +545,16 @@ int generate_compat(const flo_ptr flo, FILE *f)
                 node->name().c_str());
 #endif
 
-        fprintf(f, "    dat_dump(f, %s, \"%s\");\n",
-                node->mangled_name().c_str(),
-                node->vcd_name().c_str()
-            );
+        fprintf(f, "    fprintf(f, \"b\");\n");
+        for (auto i = node->width(); i > 0; i--) {
+            fprintf(f, "    fprintf(f, \"%%lu\", (%s.values[%lu] >> %lu) & 1);",
+                    node->mangled_name().c_str(),
+                    (i - 1) / 64,
+                    (i - 1) % 64
+                );
+        }
+        fprintf(f, "    fprintf(f, \" %s\\n\");\n",
+                node->vcd_name().c_str());
 
         fprintf(f, "    %s__prev = %s;\n",
                 node->mangled_name().c_str(),
