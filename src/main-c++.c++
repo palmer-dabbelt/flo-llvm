@@ -507,7 +507,7 @@ int generate_compat(const flo_ptr flo, FILE *f)
         if (node->chisel_temp() == false)
             continue;
 
-        fprintf(f, "    fprintf(f, \"$var wire %lu %s %s $end\\n\");\n",
+        fprintf(f, "    fprintf(f, \"$var wire " SIZET_FORMAT " %s %s $end\\n\");\n",
                 node->width(),
                 node->vcd_name().c_str(),
                 node->name().c_str()
