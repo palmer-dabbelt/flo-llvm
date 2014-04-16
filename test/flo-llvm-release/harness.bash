@@ -58,13 +58,22 @@ then
     if [[ "$(basename $PTEST_BINARY)" == "flo-llvm-vcdtmp" ]]
     then
         exargs="--emitTempNodes"
+    elif [[ "$(basename $PTEST_BINARY)" == "flo-llvm-debug" ]]
+    then
+        exargs="--debug"
+    elif [[ "$(basename $PTEST_BINARY)" == "flo-llvm-release" ]]
+    then
+        exargs=""
+    else
+        echo "Pick a run mode!"
+        exit 1
     fi
 
     touch $TEST.stdin
     while [[ "$(tail -n1 $TEST.stdin)" != "quit" ]]
     do
         scala $SCALA_FLAGS -classpath chisel.jar:. $TEST $ARGS \
-            --debug --genHarness --compile --test --backend c \
+            --genHarness --compile --test --backend c \
             --vcd --dumpTestInput --testerSeed 0 $exargs
     done
 

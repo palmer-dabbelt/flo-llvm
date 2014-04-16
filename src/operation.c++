@@ -42,7 +42,6 @@ operation::operation(std::shared_ptr<node>& dest,
     case libflo::opcode::EAT:
     case libflo::opcode::EQ:
     case libflo::opcode::GTE:
-    case libflo::opcode::IN:
     case libflo::opcode::INIT:
     case libflo::opcode::LD:
     case libflo::opcode::LIT:
@@ -59,7 +58,6 @@ operation::operation(std::shared_ptr<node>& dest,
     case libflo::opcode::NOP:
     case libflo::opcode::NOT:
     case libflo::opcode::OR:
-    case libflo::opcode::OUT:
     case libflo::opcode::RD:
     case libflo::opcode::RND:
     case libflo::opcode::RSH:
@@ -71,10 +69,20 @@ operation::operation(std::shared_ptr<node>& dest,
     case libflo::opcode::XOR:
         break;
 
+    case libflo::opcode::IN:
+        this->d()->force_export();
+        this->d()->force_vcd_export();
+        break;
+
+    case libflo::opcode::OUT:
+        this->d()->force_export();
+        this->d()->force_vcd_export();
+        break;
+
     case libflo::opcode::REG:
-        d()->force_export();
-        d()->force_vcd_export();
-        t()->force_export();
+        this->d()->force_export();
+        this->d()->force_vcd_export();
+        this->t()->force_export();
         break;
     }
 }

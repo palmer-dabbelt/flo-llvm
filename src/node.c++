@@ -35,12 +35,17 @@ node::node(const std::string name,
            bool is_const,
            libflo::unknown<size_t> cycle)
     : libflo::node(name, width, depth, is_mem, is_const, cycle),
-#ifdef EXPORT_ALL_NODES
+#if defined(EXPORT_ALL_NODES)
       _exported(true),
       _vcd_exported(!is_mem),
-#else
+#elif defined(EXPORT_MANY_NODES)
       _exported(is_mem),
       _vcd_exported(!is_mem && (strstr(name.c_str(), ":") != NULL)),
+#elif defined(EXPORT_FEW_NODES)
+      _exported(is_mem),
+      _vcd_exported(false),
+#else
+#error "Decide how many nodes to export!"
 #endif
       _vcd_name(gen_vcd_name())
 {
