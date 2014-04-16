@@ -43,7 +43,7 @@ node::node(const std::string name,
       _vcd_exported(!is_mem && (strstr(name.c_str(), ":") != NULL)),
 #elif defined(EXPORT_FEW_NODES)
       _exported(is_mem),
-      _vcd_exported(false),
+      _vcd_exported(!is_mem && (strstr(name.c_str(), ":io_") != NULL)),
 #else
 #error "Decide how many nodes to export!"
 #endif
