@@ -27,6 +27,7 @@
 #endif
 
 static const std::string gen_vcd_name(void);
+static inline bool check_io_name(const std::string& name);
 
 node::node(const std::string name,
            const libflo::unknown<size_t>& width,
@@ -43,7 +44,7 @@ node::node(const std::string name,
       _vcd_exported(!is_mem && (strstr(name.c_str(), ":") != NULL)),
 #elif defined(EXPORT_FEW_NODES)
       _exported(is_mem),
-      _vcd_exported(!is_mem && (strstr(name.c_str(), ":io_") != NULL)),
+      _vcd_exported(!is_mem && check_io_name(name)),
 #else
 #error "Decide how many nodes to export!"
 #endif
@@ -179,4 +180,21 @@ const std::string gen_vcd_name(void)
 {
     static size_t i = 0;
     return "N" + std::to_string(i++);
+}
+
+bool check_io_name(const std::string& name)
+{
+    if (strstr(name.c_str(), ":in_") != NULL)
+        return true;
+
+    if (strstr(name.c_str(), ":out_") != NULL)
+        return true;
+
+    if (strstr(name.c_str(), ":reset") != NULL)
+        return true;
+
+    if (strstr(name.c_str(), ":io_") != NULL)
+        return true;
+
+    return false;
 }
