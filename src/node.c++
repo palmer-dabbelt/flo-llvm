@@ -27,7 +27,9 @@
 #endif
 
 static const std::string gen_vcd_name(void);
-static inline bool check_io_name(const std::string& name);
+#ifdef EXPORT_FEW_NODES
+static bool check_io_name(const std::string& name);
+#endif
 
 node::node(const std::string name,
            const libflo::unknown<size_t>& width,
@@ -182,6 +184,7 @@ const std::string gen_vcd_name(void)
     return "N" + std::to_string(i++);
 }
 
+#ifdef EXPORT_FEW_NODES
 bool check_io_name(const std::string& name)
 {
     if (strstr(name.c_str(), ":in_") != NULL)
@@ -198,3 +201,4 @@ bool check_io_name(const std::string& name)
 
     return false;
 }
+#endif
