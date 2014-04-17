@@ -39,9 +39,7 @@ flo::flo(std::map<std::string, std::shared_ptr<node>>& nodes,
 
 const std::string flo::class_name(void) const
 {
-    for (auto it = nodes(); !it.done(); ++it) {
-        auto node = *it;
-
+    for (const auto& node: nodes()) {
         if (strstr(node->name().c_str(), ":") == NULL)
             continue;
 
@@ -61,9 +59,7 @@ const std::vector<size_t> flo::used_widths(void) const
     std::map<size_t, bool> used;
     std::vector<size_t> out;
 
-    for (auto it = nodes(); !it.done(); ++it) {
-        auto node = *it;
-
+    for (const auto& node: nodes()) {
         if (used.find(node->width()) == used.end()) {
             used[node->width()] = true;
             out.push_back(node->width());
@@ -73,28 +69,26 @@ const std::vector<size_t> flo::used_widths(void) const
     return out;
 }
 
-const flo::node_viter flo::nodes_alpha(void) const
+std::vector<std::shared_ptr<node>> flo::nodes_alpha(void) const
 {
     std::vector<std::shared_ptr<node>> copy;
-    for (auto it = nodes(); !it.done(); ++it) {
-        copy.push_back(*it);
-    }
+    for (const auto& node: nodes())
+        copy.push_back(node);
 
     std::sort(copy.begin(), copy.end(), &node_alpha_cmp);
 
-    return node_viter(copy);
+    return copy;
 }
 
-const flo::node_viter flo::nodes_cycle(void) const
+std::vector<std::shared_ptr<node>> flo::nodes_cycle(void) const
 {
     std::vector<std::shared_ptr<node>> copy;
-    for (auto it = nodes(); !it.done(); ++it) {
-        copy.push_back(*it);
-    }
+    for (const auto& node: nodes())
+        copy.push_back(node);
 
     std::sort(copy.begin(), copy.end(), &node_cycle_cmp);
 
-    return node_viter(copy);
+    return copy;
 }
 
 bool node_alpha_cmp(std::shared_ptr<node> a, std::shared_ptr<node> b)
@@ -104,7 +98,7 @@ bool node_alpha_cmp(std::shared_ptr<node> a, std::shared_ptr<node> b)
 
 bool node_cycle_cmp(std::shared_ptr<node> a, std::shared_ptr<node> b)
 {
-    return a->cycle() < b->cycle();
+    return a->dfdepth() < b->dfdepth();
 }
 
 const std::shared_ptr<flo> flo::parse(const std::string filename)

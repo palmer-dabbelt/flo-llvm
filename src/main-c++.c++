@@ -158,9 +158,7 @@ int generate_header(const flo_ptr flo, FILE *f)
     /* Declares the variables that need to be present in the C++
      * header file in order to maintain compatibility with Chisel's
      * output. */
-    for (auto it = flo->nodes(); !it.done(); ++it) {
-        auto node = *it;
-
+    for (const auto& node: flo->nodes()) {
         if (node->exported() == false)
             continue;
 
@@ -214,9 +212,7 @@ int generate_compat(const flo_ptr flo, FILE *f)
      * particular fields within the C++ class definition.  The idea
      * here is that I can get around C++ name mangling by exporting
      * these as C names. */
-    for (auto it = flo->nodes(); !it.done(); ++it) {
-        auto node = *it;
-
+    for (const auto& node: flo->nodes()) {
         if (node->exported() == false)
             continue;
 
@@ -337,9 +333,7 @@ int generate_compat(const flo_ptr flo, FILE *f)
     /* init just sets everything to zero, which is easy to do in C++
      * (it'll be fairly short). */
     fprintf(f, "void %s_t::init(bool r)\n{\n", flo->class_name().c_str());
-    for (auto it = flo->nodes(); !it.done(); ++it) {
-        auto node = *it;
-
+    for (const auto& node: flo->nodes()) {
         if (node->exported() == false)
             continue;
 
@@ -355,9 +349,7 @@ int generate_compat(const flo_ptr flo, FILE *f)
         }
     }
 
-    for (auto it = flo->operations(); !it.done(); ++it) {
-        auto op = *it;
-
+    for (const auto& op: flo->operations()) {
         if (op->op() != libflo::opcode::INIT)
             continue;
 
@@ -375,9 +367,7 @@ int generate_compat(const flo_ptr flo, FILE *f)
     fprintf(f, "void %s_t::clock_hi(dat_t<1> rd)\n{\n",
             flo->class_name().c_str());
     fprintf(f, "  bool r = rd.to_ulong();\n");
-    for (auto it = flo->operations(); !it.done(); ++it) {
-        auto op = *it;
-
+    for (const auto& op: flo->operations()) {
         /* Only registers need to be copied on */
         if (op->op() != libflo::opcode::REG)
             continue;
@@ -402,9 +392,7 @@ int generate_compat(const flo_ptr flo, FILE *f)
 
     std::string last_path = "";
     ssize_t scope = 1;
-    for (auto it = flo->nodes_alpha(); !it.done(); ++it) {
-        auto node = *it;
-
+    for (const auto& node: flo->nodes_alpha()) {
         char buffer[BUFFER_SIZE];
         snprintf(buffer, BUFFER_SIZE, "%s", node->name().c_str());
 
@@ -498,9 +486,7 @@ int generate_compat(const flo_ptr flo, FILE *f)
     fprintf(f, "    fprintf(f, \"$scope module %s $end\\n\");\n",
             "_chisel_temps_");
 
-    for (auto it = flo->nodes(); !it.done(); ++it) {
-        auto node = *it;
-
+    for (const auto& node: flo->nodes()) {
         if (node->vcd_exported() == false)
             continue;
 
@@ -524,9 +510,7 @@ int generate_compat(const flo_ptr flo, FILE *f)
 
     fprintf(f, "  fprintf(f, \"#%%lu\\n\", cycle);\n");
 
-    for (auto it = flo->nodes(); !it.done(); ++it) {
-        auto node = *it;
-
+    for (const auto& node: flo->nodes()) {
         if (node->vcd_exported() == false)
             continue;
 
@@ -579,9 +563,7 @@ int generate_compat(const flo_ptr flo, FILE *f)
         );
     fprintf(f, "  if (dut == NULL) {assert(dut != NULL); abort();}\n");
 
-    for (auto it = flo->nodes(); !it.done(); ++it) {
-        auto node = *it;
-
+    for (const auto& node: flo->nodes()) {
         if (node->exported() == false)
             continue;
 
@@ -639,9 +621,7 @@ int generate_llvmir(const flo_ptr flo, FILE *f)
      * still need declarations so LLVM can check their types.  Note
      * that here I'm just manually handling this type safety, which is
      * probably nasty... */
-    for (auto it = flo->nodes(); !it.done(); ++it) {
-        auto node = *it;
-
+    for (const auto& node: flo->nodes()) {
         if (node->exported() == false)
             continue;
 
@@ -677,9 +657,7 @@ int generate_llvmir(const flo_ptr flo, FILE *f)
 
         /* The code is already in dataflow order so all we need to do
          * is emit the computation out to LLVM. */
-        for (auto it = flo->operations(); !it.done(); ++it) {
-            auto op = *it;
-
+        for (const auto& op: flo->operations()) {
             /* This contains a count of the number of i64-wide
              * operations that need to be performed in order to make
              * this operation succeed. */

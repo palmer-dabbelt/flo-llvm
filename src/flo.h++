@@ -40,10 +40,10 @@ public:
     const std::vector<size_t> used_widths(void) const;
 
     /* Lists every node sorted alphabetically by the node's name. */
-    const node_viter nodes_alpha(void) const;
+    std::vector<std::shared_ptr<node>> nodes_alpha(void) const;
 
     /* Lists every node sorted by their cycle. */
-    const node_viter nodes_cycle(void) const;
+    std::vector<std::shared_ptr<node>> nodes_cycle(void) const;
 
 public:
     flo(std::map<std::string, std::shared_ptr<node>>& nodes,
