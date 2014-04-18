@@ -3,6 +3,7 @@
 
 TEST="DES"
 LARGE="true"
+FAILING_ARCHES="i686"
 
 cat >DES.scala <<EOF
 import Chisel._

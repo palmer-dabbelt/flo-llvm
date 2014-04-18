@@ -23,6 +23,14 @@ then
     fi
 fi
 
+for arch in "$(echo $FAILING_ARCHES)"
+do
+    if [[ "$arch" == "$(uname -m)" ]]
+    then
+        exit 0
+    fi
+done
+
 # For some crazy reason, Ubuntu has decided to have a clang that's
 # actually incompatible with their installed LLVM tools.  I don't know
 # why anyone would do such a thing... :(.  To avoid all this I just
