@@ -1,6 +1,8 @@
 #include "tempdir.bash"
 #include "chisel-jar.bash"
 
+FAILING_ARCHES="i686"
+
 cat >test.scala <<EOF
 import Chisel._
 
