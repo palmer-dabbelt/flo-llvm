@@ -188,6 +188,8 @@ int generate_header(const flo_ptr flo, FILE *f)
     fprintf(f, "    void clock_lo(dat_t<1> reset);\n");
     fprintf(f, "    void clock_hi(dat_t<1> reset);\n");
     fprintf(f, "    void dump(FILE *file, int clock);\n");
+    fprintf(f, "    mod_t *clone(void);\n");
+    fprintf(f, "    bool set_circuit_from(mod_t *src);\n");
 
     /* Close the class */
     fprintf(f, "};\n");
@@ -516,7 +518,7 @@ int generate_compat(const flo_ptr flo, FILE *f)
 
 #ifndef UNCOMPRESSED_VCD
         fprintf(f,
-                "  if ((cycle == 0) || (%s__prev != %s).to_ulong())",
+                "  if ((cycle == 0) || (%s__prev != %s))",
                 node->mangled_name().c_str(),
                 node->mangled_name().c_str()
             );
@@ -586,6 +588,21 @@ int generate_compat(const flo_ptr flo, FILE *f)
         
     }
 
+    fprintf(f, "}\n");
+
+    /* This function is used by the snapshot interface? */
+    fprintf(f, "mod_t *%s_t::clone(void) {\n",
+            flo->class_name().c_str());
+    fprintf(f, "  mod_t *cloned = new %s_t(*this);\n",
+            flo->class_name().c_str());
+    fprintf(f, "  return cloned;\n");
+    fprintf(f, "}\n");
+
+    /* This function is also used by the snapshot interface. */
+    /* FIXME: This should probably be implemented... */
+    fprintf(f, "bool %s_t::set_circuit_from(mod_t *src) {\n",
+            flo->class_name().c_str());
+    fprintf(f, "  return false;\n");
     fprintf(f, "}\n");
 
     return 0;
