@@ -11,6 +11,7 @@ TESTSRC += chisel_regshift.bash
 TESTSRC += chisel_many-cat.bash
 TESTSRC += chisel_extract-zero.bash
 TESTSRC += chisel_temp-reg.bash
+TESTSRC += chisel_logor.bash
 
 # "Large" tests, which really just consist of real code other people
 # wrote.  These are probably all suitable for benchmarking of some
