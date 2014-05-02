@@ -31,6 +31,15 @@ then
     clang="clang" # That's right, the clang-3.3 package installs clang!
 fi
 
+# Debian still has old versions of everything...
+if test -f /etc/debian_version
+then
+    llvm_link="llvm-link-3.5"
+    opt="opt-3.5"
+    llc="llc-3.5"
+    clang="clang-3.5"
+fi
+
 if [[ "$input" == "--help" ]]
 then
     echo "$0 <DESIGN.flo>: Converts Flo files to LLVM IR"
