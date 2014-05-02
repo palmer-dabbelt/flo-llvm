@@ -29,11 +29,9 @@ then
     opt="opt-3.3"
     llc="llc-3.3"
     clang="clang" # That's right, the clang-3.3 package installs clang!
-fi
-
-# Debian still has old versions of everything...
-if test -f /etc/debian_version
+elif test -f /etc/debian_version
 then
+    # Debian still has old versions of everything...
     llvm_link="llvm-link-3.5"
     opt="opt-3.5"
     llc="llc-3.5"
