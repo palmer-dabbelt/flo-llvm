@@ -48,7 +48,7 @@ then
     llvm_link="llvm-link-3.5"
     opt="opt-3.5"
     llc="llc-3.5"
-    clang="clang-3.5"
+    clang="clang" # That's right, the clang-3.5 package installs clang!
 fi
 
 have_valgrind="true"
