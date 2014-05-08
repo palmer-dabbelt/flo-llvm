@@ -103,7 +103,10 @@ bool node_cycle_cmp(std::shared_ptr<node> a, std::shared_ptr<node> b)
 
 const std::shared_ptr<flo> flo::parse(const std::string filename)
 {
-    auto f = libflo::flo<node, operation>::parse_help<flo>(filename);
+    auto func = libflo::flo<node, operation>::create_node;
+
+    auto f = libflo::flo<node, operation>::parse_help<flo>(filename,
+                                                           func);
 
     return f;
 }
