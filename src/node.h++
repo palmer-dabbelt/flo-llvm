@@ -39,15 +39,14 @@ private:
 
     const std::string _vcd_name;
 
-private:
+public:
         node(const std::string name,
              const libflo::unknown<size_t>& width,
              const libflo::unknown<size_t>& depth,
              bool is_mem,
              bool is_const,
              libflo::unknown<size_t> cycle,
-             const libflo::unknown<size_t>& x,
-             const libflo::unknown<size_t>& y);
+             const libflo::unknown<std::string>& posn);
 
 public:
     /* Returns TRUE if this node should be exported into the C++

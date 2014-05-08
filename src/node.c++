@@ -37,9 +37,8 @@ node::node(const std::string name,
            bool is_mem,
            bool is_const,
            libflo::unknown<size_t> cycle,
-             const libflo::unknown<size_t>& x,
-             const libflo::unknown<size_t>& y)
-    : libflo::node(name, width, depth, is_mem, is_const, cycle, x, y),
+           const libflo::unknown<std::string>& posn)
+    : libflo::node(name, width, depth, is_mem, is_const, cycle, posn),
 #if defined(EXPORT_ALL_NODES)
       _exported(true),
       _vcd_exported(!is_mem),
