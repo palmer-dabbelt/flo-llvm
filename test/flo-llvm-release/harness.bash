@@ -128,6 +128,19 @@ then
     fi
 fi
 
+time $PTEST_BINARY $TEST.flo --harness > harness.c++
+cat harness.c++
+
+if [[ "$have_valgrind" == "true" ]]
+then
+    valgrind -q $PTEST_BINARY $TEST.flo --harness >harness-vg.c++ 2>vg-harness.c++
+    cat vg-harness.c++
+    if [[ "$(cat vg-harness.c++ | wc -l)" != "0" ]]
+    then
+        exit 1
+    fi
+fi
+
 time $clang -g -c -std=c++11 harness.c++ -o harness.llvm -S -emit-llvm
 #cat harness.llvm
 

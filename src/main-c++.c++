@@ -55,6 +55,7 @@ enum gentype {
     GENTYPE_IR,
     GENTYPE_HEADER,
     GENTYPE_COMPAT,
+    GENTYPE_HARNESS,
     GENTYPE_ERROR
 };
 
@@ -63,6 +64,7 @@ enum gentype {
 static int generate_header(const flo_ptr flo, FILE *f);
 static int generate_compat(const flo_ptr flo, FILE *f);
 static int generate_llvmir(const flo_ptr flo, FILE *f);
+static int generate_harness(const flo_ptr flo, FILE *f);
 
 /* Returns TRUE if the haystack starts with the needle. */
 static bool strsta(const std::string haystack, const std::string needle);
@@ -118,6 +120,8 @@ int main(int argc, const char **argv)
         type = GENTYPE_HEADER;
     if (strcmp(argv[2], "--compat") == 0)
         type = GENTYPE_COMPAT;
+    if (strcmp(argv[2], "--harness") == 0)
+        type = GENTYPE_HARNESS;
 
     /* Reads the input file and infers the width of every node. */
     auto flo = flo::parse(infn);
@@ -130,6 +134,8 @@ int main(int argc, const char **argv)
         return generate_header(flo, stdout);
     case GENTYPE_COMPAT:
         return generate_compat(flo, stdout);
+    case GENTYPE_HARNESS:
+        return generate_harness(flo, stdout);
     case GENTYPE_ERROR:
         fprintf(stderr, "Unknown generate target '%s'\n", argv[2]);
         fprintf(stderr, "  valid targets are:\n");
@@ -914,6 +920,46 @@ int generate_llvmir(const flo_ptr flo, FILE *f)
 
         fprintf(f, "  ret void\n");
     }
+
+    return 0;
+}
+
+int generate_harness(const flo_ptr flo, FILE *f)
+{
+    /* Depend on the header file that was generated earlier. */
+    fprintf(f, "#include \"%s.h\"\n", flo->class_name().c_str());
+
+    /* The harness just contains a main function. */
+    fprintf(f, "int main(int argc, char **argv) {\n");
+
+    fprintf(f, "  %s_t *module = new %s_t();\n",
+            flo->class_name().c_str(),
+            flo->class_name().c_str()
+        );
+    fprintf(f, "  module->init();\n");
+
+    fprintf(f, "  %s_api_t *api = new %s_api_t();\n",
+            flo->class_name().c_str(),
+            flo->class_name().c_str()
+        );
+    fprintf(f, "  api->init(module);\n");
+
+    fprintf(f, "  FILE *f = fopen(\"%s.vcd\", \"w\");\n",
+            flo->class_name().c_str()
+        );
+    fprintf(f, "  FILE *tee = fopen(\"%s.stdin\", \"w\");\n",
+            flo->class_name().c_str()
+        );
+
+    fprintf(f, "  module->set_dumpfile(f);\n");
+    fprintf(f, "  api->set_teefile(tee);\n");
+
+    fprintf(f, "  api->read_eval_print_loop();\n");
+
+    fprintf(f, "  fclose(f);\n");
+    fprintf(f, "  fclose(tee);\n");
+    fprintf(f, "  return 0;");
+    fprintf(f, "}\n");
 
     return 0;
 }
