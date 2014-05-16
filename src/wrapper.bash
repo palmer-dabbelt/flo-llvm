@@ -48,9 +48,9 @@ fi
 tempdir=`mktemp -d -t flo-llvm-wrapper.XXXXXXXXXX`
 trap "rm -rf $tempdir" EXIT
 
-$0-debug "$input" --header > $tempdir/design.h
-$0-debug "$input" --compat > $tempdir/compat.c++
-$0-debug "$input" --ir     > $tempdir/design.llvm
+$0-release "$input" --header > $tempdir/design.h
+$0-release "$input" --compat > $tempdir/compat.c++
+$0-release "$input" --ir     > $tempdir/design.llvm
 
 $clang -c -S -emit-llvm \
     -I "$(dirname $input)" \
