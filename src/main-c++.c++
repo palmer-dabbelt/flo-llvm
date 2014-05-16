@@ -142,6 +142,7 @@ int main(int argc, const char **argv)
         fprintf(stderr, "    --ir:     Generates LLVM IR\n");
         fprintf(stderr, "    --header: Generates a C++ class header\n");
         fprintf(stderr, "    --compat: Generates a C++ compat layer\n");
+        fprintf(stderr, "    --harness:Generates a C++ test harness\n");
         abort();
         return 1;
     }
