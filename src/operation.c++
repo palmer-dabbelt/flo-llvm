@@ -81,7 +81,9 @@ operation::operation(std::shared_ptr<node>& dest,
 
     case libflo::opcode::REG:
         this->d()->force_export();
+#ifndef EXPORT_FEW_NODES
         this->d()->force_vcd_export();
+#endif
         this->t()->force_export();
         break;
     }
