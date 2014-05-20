@@ -20,3 +20,4 @@ TESTSRC += chisel_neg.bash
 TESTSRC += large_des.bash
 TESTSRC += large_sift-16_2_3.bash
 TESTSRC += large_sift-160_2_5.bash
+TESTSRC += large_mimo.bash
