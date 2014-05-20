@@ -776,6 +776,14 @@ int generate_llvmir(const flo_ptr flo, FILE *f)
                                 ));
                 break;
 
+            case libflo::opcode::NEG:
+            {
+                auto zero = fix_t(op->s()->width());
+                lo->operate(zext_trunc_op(zero, constant<uint64_t>(0)));
+                lo->operate(sub_op(op->dv(), zero, op->sv()));
+                break;
+            }
+
             case libflo::opcode::NEQ:
                 lo->operate(cmp_neq_op(op->dv(), op->sv(), op->tv()));
                 break;
@@ -899,7 +907,6 @@ int generate_llvmir(const flo_ptr flo, FILE *f)
             case libflo::opcode::MEM:
             case libflo::opcode::NOP:
             case libflo::opcode::LOG2:
-            case libflo::opcode::NEG:
                 fprintf(stderr, "Unable to compute node '%s'\n",
                         libflo::opcode_to_string(op->op()).c_str());
                 abort();
