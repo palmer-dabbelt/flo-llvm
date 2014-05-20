@@ -1,3 +1,22 @@
+mode="release"
+if [[ "$1" == "--debug" ]]
+then
+    mode="debug"
+    shift
+fi
+
+if [[ "$1" == "--release" ]]
+then
+    mode="release"
+    shift
+fi
+
+if [[ "$1" == "--vcdtmp" ]]
+then
+    mode="vcdtmp"
+    shift
+fi
+
 # If we weren't passed an input then just send the help text.
 input="$1"
 if [[ "$input" == "" ]]
@@ -7,7 +26,7 @@ fi
 
 if [[ "$input" == "--version" ]]
 then
-    $0-debug --version
+    $0-$mode --version
     exit $?
 fi
 
@@ -48,9 +67,9 @@ fi
 tempdir=`mktemp -d -t flo-llvm-wrapper.XXXXXXXXXX`
 trap "rm -rf $tempdir" EXIT
 
-$0-release "$input" --header > $tempdir/design.h
-$0-release "$input" --compat > $tempdir/compat.c++
-$0-release "$input" --ir     > $tempdir/design.llvm
+$0-$mode "$input" --header > $tempdir/design.h
+$0-$mode "$input" --compat > $tempdir/compat.c++
+$0-$mode "$input" --ir     > $tempdir/design.llvm
 
 $clang -c -S -emit-llvm \
     -I "$(dirname $input)" \
