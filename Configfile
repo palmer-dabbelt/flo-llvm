@@ -22,6 +22,16 @@ GENERATE    += version.h
 BINARIES    += flo-llvm
 SOURCES     += wrapper.bash
 
+# This binary generates code that matches what "flo-torture" will
+# output -- in other words, it _really_ only generates in/out nodes
+# into the VCD file.
+BINARIES    += flo-llvm-torture
+COMPILEOPTS += `ppkg-config flo --cflags`
+LINKOPTS    += `ppkg-config flo --libs`
+COMPILEOPTS += -DEXPORT_FEW_NODES
+COMPILEOPTS += -DTORTURE_OUTPUT
+SOURCES     += main-c++.c++
+
 # This binary generates code that's compatible with Chisel's "debug"
 # mode, which puts many signals in the VCD dump.
 BINARIES    += flo-llvm-release

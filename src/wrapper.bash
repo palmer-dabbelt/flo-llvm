@@ -17,6 +17,12 @@ then
     shift
 fi
 
+if [[ "$1" == "--torture" ]]
+then
+    mode="torture"
+    shift
+fi
+
 # If we weren't passed an input then just send the help text.
 input="$1"
 if [[ "$input" == "" ]]
