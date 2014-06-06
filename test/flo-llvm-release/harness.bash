@@ -79,6 +79,9 @@ then
     elif [[ "$(basename $PTEST_BINARY)" == "flo-llvm-release" ]]
     then
         exargs=""
+    elif [[ "$(basename $PTEST_BINARY)" == "flo-llvm-torture" ]]
+    then
+        exargs=""
     else
         echo "Pick a run mode!"
         exit 1
