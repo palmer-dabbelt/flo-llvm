@@ -650,11 +650,19 @@ int generate_llvmir(const flo_ptr flo, FILE *f)
             continue;
 
         if (node->is_mem() == true) {
-            out.declare(node->getm_func());
-            out.declare(node->setm_func());
+            out.declare(node->getm_func(),
+                        libcodegen::llvm::declare_flags_inline
+                );
+            out.declare(node->setm_func(),
+                        libcodegen::llvm::declare_flags_inline
+                );
         } else {
-            out.declare(node->get_func());
-            out.declare(node->set_func());
+            out.declare(node->get_func(),
+                        libcodegen::llvm::declare_flags_inline
+                );
+            out.declare(node->set_func(),
+                        libcodegen::llvm::declare_flags_inline
+                );
         }
     }
 

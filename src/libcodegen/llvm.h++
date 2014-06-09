@@ -56,7 +56,8 @@ namespace libcodegen {
         llvm(const std::string filename);
 
         /* Emits a function declaration. */
-        void declare(const function_t &f);
+        static const int declare_flags_inline = 0x1;
+        void declare(const function_t &f, int flags = 0);
 
         /* Emits a function definition. */
         /* FIXME: This probably shouldn't be a pointer, but it appears

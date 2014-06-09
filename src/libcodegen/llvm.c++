@@ -33,7 +33,7 @@ llvm::llvm(const std::string filename)
 {
 }
 
-void llvm::declare(const function_t &f)
+void llvm::declare(const function_t &f, int flags)
 {
     fprintf(_f, "declare %s @%s(", f.ret_llvm().c_str(), f.name().c_str());
 
@@ -49,7 +49,12 @@ void llvm::declare(const function_t &f)
         }
     }
 
-    fprintf(_f, ")\n");
+    fprintf(_f, ")");
+
+    if (flags & declare_flags_inline)
+        fprintf(_f, "alwaysinline");
+
+    fprintf(_f, "\n");
 }
 
 definition_ptr llvm::define(const function_t &f,
