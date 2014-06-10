@@ -172,12 +172,12 @@ time $llvm_link $TEST.llvm compat.llvm harness.llvm -S > exe.llvm
 
 # Optimizes the assembly that was generated.  I'm not sure if this is
 # necessary to do before I stick in inside the JIT or not...
-#time $opt -O2 exe.llvm -S > opt.llvm
+time $opt -O2 exe.llvm -S > opt.llvm
 #cat opt.llvm
 
 # Runs the new emulator inside the LLVM interpreter (or probably JIT
 # compiler, if you're using a sane architecture).
-$llc -O2 exe.llvm -o opt.S
+$llc -O2 opt.llvm -o opt.S
 c++ -g opt.S -o opt
 if test -f $TEST.stdin
 then
