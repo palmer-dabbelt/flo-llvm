@@ -84,7 +84,8 @@ $clang -c -S -emit-llvm \
 
 $llvm_link $tempdir/design.llvm $tempdir/compat.llvm > $tempdir/link.llvm
 
-$llc -O2 $tempdir/link.llvm -o $tempdir/opt.S
+$opt -O2 $tempdir/link.llvm -o $tempdir/opt.llvm
+$llc -O2 $tempdir/opt.llvm -o $tempdir/opt.S
 
 c++ $tempdir/opt.S -c -o $tempdir/opt.o
 
