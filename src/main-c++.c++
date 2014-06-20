@@ -750,13 +750,16 @@ int generate_llvmir(const flo_ptr flo, FILE *f)
 
             case libflo::opcode::LSH:
             {
-                auto es = fix_t(op->d()->width());
-                auto et = fix_t(op->d()->width());
+                auto ed = fix_t(op->d()->width() + op->s()->width());
+                auto es = fix_t(op->d()->width() + op->s()->width());
+                auto et = fix_t(op->d()->width() + op->s()->width());
 
                 lo->operate(zext_trunc_op(es, op->sv()));
                 lo->operate(zext_trunc_op(et, op->tv()));
                 
-                lo->operate(lsh_op(op->dv(), es, et));
+                lo->operate(lsh_op(ed, es, et));
+
+                lo->operate(zext_trunc_op(op->dv(), ed));
 
                 break;
             }
