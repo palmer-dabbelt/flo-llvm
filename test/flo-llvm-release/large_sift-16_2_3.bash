@@ -4,6 +4,9 @@
 TEST="ScaleSpaceExtrema"
 ARGS="Random_16_2_3"
 
+# FIXME: vcd2step doesn't work for this circuit.
+STEP_BROKEN="true"
+
 # FIXME: This test isn't actually too large, it just fails because of
 # the output of WR nodes.  I've got no idea why these WR nodes look
 # the way they do, so I'm just giving up for now...

@@ -87,14 +87,11 @@ then
         exit 1
     fi
 
-    touch $TEST.stdin
-    while [[ "$(tail -n1 $TEST.stdin)" != "quit" ]]
-    do
-        scala $SCALA_FLAGS -classpath chisel.jar:. $TEST $ARGS \
-            --genHarness --compile --test --backend c \
-            --vcd --dumpTestInput --testerSeed 0 $exargs
-    done
+    scala $SCALA_FLAGS -classpath chisel.jar:. $TEST $ARGS \
+        --genHarness --dumpTestInput --compile --test --backend c \
+        --vcd --testerSeed 0 $exargs
 
+    cat $TEST.stdin
     mv $TEST.vcd gold.vcd
     mv $TEST-emulator.cpp harness.c++
     cat $TEST.flo
@@ -102,6 +99,13 @@ then
 fi
 
 cat $TEST.flo
+
+if [[ "$STEP_BROKEN" != "true" ]]
+then
+    cat gold.vcd
+    vcd2step gold.vcd $TEST.flo $TEST.stdin
+    cat $TEST.stdin
+fi
 
 # Builds the rest of the C++ emulator, which contains a main() that
 # actually runs the code.
