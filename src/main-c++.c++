@@ -909,6 +909,7 @@ int generate_llvmir(const flo_ptr flo, FILE *f)
                 break;
 
             case libflo::opcode::RND:
+            case libflo::opcode::DIV:
             case libflo::opcode::EAT:
             case libflo::opcode::LIT:
             case libflo::opcode::MSK:
