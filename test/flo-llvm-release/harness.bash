@@ -114,7 +114,7 @@ cat $TEST.h
 
 if [[ "$have_valgrind" == "true" ]]
 then
-    valgrind -q $PTEST_BINARY $TEST.flo --header >$TEST-vg.h 2>vg-$TEST.h
+    valgrind --log-file=vg-$TEST.h -q $PTEST_BINARY $TEST.flo --header >$TEST-vg.h
     cat vg-$TEST.h
     if [[ "$(cat vg-$TEST.h | wc -l)" != "0" ]]
     then
@@ -127,7 +127,7 @@ cat compat.c++
 
 if [[ "$have_valgrind" == "true" ]]
 then
-    valgrind -q $PTEST_BINARY $TEST.flo --compat >compat-vg.c++ 2>vg-compat.c++
+    valgrind --log-file=vg-compat.c++ -q $PTEST_BINARY $TEST.flo --compat >compat-vg.c++
     cat vg-compat.c++
     if [[ "$(cat vg-compat.c++ | wc -l)" != "0" ]]
     then
@@ -140,7 +140,7 @@ cat harness.c++
 
 if [[ "$have_valgrind" == "true" ]]
 then
-    valgrind -q $PTEST_BINARY $TEST.flo --harness >harness-vg.c++ 2>vg-harness.c++
+    valgrind --log-file=vg-harness.c++ -q $PTEST_BINARY $TEST.flo --harness >harness-vg.c++
     cat vg-harness.c++
     if [[ "$(cat vg-harness.c++ | wc -l)" != "0" ]]
     then
@@ -162,7 +162,7 @@ cat $TEST.llvm
 
 if [[ "$have_valgrind" == "true" ]]
 then
-    valgrind -q $PTEST_BINARY $TEST.flo --ir >$TEST-vg.llvm 2>vg-$TEST.llvm
+    valgrind --log-file=vg-$TEST.llvm -q $PTEST_BINARY $TEST.flo --ir >$TEST-vg.llvm
     cat vg-$TEST.llvm
     if [[ "$(cat vg-$TEST.llvm | wc -l)" != "0" ]]
     then
@@ -192,7 +192,7 @@ then
     if [[ "$have_valgrind" == "true" ]]
     then
         cp $TEST.vcd $TEST-novg.vcd
-        cat $TEST.stdin.copy | valgrind -q ./opt 2>vg-opt
+        cat $TEST.stdin.copy | valgrind --log-file=vg-opt -q ./opt
         cat vg-opt
         if [[ "$(cat vg-opt | wc -l)" != "0" ]]
         then
@@ -203,7 +203,7 @@ else
     time ./opt --vcd $TEST.vcd --cycles 100
 
     cp $TEST.vcd $TEST-novg.vcd
-    valgrind -q ./opt --vcd $TEST.vcd --cycles 100 2>vg-opt
+    valgrind --log-file=vg-opt -q ./opt --vcd $TEST.vcd --cycles 100
     cat vg-opt
     if [[ "$(cat vg-opt | wc -l)" != "0" ]]
     then
