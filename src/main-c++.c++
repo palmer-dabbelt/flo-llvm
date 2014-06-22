@@ -716,6 +716,10 @@ int generate_llvmir(const flo_ptr flo, FILE *f)
                 lo->operate(and_op(op->dv(), op->sv(), op->tv()));
                 break;
 
+            case libflo::opcode::DIV:
+                lo->operate(div_op(op->dv(), op->sv(), op->tv()));
+                break;
+
             case libflo::opcode::CAT:
             case libflo::opcode::CATD:
             {
@@ -910,7 +914,6 @@ int generate_llvmir(const flo_ptr flo, FILE *f)
                 break;
 
             case libflo::opcode::RND:
-            case libflo::opcode::DIV:
             case libflo::opcode::EAT:
             case libflo::opcode::LIT:
             case libflo::opcode::MSK:
