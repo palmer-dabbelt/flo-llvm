@@ -178,6 +178,7 @@ namespace libcodegen {
     /* Performs a left shift. */
     LIBCODEGEN__DEF_ALU_OP_2_3o(lsh, "shl")
     LIBCODEGEN__DEF_ALU_OP_2_3o(lrsh, "lshr")
+    LIBCODEGEN__DEF_ALU_OP_2_3o(arsh, "ashr")
 
     /* Comparison operations. */
     LIBCODEGEN__DEF_ALU_OP_2_3s(cmp_eq, "icmp eq")

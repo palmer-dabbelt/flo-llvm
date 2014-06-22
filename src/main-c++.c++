@@ -840,6 +840,7 @@ int generate_llvmir(const flo_ptr flo, FILE *f)
                 break;
             }
 
+            case libflo::opcode::ARSH:
             case libflo::opcode::RSH:
             case libflo::opcode::RSHD:
             {
@@ -847,7 +848,10 @@ int generate_llvmir(const flo_ptr flo, FILE *f)
                 lo->operate(zext_trunc_op(cast, op->tv()));
 
                 auto shifted = fix_t(op->s()->width());
-                lo->operate(lrsh_op(shifted, op->sv(), cast));
+                if (op->op() == libflo::opcode::ARSH)
+                    lo->operate(arsh_op(shifted, op->sv(), cast));
+                else
+                    lo->operate(lrsh_op(shifted, op->sv(), cast));
 
                 auto zero = fix_t(op->t()->width());
                 lo->operate(zext_trunc_op(zero, constant<uint64_t>(0)));
@@ -918,7 +922,6 @@ int generate_llvmir(const flo_ptr flo, FILE *f)
             case libflo::opcode::LIT:
             case libflo::opcode::MSK:
             case libflo::opcode::LD:
-            case libflo::opcode::ARSH:
             case libflo::opcode::ST:
             case libflo::opcode::MEM:
             case libflo::opcode::NOP:
