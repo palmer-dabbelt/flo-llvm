@@ -347,12 +347,13 @@ int generate_compat(const flo_ptr flo, FILE *f)
             continue;
 
         if (node->is_mem() == true) {
-            for (size_t i = 0; i < node->depth(); ++i) {
-                fprintf(f, "  this->%s.put(" SIZET_FORMAT ", 0);\n",
-                        node->mangled_name().c_str(),
-                        i
-                    );
-            }
+            fprintf(f, "  for (size_t i = 0; i < " SIZET_FORMAT "; ++i) {",
+                    node->depth()
+                );
+            fprintf(f, "    this->%s.put(i, 0);\n",
+                    node->mangled_name().c_str()
+                );
+            fprintf(f, "  }\n");
         } else {
             fprintf(f, "  this->%s = 0;\n", node->mangled_name().c_str());
         }
