@@ -749,6 +749,37 @@ int generate_llvmir(const flo_ptr flo, FILE *f)
                 nop = true;
                 break;
 
+            case libflo::opcode::LOG2:
+            {
+                auto one = fix_t(op->s()->width());
+                lo->operate(zext_trunc_op(one, constant<uint32_t>(1)));
+
+                std::vector<fix_t> lookup;
+                for (size_t i = 0; i < op->s()->width(); ++i)
+                    lookup.push_back(fix_t(op->d()->width()));
+
+                lo->operate(zext_trunc_op(lookup[0], constant<uint32_t>(0)));
+
+                for (size_t i = 1; i < op->s()->width(); ++i) {
+                    auto shift = fix_t(op->s()->width());
+                    lo->operate(lsh_op(shift, one, constant<uint64_t>(i)));
+
+                    auto cmp = fix_t(op->s()->width());
+                    lo->operate(cmp_gte_op(cmp, op->sv(), shift));
+
+                    auto iv = fix_t(op->d()->width());
+                    lo->operate(zext_trunc_op(iv, constant<size_t>(i)));
+
+                    auto log2 = lookup[i-1];
+                    auto nlog2 = lookup[i];
+                    lo->operate(mux_op(nlog2, cmp, iv, log2));
+                }
+
+                lo->operate(mov_op(op->dv(), lookup[lookup.size()-1]));
+
+                break;
+            }
+
             case libflo::opcode::LT:
                 lo->operate(cmp_lt_op(op->dv(), op->sv(), op->tv()));
                 break;
@@ -925,7 +956,6 @@ int generate_llvmir(const flo_ptr flo, FILE *f)
             case libflo::opcode::ST:
             case libflo::opcode::MEM:
             case libflo::opcode::NOP:
-            case libflo::opcode::LOG2:
                 fprintf(stderr, "Unable to compute node '%s'\n",
                         libflo::opcode_to_string(op->op()).c_str());
                 abort();
