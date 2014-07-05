@@ -1,0 +1,10 @@
+#!/bin/bash
+
+flo-patterns --list | while read pattern
+do
+    flo-patterns --list $pattern | while read example
+    do
+        echo "TESTS += patterns-$pattern-$example"
+        echo "SOURCES += pattern.bash"
+    done
+done

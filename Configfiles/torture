@@ -1,0 +1,7 @@
+#!/bin/bash
+
+for seed in $(seq -w 1 100)
+do
+    echo "TESTS += torture-$seed"
+    echo "SOURCES += torture.bash"
+done
