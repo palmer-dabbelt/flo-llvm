@@ -61,8 +61,6 @@ fi
 # be generated right from here.
 if test -f $TEST.scala
 then
-    cat $TEST.scala
-
     scalac *.scala -classpath chisel.jar:.
 
     scala $SCALA_FLAGS -classpath chisel.jar:. $TEST $ARGS \
@@ -91,26 +89,19 @@ then
         --genHarness --dumpTestInput --compile --test --backend c \
         --vcd --testerSeed 0 $exargs
 
-    cat $TEST.stdin
     mv $TEST.vcd gold.vcd
     mv $TEST-emulator.cpp harness.c++
-    cat $TEST.flo
     mv $TEST.h $TEST-chisel.h
 fi
 
-cat $TEST.flo
-
 if [[ "$STEP_BROKEN" != "true" ]]
 then
-    cat gold.vcd
     vcd2step gold.vcd $TEST.flo $TEST.stdin
-    cat $TEST.stdin
 fi
 
 # Builds the rest of the C++ emulator, which contains a main() that
 # actually runs the code.
 time $PTEST_BINARY $TEST.flo --header > $TEST.h
-cat $TEST.h
 
 if [[ "$have_valgrind" == "true" ]]
 then
@@ -123,7 +114,6 @@ then
 fi
 
 time $PTEST_BINARY $TEST.flo --compat > compat.c++
-cat compat.c++
 
 if [[ "$have_valgrind" == "true" ]]
 then
@@ -158,7 +148,6 @@ time $clang -g -c -include $TEST.h -std=c++11 compat.c++ \
 # Preforms the Flo->LLVM conversion to generate the actual clock
 # lines.
 time $PTEST_BINARY $TEST.flo --ir > $TEST.llvm
-cat $TEST.llvm
 
 if [[ "$have_valgrind" == "true" ]]
 then
@@ -186,7 +175,6 @@ c++ -g opt.S -o opt
 if test -f $TEST.stdin
 then
     cp $TEST.stdin $TEST.stdin.copy
-    cat $TEST.stdin.copy
     time cat $TEST.stdin.copy | ./opt
 
     if [[ "$have_valgrind" == "true" ]]
@@ -210,7 +198,6 @@ else
         exit 1
     fi
 fi
-cat $TEST.vcd
 
 if [[ "$have_valgrind" == "true" ]]
 then
