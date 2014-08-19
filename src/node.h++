@@ -121,6 +121,7 @@ public:
      * file. */
     void force_export(void) { _exported = true; }
     void force_vcd_export(void) { _vcd_exported = true; }
+    void skip_vcd_export(void) { _vcd_exported = false; }
 };
 
 #endif
