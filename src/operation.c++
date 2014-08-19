@@ -66,8 +66,11 @@ operation::operation(std::shared_ptr<node>& dest,
     case libflo::opcode::RST:
     case libflo::opcode::ST:
     case libflo::opcode::SUB:
-    case libflo::opcode::WR:
     case libflo::opcode::XOR:
+        break;
+
+    case libflo::opcode::WR:
+        this->d()->skip_vcd_export();
         break;
 
     case libflo::opcode::IN:
