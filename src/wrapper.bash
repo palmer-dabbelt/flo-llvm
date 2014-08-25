@@ -48,7 +48,7 @@ clang="clang"
 # why anyone would do such a thing... :(.  To avoid all this I just
 # have the Ubuntu package explicitly depend on the 3.3 version of the
 # tools and postfix all names.
-if [[ "$DISTRIB_DESCRIPTION" == "Ubuntu 12.04.4 LTS" ]]
+if [[ "$DISTRIB_DESCRIPTION" == "Ubuntu 12.04.5 LTS" ]]
 then
     llvm_link="llvm-link-3.3"
     opt="opt-3.3"
