@@ -22,8 +22,8 @@ TESTSRC += chisel_log2-32.bash
 # wrote.  These are probably all suitable for benchmarking of some
 # sort...
 TESTSRC += large_des.bash
-TESTSRC += large_sift-16_2_3.bash
-TESTSRC += large_sift-160_2_5.bash
+#TESTSRC += large_sift-16_2_3.bash
+#TESTSRC += large_sift-160_2_5.bash
 TESTSRC += large_mimo.bash
 #TESTSRC += large_rv321.bash
 #TESTSRC += large_reference-chip.bash
