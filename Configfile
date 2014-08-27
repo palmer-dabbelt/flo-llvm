@@ -59,4 +59,4 @@ COMPILEOPTS += `ppkg-config flo --cflags`
 LINKOPTS    += `ppkg-config flo --libs`
 COMPILEOPTS += -DEXPORT_ALL_NODES
 SOURCES     += main-c++.c++
-CONFIG      += designs
+#CONFIG      += designs
