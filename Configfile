@@ -31,8 +31,8 @@ LINKOPTS    += `ppkg-config flo --libs`
 COMPILEOPTS += -DEXPORT_FEW_NODES
 COMPILEOPTS += -DTORTURE_OUTPUT
 SOURCES     += main-c++.c++
-#CONFIG      += patterns
-#CONFIG      += torture
+CONFIG      += patterns
+CONFIG      += torture
 
 # This binary generates code that's compatible with Chisel's "debug"
 # mode, which puts many signals in the VCD dump.
