@@ -12,9 +12,8 @@ class test extends Module {
 
   val mem = Mem(UInt(width = 32), 256)
 
-  val r = Reg(init = UInt(0, width = 32))
+  val r = Reg(init = UInt(5381, width = 32))
   when (io.r) { r := (r << UInt(5)) + r }
-  when (io.i === UInt(0)) { r := UInt(5381) }
 
   io.o := r
   when (io.r)  { io.o := mem(io.i) }
