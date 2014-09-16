@@ -38,7 +38,10 @@ then
     exit $?
 fi
 
-source /etc/lsb-release || true
+if test -f /etc/lsb-release
+then
+    source /etc/lsb-release
+fi
 
 llvm_link="llvm-link"
 opt="opt"
