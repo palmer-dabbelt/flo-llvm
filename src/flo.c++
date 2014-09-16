@@ -50,6 +50,7 @@ const std::string flo::class_name(void) const
     }
 
     fprintf(stderr, "Unable to obtain class name\n");
+    fprintf(stderr, "  There must be one Flo node with a :: in it\n");
     abort();
     return "";
 }
