@@ -1,3 +1,5 @@
+set -e
+
 mode="release"
 if [[ "$1" == "--debug" ]]
 then
