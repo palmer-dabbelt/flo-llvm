@@ -138,10 +138,10 @@ then
     fi
 fi
 
-time $clang -g -c -std=c++11 harness.c++ -o harness.llvm -S -emit-llvm
+time $clang -Werror -g -c -std=c++11 harness.c++ -o harness.llvm -S -emit-llvm
 #cat harness.llvm
 
-time $clang -g -c -include $TEST.h -std=c++11 compat.c++ \
+time $clang -Werror -g -c -include $TEST.h -std=c++11 compat.c++ \
     -o compat.llvm -S -emit-llvm
 #cat compat.llvm
 
