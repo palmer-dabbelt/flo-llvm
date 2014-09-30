@@ -541,7 +541,7 @@ int generate_compat(const flo_ptr flo, FILE *f)
 
         fprintf(f, "    fprintf(f, \"b\");\n");
         for (auto i = node->width(); i > 0; i--) {
-            fprintf(f, "    fprintf(f, \"%%lu\", (%s.values[" SIZET_FORMAT "] >> " SIZET_FORMAT ") & 1);",
+            fprintf(f, "    fprintf(f, \"%%d\", (int)(%s.values[" SIZET_FORMAT "] >> " SIZET_FORMAT ") & 1);",
                     node->mangled_name().c_str(),
                     (i - 1) / 64,
                     (i - 1) % 64
