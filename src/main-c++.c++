@@ -518,7 +518,7 @@ int generate_compat(const flo_ptr flo, FILE *f)
 
     fprintf(f, "  }\n");
 
-    fprintf(f, "  fprintf(f, \"#%%lu\\n\", cycle);\n");
+    fprintf(f, "  fprintf(f, \"#%%d\\n\", cycle);\n");
 
     for (const auto& node: flo->nodes()) {
         if (node->vcd_exported() == false)
