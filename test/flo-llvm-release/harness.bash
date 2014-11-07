@@ -87,12 +87,15 @@ then
 
     scala $SCALA_FLAGS -classpath chisel.jar:. $TEST $ARGS \
         --genHarness --dumpTestInput --compile --test --backend c \
-        --vcd --testerSeed 0 $exargs
+        --vcd --testerSeed 0 $exargs || cat -n $TEST.cpp
+    cat -n $TEST.cpp
 
     mv $TEST.vcd gold.vcd
     mv $TEST-emulator.cpp harness.c++
     mv $TEST.h $TEST-chisel.h
 fi
+
+cat $TEST.flo
 
 if [[ "$STEP_BROKEN" != "true" ]]
 then
