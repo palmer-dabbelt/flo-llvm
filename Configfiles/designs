@@ -17,6 +17,9 @@ TESTSRC += chisel_cat-64-1.bash
 TESTSRC += chisel_cat-64-2.bash
 TESTSRC += chisel_lsh-32-1-1.bash
 TESTSRC += chisel_log2-32.bash
+#TESTSRC += chisel_shift-too-far.bash
+#TESTSRC += chisel_lsh.bash
+TESTSRC += chisel_orR.bash
 
 # "Large" tests, which really just consist of real code other people
 # wrote.  These are probably all suitable for benchmarking of some
@@ -24,6 +27,6 @@ TESTSRC += chisel_log2-32.bash
 TESTSRC += large_des.bash
 #TESTSRC += large_sift-16_2_3.bash
 #TESTSRC += large_sift-160_2_5.bash
-TESTSRC += large_mimo.bash
+#TESTSRC += large_mimo.bash
 #TESTSRC += large_rv321.bash
 #TESTSRC += large_reference-chip.bash
