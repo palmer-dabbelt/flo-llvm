@@ -20,6 +20,7 @@ GENERATE    += version.h
 # Here's a simple little wrapper that calls the compiler a bunch of
 # times in order to produce a result.
 BINARIES    += flo-llvm
+LINKOPTS    += -DLLVM_BINDIR=`ppkg-config --ccmd llvm --bindir`
 SOURCES     += wrapper.bash
 
 # This binary generates code that matches what "flo-torture" will
