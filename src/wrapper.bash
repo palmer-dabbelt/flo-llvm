@@ -46,7 +46,7 @@ fi
 llvm_link="LLVM_BINDIR/llvm-link"
 opt="LLVM_BINDIR/opt"
 llc="LLVM_BINDIR/llc"
-clang="LLVM_BINDIR/clang"
+clang="clang"
 
 # For some crazy reason, Ubuntu has decided to have a clang that's
 # actually incompatible with their installed LLVM tools.  I don't know
