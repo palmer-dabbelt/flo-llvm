@@ -92,7 +92,19 @@ $llvm_link $tempdir/design.llvm $tempdir/compat.llvm > $tempdir/link.llvm
 $opt -O2 $tempdir/link.llvm -o $tempdir/opt.llvm
 $llc -O2 $tempdir/opt.llvm -o $tempdir/opt.S
 
-c++ $tempdir/opt.S -c -o $tempdir/opt.o
+# So for some reason it turns out that on OSX the compiler doesn't
+# actually emit assembly that the assembler understands.  According to
+# a mailing list post:
+# https://www.mail-archive.com/llvmbugs@cs.uiuc.edu/msg31901.html
+# They just don't care about fixing this.
+
+asm="$tempdir/opt.S"
+if [[ "$(uname)" == "Darwin" ]]
+then
+    asm="$tempdir/opt.llvm"
+fi
+
+c++ $asm -c -o $tempdir/opt.o
 
 mv $tempdir/opt.o "$(dirname $input)"/"$(basename $input .flo)".o
 mv $tempdir/design.h "$(dirname $input)"/"$(basename $input .flo)".h
