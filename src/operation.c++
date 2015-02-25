@@ -42,6 +42,7 @@ operation::operation(std::shared_ptr<node>& dest,
     case libflo::opcode::DIV:
     case libflo::opcode::EAT:
     case libflo::opcode::EQ:
+    case libflo::opcode::GT:
     case libflo::opcode::GTE:
     case libflo::opcode::INIT:
     case libflo::opcode::LD:
@@ -49,6 +50,7 @@ operation::operation(std::shared_ptr<node>& dest,
     case libflo::opcode::LOG2:
     case libflo::opcode::LSH:
     case libflo::opcode::LT:
+    case libflo::opcode::LTE:
     case libflo::opcode::MEM:
     case libflo::opcode::MOV:
     case libflo::opcode::MSK:

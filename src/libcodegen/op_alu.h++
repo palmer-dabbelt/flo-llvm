@@ -183,8 +183,10 @@ namespace libcodegen {
     /* Comparison operations. */
     LIBCODEGEN__DEF_ALU_OP_2_3s(cmp_eq, "icmp eq")
     LIBCODEGEN__DEF_ALU_OP_2_3s(cmp_neq, "icmp ne")
+    LIBCODEGEN__DEF_ALU_OP_2_3s(cmp_gt, "icmp ge")
     LIBCODEGEN__DEF_ALU_OP_2_3s(cmp_gte, "icmp uge")
     LIBCODEGEN__DEF_ALU_OP_2_3s(cmp_lt, "icmp ult")
+    LIBCODEGEN__DEF_ALU_OP_2_3s(cmp_lte, "icmp ule")
 
     /* Performs a bitwise logical NOT -- note that this is a
      * special-case operation because LLVM doesn't have a NOT

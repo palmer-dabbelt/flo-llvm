@@ -740,6 +740,10 @@ int generate_llvmir(const flo_ptr flo, FILE *f)
                 lo->operate(cmp_eq_op(op->dv(), op->sv(), op->tv()));
                 break;
 
+            case libflo::opcode::GT:
+                lo->operate(cmp_gt_op(op->dv(), op->sv(), op->tv()));
+                break;
+
             case libflo::opcode::GTE:
                 lo->operate(cmp_gte_op(op->dv(), op->sv(), op->tv()));
                 break;
@@ -782,6 +786,10 @@ int generate_llvmir(const flo_ptr flo, FILE *f)
 
             case libflo::opcode::LT:
                 lo->operate(cmp_lt_op(op->dv(), op->sv(), op->tv()));
+                break;
+
+            case libflo::opcode::LTE:
+                lo->operate(cmp_lte_op(op->dv(), op->sv(), op->tv()));
                 break;
 
             case libflo::opcode::LSH:
