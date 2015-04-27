@@ -21,6 +21,10 @@ TESTSRC += chisel_log2-32.bash
 #TESTSRC += chisel_lsh.bash
 TESTSRC += chisel_orR.bash
 
+# These handwritten tests are for Flo files that Chisel itself can't
+# actually emit, but that other languages can.
+TESTSRC += flo_regenable.bash
+
 # "Large" tests, which really just consist of real code other people
 # wrote.  These are probably all suitable for benchmarking of some
 # sort...

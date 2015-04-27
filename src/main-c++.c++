@@ -382,10 +382,19 @@ int generate_compat(const flo_ptr flo, FILE *f)
         if (op->op() != libflo::opcode::REG)
             continue;
 
-        fprintf(f, "  %s = %s;\n",
-                op->d()->mangled_name().c_str(),
-                op->t()->mangled_name().c_str()
-            );
+        if (op->s()->is_const()) {
+            fprintf(f, "  if (%s == 1) { %s = %s; }\n",
+                    op->s()->mangled_name().c_str(),
+                    op->d()->mangled_name().c_str(),
+                    op->t()->mangled_name().c_str()
+                );
+        } else {
+            fprintf(f, "  if (%s.lo_word() == 1) { %s = %s; }\n",
+                    op->s()->mangled_name().c_str(),
+                    op->d()->mangled_name().c_str(),
+                    op->t()->mangled_name().c_str()
+                );
+        }
     }
     fprintf(f, "}\n");
 
