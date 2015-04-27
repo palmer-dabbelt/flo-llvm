@@ -11,7 +11,7 @@ cat Torture.flo
 cat Torture.vcd
 mv Torture.vcd gold.vcd
 
-chisel-hdrtar headers.tar
+chisel-hdrtar > headers.tar
 tar -xf headers.tar
 
 #include "harness.bash"
