@@ -1,1 +1,1 @@
-chisel-jargen chisel.jar
+chisel-jargen > chisel.jar
