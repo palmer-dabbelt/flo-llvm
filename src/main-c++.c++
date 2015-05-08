@@ -910,7 +910,10 @@ int generate_llvmir(const flo_ptr flo, FILE *f)
                 auto zero_check = fix_t(cast.width());
                 lo->operate(mux_op(zero_check, is_zero, op->sv(), shifted));
 
-                lo->operate(zext_trunc_op(op->dv(), zero_check));
+                if (op->op() == libflo::opcode::ARSH)
+                    lo->operate(sext_trunc_op(op->dv(), zero_check));
+                else
+                    lo->operate(zext_trunc_op(op->dv(), zero_check));
 
                 break;
             }
