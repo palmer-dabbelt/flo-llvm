@@ -1,5 +1,11 @@
 #!/bin/bash
 
+which flo-patterns >& /dev/null
+if [[ "$?" == "0" ]]
+then
+    exit 0
+fi
+
 flo-patterns --list | while read pattern
 do
     flo-patterns --list $pattern | while read example
