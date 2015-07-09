@@ -59,6 +59,12 @@ then
     opt="opt-3.3"
     llc="llc-3.3"
     clang="clang" # That's right, the clang-3.3 package installs clang!
+elif [[ "$DISTRIB_DESCRIPTION" == "Ubuntu 14.04.2 LTS" ]]
+then
+    llvm_link="llvm-link-3.5"
+    opt="opt-3.5"
+    llc="llc-3.5"
+    clang="clang-3.5"
 elif test -f /etc/debian_version
 then
     # Debian still has old versions of everything...
