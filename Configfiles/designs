@@ -25,6 +25,8 @@ TESTSRC += chisel_orR.bash
 # actually emit, but that other languages can.
 TESTSRC += flo_regenable.bash
 TESTSRC += flo_arsh.bash
+TESTSRC += flo_shiftreg-bad.bash
+TESTSRC += flo_shiftreg-good.bash
 
 # "Large" tests, which really just consist of real code other people
 # wrote.  These are probably all suitable for benchmarking of some

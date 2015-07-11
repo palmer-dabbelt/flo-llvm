@@ -116,7 +116,8 @@ then
     fi
 fi
 
-time $PTEST_BINARY $TEST.flo --compat > compat.c++
+(time $PTEST_BINARY $TEST.flo --compat > compat.c++) \
+    || (gdb --batch --ex r --ex bt --args $PTEST_BINARY $TEST.flo --compat; false)
 
 if [[ "$have_valgrind" == "true" ]]
 then

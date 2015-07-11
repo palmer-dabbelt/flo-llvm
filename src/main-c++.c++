@@ -377,19 +377,45 @@ int generate_compat(const flo_ptr flo, FILE *f)
     fprintf(f, "void %s_t::clock_hi(dat_t<1> rd)\n{\n",
             flo->class_name().c_str());
     fprintf(f, "  bool r = rd.to_ulong();\n");
+
+    /* Construct a list of all the register's source operands, which
+     * will be used to make shadow copies. */
+    std::map<std::string, bool> to_shadow;
     for (const auto& op: flo->operations()) {
-        /* Only registers need to be copied on */
+        /* Only registers will cause copies to happen. */
+        if (op->op() != libflo::opcode::REG)
+            continue;
+
+        if (op->s()->is_const() == false)
+            to_shadow[op->s()->mangled_name()] = true;
+        if (op->t()->is_const() == false)
+            to_shadow[op->t()->mangled_name()] = true;
+    }
+
+    /* Make shadow copies of the register values internally  */
+    for (const auto& pair: to_shadow) {
+        auto mangled_name = pair.first;
+
+        fprintf(f, "  auto __shadow__%s = %s;\n",
+                mangled_name.c_str(),
+                mangled_name.c_str()
+            );
+    }
+
+    /* Register updates need to happen _after_ the shadow copies
+     * do. */
+    for (const auto& op: flo->operations()) {
         if (op->op() != libflo::opcode::REG)
             continue;
 
         if (op->s()->is_const()) {
-            fprintf(f, "  if (%s == 1) { %s = %s; }\n",
+            fprintf(f, "  if (%s == 1) { %s = __shadow__%s; }\n",
                     op->s()->mangled_name().c_str(),
                     op->d()->mangled_name().c_str(),
                     op->t()->mangled_name().c_str()
                 );
         } else {
-            fprintf(f, "  if (%s.lo_word() == 1) { %s = %s; }\n",
+            fprintf(f, "  if (%s.lo_word() == 1) { %s = __shadow__%s; }\n",
                     op->s()->mangled_name().c_str(),
                     op->d()->mangled_name().c_str(),
                     op->t()->mangled_name().c_str()
