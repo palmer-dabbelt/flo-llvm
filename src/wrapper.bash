@@ -88,7 +88,7 @@ $0-$mode "$input" --header > $tempdir/design.h
 $0-$mode "$input" --compat > $tempdir/compat.c++
 $0-$mode "$input" --ir     > $tempdir/design.llvm
 
-$clang -c -S -emit-llvm \
+$clang -std=c++11 -c -S -emit-llvm \
     -I "$(dirname $input)" \
     -include $tempdir/design.h \
     $tempdir/compat.c++ -o $tempdir/compat.llvm
