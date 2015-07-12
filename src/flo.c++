@@ -35,6 +35,56 @@ flo::flo(std::map<std::string, std::shared_ptr<node>>& nodes,
          std::vector<std::shared_ptr<operation>>& ops)
     : libflo::flo<node, operation>(nodes, ops)
 {
+    /* Go through the list of nodes and cross-reference those that
+     * need to have shadow copies made of them. */
+    for (const auto& op: ops) {
+        switch (op->op()) {
+        case libflo::opcode::REG:
+            op->s()->force_shadowed();
+            op->t()->force_shadowed();
+            break;
+
+        case libflo::opcode::ADD:
+        case libflo::opcode::AND:
+        case libflo::opcode::ARSH:
+        case libflo::opcode::CAT:
+        case libflo::opcode::CATD:
+        case libflo::opcode::DIV:
+        case libflo::opcode::EAT:
+        case libflo::opcode::EQ:
+        case libflo::opcode::GT:
+        case libflo::opcode::GTE:
+        case libflo::opcode::IN:
+        case libflo::opcode::INIT:
+        case libflo::opcode::LD:
+        case libflo::opcode::LIT:
+        case libflo::opcode::LOG2:
+        case libflo::opcode::LSH:
+        case libflo::opcode::LT:
+        case libflo::opcode::LTE:
+        case libflo::opcode::MEM:
+        case libflo::opcode::MOV:
+        case libflo::opcode::MSK:
+        case libflo::opcode::MUL:
+        case libflo::opcode::MUX:
+        case libflo::opcode::NEG:
+        case libflo::opcode::NEQ:
+        case libflo::opcode::NOP:
+        case libflo::opcode::NOT:
+        case libflo::opcode::OR:
+        case libflo::opcode::OUT:
+        case libflo::opcode::RD:
+        case libflo::opcode::RND:
+        case libflo::opcode::RSH:
+        case libflo::opcode::RSHD:
+        case libflo::opcode::RST:
+        case libflo::opcode::ST:
+        case libflo::opcode::SUB:
+        case libflo::opcode::WR:
+        case libflo::opcode::XOR:
+            break;
+         }
+    }
 }
 
 const std::string flo::class_name(void) const

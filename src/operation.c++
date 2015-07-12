@@ -90,7 +90,6 @@ operation::operation(std::shared_ptr<node>& dest,
 #ifndef TORTURE_OUTPUT
         this->d()->force_vcd_export();
 #endif
-        this->t()->force_export();
         break;
     }
 }

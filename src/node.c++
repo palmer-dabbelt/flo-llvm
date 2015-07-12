@@ -51,7 +51,8 @@ node::node(const std::string name,
 #else
 #error "Decide how many nodes to export!"
 #endif
-      _vcd_name(gen_vcd_name())
+      _vcd_name(gen_vcd_name()),
+      _shadowed(false)
 {
 }
 
@@ -175,6 +176,23 @@ libcodegen::function<
                              libcodegen::pointer<libcodegen::builtin<uint64_t>>
                              >
         > out("_llvmflo_%s_setm", mangled_name().c_str());
+
+    return out;
+}
+
+libcodegen::function<
+    libcodegen::builtin<void>,
+    libcodegen::arglist2<libcodegen::pointer<libcodegen::builtin<void>>,
+                         libcodegen::pointer<libcodegen::builtin<uint64_t>>
+                         >
+    > node::shadow_func(void) const
+{
+    libcodegen::function<
+        libcodegen::builtin<void>,
+        libcodegen::arglist2<libcodegen::pointer<libcodegen::builtin<void>>,
+                             libcodegen::pointer<libcodegen::builtin<uint64_t>>
+                             >
+        > out("_llvmflo_%s_shadow", mangled_name().c_str());
 
     return out;
 }

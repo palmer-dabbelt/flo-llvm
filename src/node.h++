@@ -39,6 +39,8 @@ private:
 
     const std::string _vcd_name;
 
+    bool _shadowed;
+
 public:
         node(const std::string name,
              const libflo::unknown<size_t>& width,
@@ -56,6 +58,10 @@ public:
     /* Returns TRUE if this node should be exported into the VCD
      * file. */
     bool vcd_exported(void) const { return _vcd_exported; }
+
+    /* Returns TRUE if a shadow copy of this node should be exported
+     * into the C++ header file. */
+    bool shadowed(void) const { return _shadowed; }
 
     /* Returns TRUE if this node is a Chisel temporary node. */
     bool chisel_temp(void) const { return (mangled_name() == chisel_name()); }
@@ -81,6 +87,11 @@ public:
     /* Returns the libcodegen "name" of this node, which is really a
      * type-safe object that represents this node. */
     const libcodegen::fix_t cg_name(void) const;
+
+    /* Returns the name (as a string) of a variable that shadows this
+     * variable. */
+    const std::string shadow_name(void) const
+        { return std::string("__shadow__") + mangled_name(); }
 
     /* Functions that allow access to this node's internal data
      * structures. */
@@ -116,12 +127,21 @@ public:
                              >
         > setm_func(void) const;
 
+    /* Sets the shadow value for this node. */
+    libcodegen::function<
+        libcodegen::builtin<void>,
+        libcodegen::arglist2<libcodegen::pointer<libcodegen::builtin<void>>,
+                             libcodegen::pointer<libcodegen::builtin<uint64_t>>
+                             >
+        > shadow_func(void) const;
+
 public:
     /* Forces that this node is always exported into the header
      * file. */
     void force_export(void) { _exported = true; }
     void force_vcd_export(void) { _vcd_exported = true; }
     void skip_vcd_export(void) { _vcd_exported = false; }
+    void force_shadowed(void) { _shadowed = true; }
 };
 
 #endif

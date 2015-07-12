@@ -185,6 +185,15 @@ int generate_header(const flo_ptr flo, FILE *f)
         }
     }
 
+    for (const auto& node: flo->nodes()) {
+        if (node->shadowed() == false)
+            continue;
+
+        fprintf(f, "    dat_t<" SIZET_FORMAT "> %s;\n",
+                node->width(),
+                node->shadow_name().c_str());
+    }
+
     /* Here we write the class methods that exist in Chisel and will
      * be implemented externally by either the compatibility layer or
      * the emitted LLVM IR.  These must exactly match the
@@ -311,6 +320,29 @@ int generate_compat(const flo_ptr flo, FILE *f)
         }
     }
 
+    for (const auto& node: flo->nodes()) {
+        /* Sets the shadow value, which is later used for state
+         * updates. */
+        if (node->shadowed() == false)
+            continue;
+
+        fprintf(f, "  void _llvmflo_%s_shadow(%s_t *d, uint64_t *a) {\n",
+                node->mangled_name().c_str(),
+                flo->class_name().c_str()
+            );
+
+        for (size_t i = 0; i < (node->width() + 63) / 64; ++i) {
+            fprintf(f, "    d->%s.values[" SIZET_FORMAT "] "
+                    "= a[" SIZET_FORMAT "];\n",
+                    node->shadow_name().c_str(),
+                    i,
+                    i
+                );
+        }
+
+        fprintf(f, "  }\n");
+    }
+
     /* Here's where we elide the last bits of name mangling: these
      * functions wrap some non-mangled IR-generated names that
      * actually implement the functions required by Chisel's C++
@@ -378,49 +410,74 @@ int generate_compat(const flo_ptr flo, FILE *f)
             flo->class_name().c_str());
     fprintf(f, "  bool r = rd.to_ulong();\n");
 
-    /* Construct a list of all the register's source operands, which
-     * will be used to make shadow copies. */
-    std::map<std::string, bool> to_shadow;
+    /* State elements need to be performed all at once, despite the
+     * fact that they might */
     for (const auto& op: flo->operations()) {
         /* Only registers will cause copies to happen. */
-        if (op->op() != libflo::opcode::REG)
-            continue;
+        switch (op->op()) {
+        case libflo::opcode::REG:
+            if (op->s()->is_const()) {
+                fprintf(f, "  if (%s == 1) { %s = %s; }\n",
+                        op->s()->mangled_name().c_str(),
+                        op->d()->mangled_name().c_str(),
+                        op->t()->shadow_name().c_str()
+                    );
+            } else {
+                fprintf(f, "  if (%s.lo_word() == 1) { %s = %s; }\n",
+                        op->s()->shadow_name().c_str(),
+                        op->d()->mangled_name().c_str(),
+                        op->t()->shadow_name().c_str()
+                    );
+            }
+            break;
 
-        if (op->s()->is_const() == false)
-            to_shadow[op->s()->mangled_name()] = true;
-        if (op->t()->is_const() == false)
-            to_shadow[op->t()->mangled_name()] = true;
+        case libflo::opcode::ADD:
+        case libflo::opcode::AND:
+        case libflo::opcode::ARSH:
+        case libflo::opcode::CAT:
+        case libflo::opcode::CATD:
+        case libflo::opcode::DIV:
+        case libflo::opcode::EAT:
+        case libflo::opcode::EQ:
+        case libflo::opcode::GT:
+        case libflo::opcode::GTE:
+        case libflo::opcode::IN:
+        case libflo::opcode::INIT:
+        case libflo::opcode::LD:
+        case libflo::opcode::LIT:
+        case libflo::opcode::LOG2:
+        case libflo::opcode::LSH:
+        case libflo::opcode::LT:
+        case libflo::opcode::LTE:
+        case libflo::opcode::MEM:
+        case libflo::opcode::MOV:
+        case libflo::opcode::MSK:
+        case libflo::opcode::MUL:
+        case libflo::opcode::MUX:
+        case libflo::opcode::NEG:
+        case libflo::opcode::NEQ:
+        case libflo::opcode::NOP:
+        case libflo::opcode::NOT:
+        case libflo::opcode::OR:
+        case libflo::opcode::OUT:
+        case libflo::opcode::RD:
+        case libflo::opcode::RND:
+        case libflo::opcode::RSH:
+        case libflo::opcode::RSHD:
+        case libflo::opcode::RST:
+        case libflo::opcode::ST:
+        case libflo::opcode::SUB:
+        case libflo::opcode::WR:
+        case libflo::opcode::XOR:
+            break;
+        }
+
     }
 
-    /* Make shadow copies of the register values internally  */
-    for (const auto& pair: to_shadow) {
-        auto mangled_name = pair.first;
-
-        fprintf(f, "  auto __shadow__%s = %s;\n",
-                mangled_name.c_str(),
-                mangled_name.c_str()
-            );
-    }
-
-    /* Register updates need to happen _after_ the shadow copies
-     * do. */
     for (const auto& op: flo->operations()) {
         if (op->op() != libflo::opcode::REG)
             continue;
 
-        if (op->s()->is_const()) {
-            fprintf(f, "  if (%s == 1) { %s = __shadow__%s; }\n",
-                    op->s()->mangled_name().c_str(),
-                    op->d()->mangled_name().c_str(),
-                    op->t()->mangled_name().c_str()
-                );
-        } else {
-            fprintf(f, "  if (%s.lo_word() == 1) { %s = __shadow__%s; }\n",
-                    op->s()->mangled_name().c_str(),
-                    op->d()->mangled_name().c_str(),
-                    op->t()->mangled_name().c_str()
-                );
-        }
     }
     fprintf(f, "}\n");
 
@@ -700,6 +757,15 @@ int generate_llvmir(const flo_ptr flo, FILE *f)
                         libcodegen::llvm::declare_flags_inline
                 );
         }
+    }
+
+    for (const auto& node: flo->nodes()) {
+        if (node->shadowed() == false)
+            continue;
+
+        out.declare(node->shadow_func(),
+                    libcodegen::llvm::declare_flags_inline
+            );
     }
 
     /* Here we generate clock_lo, which performs all the logic
@@ -1018,6 +1084,18 @@ int generate_llvmir(const flo_ptr flo, FILE *f)
                 lo->operate(alloca_op(ptr64, i64cnt));
                 int2array(lo, op->dv(), ptr64, i64cnt);
                 lo->operate(call_op(op->d()->set_func(), {&dut, &ptr64}));
+            }
+
+            /* Some nodes have another value in the header file, which
+             * will be used to generate shadow copies for state
+             * updates. */
+            if (op->d()->shadowed() == true) {
+                lo->comment("  Shadow");
+
+                auto ptr64 = pointer<builtin<uint64_t>>();
+                lo->operate(alloca_op(ptr64, i64cnt));
+                int2array(lo, op->dv(), ptr64, i64cnt);
+                lo->operate(call_op(op->d()->shadow_func(), {&dut, &ptr64}));
             }
         }
 

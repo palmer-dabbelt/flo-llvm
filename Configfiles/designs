@@ -27,6 +27,7 @@ TESTSRC += flo_regenable.bash
 TESTSRC += flo_arsh.bash
 TESTSRC += flo_shiftreg-bad.bash
 TESTSRC += flo_shiftreg-good.bash
+TESTSRC += flo_shiftreg-shadow.bash
 
 # "Large" tests, which really just consist of real code other people
 # wrote.  These are probably all suitable for benchmarking of some
