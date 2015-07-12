@@ -1,32 +1,33 @@
 set -e
 
+# Command-line argument handling
 mode="release"
-if [[ "$1" == "--debug" ]]
-then
-    mode="debug"
-    shift
-fi
-
-if [[ "$1" == "--release" ]]
-then
-    mode="release"
-    shift
-fi
-
-if [[ "$1" == "--vcdtmp" ]]
-then
-    mode="vcdtmp"
-    shift
-fi
-
-if [[ "$1" == "--torture" ]]
-then
-    mode="torture"
-    shift
-fi
+input=""
+while [[ "$1" != "" ]]
+do
+    if [[ "$1" == "--debug" ]]
+    then
+        mode="debug"
+        shift
+    elif [[ "$1" == "--release" ]]
+    then
+        mode="release"
+        shift
+    elif [[ "$1" == "--vcdtmp" ]]
+    then
+        mode="vcdtmp"
+        shift
+    elif [[ "$1" == "--torture" ]]
+    then
+        mode="torture"
+        shift
+    else
+        input="$1"
+        shift
+    fi
+done
 
 # If we weren't passed an input then just send the help text.
-input="$1"
 if [[ "$input" == "" ]]
 then
     input="--help"
