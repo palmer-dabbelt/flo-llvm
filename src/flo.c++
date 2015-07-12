@@ -44,6 +44,12 @@ flo::flo(std::map<std::string, std::shared_ptr<node>>& nodes,
             op->t()->force_shadowed();
             break;
 
+        case libflo::opcode::WR:
+            op->s()->force_shadowed();
+            op->u()->force_shadowed();
+            op->v()->force_shadowed();
+            break;
+
         case libflo::opcode::ADD:
         case libflo::opcode::AND:
         case libflo::opcode::ARSH:
@@ -80,7 +86,6 @@ flo::flo(std::map<std::string, std::shared_ptr<node>>& nodes,
         case libflo::opcode::RST:
         case libflo::opcode::ST:
         case libflo::opcode::SUB:
-        case libflo::opcode::WR:
         case libflo::opcode::XOR:
             break;
          }

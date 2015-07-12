@@ -431,6 +431,26 @@ int generate_compat(const flo_ptr flo, FILE *f)
             }
             break;
 
+        case libflo::opcode::WR:
+            if (op->s()->is_const()) {
+                fprintf(f,
+                        "  if (%s == 1) { %s[%s.lo_word()] = %s; }\n",
+                        op->s()->mangled_name().c_str(),
+                        op->t()->mangled_name().c_str(),
+                        op->v()->shadow_name().c_str(),
+                        op->u()->shadow_name().c_str()
+                    );
+            } else {
+                fprintf(f,
+                        "  if (%s.lo_word() == 1) { %s.put(%s.lo_word(), %s); }\n",
+                        op->s()->shadow_name().c_str(),
+                        op->t()->mangled_name().c_str(),
+                        op->u()->shadow_name().c_str(),
+                        op->v()->shadow_name().c_str()
+                    );
+            }
+            break;
+
         case libflo::opcode::ADD:
         case libflo::opcode::AND:
         case libflo::opcode::ARSH:
@@ -467,7 +487,6 @@ int generate_compat(const flo_ptr flo, FILE *f)
         case libflo::opcode::RST:
         case libflo::opcode::ST:
         case libflo::opcode::SUB:
-        case libflo::opcode::WR:
         case libflo::opcode::XOR:
             break;
         }
@@ -1019,42 +1038,11 @@ int generate_llvmir(const flo_ptr flo, FILE *f)
                 break;
 
             case libflo::opcode::WR:
-            {
-                auto index = op->uv();
-                auto index64 = builtin<uint64_t>();
-                lo->operate(zero_ext_op(index64, index));
-
-                /* On a CPU we have to emulate WR with a
-                 * read-modify-write cycle: no modification is made if
-                 * write-enable is FALSE. */
-                auto read_value = fix_t(op->v()->width());
-
-                auto read_ptr = pointer<builtin<uint64_t>>();
-                lo->operate(alloca_op(read_ptr, i64cnt));
-                lo->operate(call_op(op->t()->getm_func(),
-                                    {&dut, &index64, &read_ptr}));
-                array2int(lo, read_value, read_ptr, i64cnt);
-
-                auto write_value = fix_t(op->v()->width());
-                lo->operate(mux_op(write_value,
-                                   op->sv(),
-                                   op->vv(),
-                                   read_value
-                                ));
-
-                auto write_ptr = pointer<builtin<uint64_t>>();
-                lo->operate(alloca_op(write_ptr, i64cnt));
-                int2array(lo, write_value, write_ptr, i64cnt);
-                lo->operate(call_op(op->t()->setm_func(),
-                                    {&dut, &index64, &write_ptr}));
-
                 /* WR doesn't return anything despite having a node in
                  * there.  Don't attempt to write this back to the
                  * header. */
                 nop = true;
-
                 break;
-            }
 
             case libflo::opcode::XOR:
                 lo->operate(xor_op(op->dv(), op->sv(0), op->tv()));
