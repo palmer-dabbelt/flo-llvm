@@ -3,6 +3,10 @@ set -e
 # Command-line argument handling
 mode="release"
 input=""
+extra_cxxflags=""
+extra_llcflags=""
+extra_linkflags=""
+extra_optflags=""
 while [[ "$1" != "" ]]
 do
     if [[ "$1" == "--debug" ]]
@@ -21,6 +25,12 @@ do
     then
         mode="torture"
         shift
+    elif [[ "$1" == "--pic" ]]
+    then
+        extra_cxxflags="$extra_cxxflags -fPIC"
+        extra_llcflags="$extra_llcflags -fPIC"
+        extra_linkflags="$extra_linkflags -fPIC"
+        extra_optflags="$extra_optflags -fPIC"
     else
         input="$1"
         shift
@@ -89,14 +99,15 @@ $0-$mode "$input" --header > $tempdir/design.h
 $0-$mode "$input" --compat > $tempdir/compat.c++
 $0-$mode "$input" --ir     > $tempdir/design.llvm
 
-$clang -std=c++11 -c -S -emit-llvm \
+$clang $extra_cxxflags -std=c++11 -c -S -emit-llvm \
     -I "$(dirname $input)" \
     -include $tempdir/design.h \
     $tempdir/compat.c++ -o $tempdir/compat.llvm
 
-$llvm_link $tempdir/design.llvm $tempdir/compat.llvm > $tempdir/link.llvm
+$llvm_link $extra_linkflags\
+           $tempdir/design.llvm $tempdir/compat.llvm > $tempdir/link.llvm
 
-$opt -O2 $tempdir/link.llvm -o $tempdir/opt.llvm
+$opt $extra_optflags -O2 $tempdir/link.llvm -o $tempdir/opt.llvm
 
 # So for some reason it turns out that on OSX the compiler doesn't
 # actually emit assembly that the assembler understands.  According to
@@ -105,10 +116,10 @@ $opt -O2 $tempdir/link.llvm -o $tempdir/opt.llvm
 # They just don't care about fixing this.
 if [[ "$(uname)" == "Darwin" ]]
 then
-    $llc -O2 $tempdir/opt.llvm -filetype=obj -o $tempdir/opt.o
+    $llc $extra_llcflags -O2 $tempdir/opt.llvm -filetype=obj -o $tempdir/opt.o
 else
-    $llc -O2 $tempdir/opt.llvm -o $tempdir/opt.S
-    c++ $tempdir/opt.S -c -o $tempdir/opt.o
+    $llc $extra_llcflags -O2 $tempdir/opt.llvm -o $tempdir/opt.S
+    c++ $extra_cxxflags $tempdir/opt.S -c -o $tempdir/opt.o
 fi
 
 mv $tempdir/opt.o "$(dirname $input)"/"$(basename $input .flo)".o
