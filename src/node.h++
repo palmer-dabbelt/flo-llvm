@@ -91,7 +91,10 @@ public:
     /* Returns the name (as a string) of a variable that shadows this
      * variable. */
     const std::string shadow_name(void) const
-        { return std::string("__shadow__") + mangled_name(); }
+        {
+            if (is_const()) return mangled_name();
+            return std::string("__shadow__") + mangled_name();
+        }
 
     /* Functions that allow access to this node's internal data
      * structures. */
